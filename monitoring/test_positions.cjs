@@ -1,0 +1,4 @@
+process.env.AEGIS_TELEGRAM_BOT_USERNAME ||= 'FixtureResearchBot';
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path');
+const {record,holdings}=require('./positions.cjs');
+test('manual purchases and partial sales preserve cost basis, duplicates do not add holdings',()=>{const dir=fs.mkdtempSync(path.join(os.tmpdir(),'aegis-position-'));record('bought','ABC 2 10 CAD','01',dir);record('bought','ABC 2 10 CAD','01',dir);record('bought','ABC 2 12 CAD','02',dir);record('sold','ABC 1 13 CAD','03',dir);assert.equal(holdings(dir)['ABC CAD'].quantity,3);assert.equal(holdings(dir)['ABC CAD'].cost,33);assert.match(record('sold','ABC 4 13 CAD','04',dir),/exceeds/);assert.match(record('bought','ABC -1 1 CAD','05',dir),/Format/);});

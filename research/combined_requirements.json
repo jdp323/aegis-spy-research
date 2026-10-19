@@ -1,0 +1,1601 @@
+[
+  {
+    "id": "0. GOAL-1-1",
+    "requirement": "**One clear answer.** `/trend` says, in a few lines, what SPY's trend is and whether there is a **BUY CALL idea, BUY PUT idea or NO TRADE** right now. News, WSB sentiment, research detail and system status stay available but move behind other commands.",
+    "files": [
+      "core/verdict.py",
+      "ops/demo.py",
+      "ops/verification_packet.py"
+    ],
+    "tests": [
+      "tests/test_combined_verdict.py",
+      "tests/test_combined_demo.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_verdict.py:test_three_states_and_line_cap",
+      "tests/test_combined_verdict.py:test_closed_and_simulated_rejection",
+      "tests/test_combined_demo.py:test_actual_pipeline_and_real_rejection",
+      "tests/test_combined_demo.py:test_arithmetic_labels_and_isolation",
+      "tests/test_combined_demo.py:test_user_nonce_and_duplicate_isolation",
+      "tests/test_combined_demo.py:test_all_scenarios_have_generated_ideas_or_blockers"
+    ]
+  },
+  {
+    "id": "0. GOAL-2-2",
+    "requirement": "**Specific and checkable.** When real option quotes exist, the idea is concrete, for example: *\"Downtrend: buy the SPY 771 put (expires Oct 14) with a limit around $2.40; sell at about $3.10 or when SPY reaches 768.9; stop at about $1.80 or if SPY closes above 772.6.\"* Every exit shows **both** an option price and a SPY price. The bot chooses the h",
+    "files": [
+      "core/verdict.py",
+      "ops/demo.py",
+      "ops/verification_packet.py"
+    ],
+    "tests": [
+      "tests/test_combined_verdict.py",
+      "tests/test_combined_demo.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_verdict.py:test_three_states_and_line_cap",
+      "tests/test_combined_verdict.py:test_closed_and_simulated_rejection",
+      "tests/test_combined_demo.py:test_actual_pipeline_and_real_rejection",
+      "tests/test_combined_demo.py:test_arithmetic_labels_and_isolation",
+      "tests/test_combined_demo.py:test_user_nonce_and_duplicate_isolation",
+      "tests/test_combined_demo.py:test_all_scenarios_have_generated_ideas_or_blockers"
+    ]
+  },
+  {
+    "id": "0. GOAL-3-3",
+    "requirement": "**Real option prices** through an optional read-only market-data provider (optional adapter; configure independently).",
+    "files": [
+      "core/verdict.py",
+      "ops/demo.py",
+      "ops/verification_packet.py"
+    ],
+    "tests": [
+      "tests/test_combined_verdict.py",
+      "tests/test_combined_demo.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "status_override": "NOT DONE",
+    "evidence_override": "Legacy coverage mapping only. This public installation requires independent operational and external verification.",
+    "test_names": [
+      "tests/test_combined_verdict.py:test_three_states_and_line_cap",
+      "tests/test_combined_verdict.py:test_closed_and_simulated_rejection",
+      "tests/test_combined_demo.py:test_actual_pipeline_and_real_rejection",
+      "tests/test_combined_demo.py:test_arithmetic_labels_and_isolation",
+      "tests/test_combined_demo.py:test_user_nonce_and_duplicate_isolation",
+      "tests/test_combined_demo.py:test_all_scenarios_have_generated_ideas_or_blockers"
+    ]
+  },
+  {
+    "id": "0. GOAL-4-4",
+    "requirement": "**A full tap-through demo** of the whole experience that works any time, even with the market closed.",
+    "files": [
+      "core/verdict.py",
+      "ops/demo.py",
+      "ops/verification_packet.py"
+    ],
+    "tests": [
+      "tests/test_combined_verdict.py",
+      "tests/test_combined_demo.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_verdict.py:test_three_states_and_line_cap",
+      "tests/test_combined_verdict.py:test_closed_and_simulated_rejection",
+      "tests/test_combined_demo.py:test_actual_pipeline_and_real_rejection",
+      "tests/test_combined_demo.py:test_arithmetic_labels_and_isolation",
+      "tests/test_combined_demo.py:test_user_nonce_and_duplicate_isolation",
+      "tests/test_combined_demo.py:test_all_scenarios_have_generated_ideas_or_blockers"
+    ]
+  },
+  {
+    "id": "0. GOAL-5-5",
+    "requirement": "**A verification packet** the owner can send to an independent reviewer .",
+    "files": [
+      "core/verdict.py",
+      "ops/demo.py",
+      "ops/verification_packet.py"
+    ],
+    "tests": [
+      "tests/test_combined_verdict.py",
+      "tests/test_combined_demo.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_verdict.py:test_three_states_and_line_cap",
+      "tests/test_combined_verdict.py:test_closed_and_simulated_rejection",
+      "tests/test_combined_demo.py:test_actual_pipeline_and_real_rejection",
+      "tests/test_combined_demo.py:test_arithmetic_labels_and_isolation",
+      "tests/test_combined_demo.py:test_user_nonce_and_duplicate_isolation",
+      "tests/test_combined_demo.py:test_all_scenarios_have_generated_ideas_or_blockers"
+    ]
+  },
+  {
+    "id": "2. HARD RULES-1-6",
+    "requirement": "All real orders stay manual. The Questrade integration is **market data only**: no order, account, balance, position or activity endpoints. `order_execution_enabled=false`, `live_signal_enabled=false`, `LIVE_SIGNAL_READY=false`. `BUY`, `SELL`, `TRADE_PROPOSAL` notification kinds stay blocked.",
+    "files": [
+      "core/signals.py",
+      "core/isolation.py",
+      "monitoring/notifier.cjs"
+    ],
+    "tests": [
+      "tests/test_paper_upgrade_c.py",
+      "tests/test_combined_demo.py",
+      "monitoring/test_notifier.cjs"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_paper_upgrade_c.py:test_flag_and_live_separation",
+      "tests/test_paper_upgrade_c.py:test_each_other_gate",
+      "tests/test_paper_upgrade_c.py:test_paper_route_real_quotes_only",
+      "tests/test_paper_upgrade_c.py:test_validator_never_promotes",
+      "tests/test_paper_upgrade_c.py:test_stale_missing_greeks_and_liquidity_block_paper",
+      "tests/test_combined_demo.py:test_actual_pipeline_and_real_rejection",
+      "tests/test_combined_demo.py:test_arithmetic_labels_and_isolation",
+      "tests/test_combined_demo.py:test_user_nonce_and_duplicate_isolation",
+      "tests/test_combined_demo.py:test_all_scenarios_have_generated_ideas_or_blockers"
+    ]
+  },
+  {
+    "id": "2. HARD RULES-2-7",
+    "requirement": "Never ask for, read, store or log the owner's Questrade password. Only a refresh token is used, entered through the existing local encrypted (DPAPI) setup page. Never print or log tokens; never put them in chat, files or command arguments.",
+    "files": [
+      "core/signals.py",
+      "core/isolation.py",
+      "monitoring/notifier.cjs"
+    ],
+    "tests": [
+      "tests/test_paper_upgrade_c.py",
+      "tests/test_combined_demo.py",
+      "monitoring/test_notifier.cjs"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_paper_upgrade_c.py:test_flag_and_live_separation",
+      "tests/test_paper_upgrade_c.py:test_each_other_gate",
+      "tests/test_paper_upgrade_c.py:test_paper_route_real_quotes_only",
+      "tests/test_paper_upgrade_c.py:test_validator_never_promotes",
+      "tests/test_paper_upgrade_c.py:test_stale_missing_greeks_and_liquidity_block_paper",
+      "tests/test_combined_demo.py:test_actual_pipeline_and_real_rejection",
+      "tests/test_combined_demo.py:test_arithmetic_labels_and_isolation",
+      "tests/test_combined_demo.py:test_user_nonce_and_duplicate_isolation",
+      "tests/test_combined_demo.py:test_all_scenarios_have_generated_ideas_or_blockers"
+    ]
+  },
+  {
+    "id": "2. HARD RULES-3-8",
+    "requirement": "Fail closed. No guessing or fabricating quotes, Greeks, IV, premiums, calendar dates, news status or results. Missing fields stay `UNAVAILABLE`.",
+    "files": [
+      "core/signals.py",
+      "core/isolation.py",
+      "monitoring/notifier.cjs"
+    ],
+    "tests": [
+      "tests/test_paper_upgrade_c.py",
+      "tests/test_combined_demo.py",
+      "monitoring/test_notifier.cjs"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_paper_upgrade_c.py:test_flag_and_live_separation",
+      "tests/test_paper_upgrade_c.py:test_each_other_gate",
+      "tests/test_paper_upgrade_c.py:test_paper_route_real_quotes_only",
+      "tests/test_paper_upgrade_c.py:test_validator_never_promotes",
+      "tests/test_paper_upgrade_c.py:test_stale_missing_greeks_and_liquidity_block_paper",
+      "tests/test_combined_demo.py:test_actual_pipeline_and_real_rejection",
+      "tests/test_combined_demo.py:test_arithmetic_labels_and_isolation",
+      "tests/test_combined_demo.py:test_user_nonce_and_duplicate_isolation",
+      "tests/test_combined_demo.py:test_all_scenarios_have_generated_ideas_or_blockers"
+    ]
+  },
+  {
+    "id": "2. HARD RULES-4-9",
+    "requirement": "**Do not delete or rewrite any feature or history.** This release regroups commands, changes defaults and shortens messages; every existing command keeps working when typed. Migrations are additive and backed up first.",
+    "files": [
+      "core/signals.py",
+      "core/isolation.py",
+      "monitoring/notifier.cjs"
+    ],
+    "tests": [
+      "tests/test_paper_upgrade_c.py",
+      "tests/test_combined_demo.py",
+      "monitoring/test_notifier.cjs"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_paper_upgrade_c.py:test_flag_and_live_separation",
+      "tests/test_paper_upgrade_c.py:test_each_other_gate",
+      "tests/test_paper_upgrade_c.py:test_paper_route_real_quotes_only",
+      "tests/test_paper_upgrade_c.py:test_validator_never_promotes",
+      "tests/test_paper_upgrade_c.py:test_stale_missing_greeks_and_liquidity_block_paper",
+      "tests/test_combined_demo.py:test_actual_pipeline_and_real_rejection",
+      "tests/test_combined_demo.py:test_arithmetic_labels_and_isolation",
+      "tests/test_combined_demo.py:test_user_nonce_and_duplicate_isolation",
+      "tests/test_combined_demo.py:test_all_scenarios_have_generated_ideas_or_blockers"
+    ]
+  },
+  {
+    "id": "2. HARD RULES-5-10",
+    "requirement": "Timestamps stored in UTC, shown in ET (America/New_York). Never mix naive and aware datetimes.",
+    "files": [
+      "core/signals.py",
+      "core/isolation.py",
+      "monitoring/notifier.cjs"
+    ],
+    "tests": [
+      "tests/test_paper_upgrade_c.py",
+      "tests/test_combined_demo.py",
+      "monitoring/test_notifier.cjs"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_paper_upgrade_c.py:test_flag_and_live_separation",
+      "tests/test_paper_upgrade_c.py:test_each_other_gate",
+      "tests/test_paper_upgrade_c.py:test_paper_route_real_quotes_only",
+      "tests/test_paper_upgrade_c.py:test_validator_never_promotes",
+      "tests/test_paper_upgrade_c.py:test_stale_missing_greeks_and_liquidity_block_paper",
+      "tests/test_combined_demo.py:test_actual_pipeline_and_real_rejection",
+      "tests/test_combined_demo.py:test_arithmetic_labels_and_isolation",
+      "tests/test_combined_demo.py:test_user_nonce_and_duplicate_isolation",
+      "tests/test_combined_demo.py:test_all_scenarios_have_generated_ideas_or_blockers"
+    ]
+  },
+  {
+    "id": "2. HARD RULES-6-11",
+    "requirement": "Verdicts are ideas from unvalidated research, never recommendations or orders. Keep one short \"unvalidated\" line per idea; do not repeat paragraphs of disclaimers.",
+    "files": [
+      "core/signals.py",
+      "core/isolation.py",
+      "monitoring/notifier.cjs"
+    ],
+    "tests": [
+      "tests/test_paper_upgrade_c.py",
+      "tests/test_combined_demo.py",
+      "monitoring/test_notifier.cjs"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_paper_upgrade_c.py:test_flag_and_live_separation",
+      "tests/test_paper_upgrade_c.py:test_each_other_gate",
+      "tests/test_paper_upgrade_c.py:test_paper_route_real_quotes_only",
+      "tests/test_paper_upgrade_c.py:test_validator_never_promotes",
+      "tests/test_paper_upgrade_c.py:test_stale_missing_greeks_and_liquidity_block_paper",
+      "tests/test_combined_demo.py:test_actual_pipeline_and_real_rejection",
+      "tests/test_combined_demo.py:test_arithmetic_labels_and_isolation",
+      "tests/test_combined_demo.py:test_user_nonce_and_duplicate_isolation",
+      "tests/test_combined_demo.py:test_all_scenarios_have_generated_ideas_or_blockers"
+    ]
+  },
+  {
+    "id": "2. HARD RULES-7-12",
+    "requirement": "**Premium prices and option-dollar targets may only come from a real, fresh, verified, non-delayed option quote.** Indicative, delayed, stale or simulated data (outside the demo) never produces a price, a paper option trade or an option-dollar exit.",
+    "files": [
+      "core/signals.py",
+      "core/isolation.py",
+      "monitoring/notifier.cjs"
+    ],
+    "tests": [
+      "tests/test_paper_upgrade_c.py",
+      "tests/test_combined_demo.py",
+      "monitoring/test_notifier.cjs"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_paper_upgrade_c.py:test_flag_and_live_separation",
+      "tests/test_paper_upgrade_c.py:test_each_other_gate",
+      "tests/test_paper_upgrade_c.py:test_paper_route_real_quotes_only",
+      "tests/test_paper_upgrade_c.py:test_validator_never_promotes",
+      "tests/test_paper_upgrade_c.py:test_stale_missing_greeks_and_liquidity_block_paper",
+      "tests/test_combined_demo.py:test_actual_pipeline_and_real_rejection",
+      "tests/test_combined_demo.py:test_arithmetic_labels_and_isolation",
+      "tests/test_combined_demo.py:test_user_nonce_and_duplicate_isolation",
+      "tests/test_combined_demo.py:test_all_scenarios_have_generated_ideas_or_blockers"
+    ]
+  },
+  {
+    "id": "2. HARD RULES-8-13",
+    "requirement": "**Simulated data must never leak into anything real.** Demo data carries `feed_quality=SIMULATED` and is rejected by every real gate, store and report (tests prove it).",
+    "files": [
+      "core/signals.py",
+      "core/isolation.py",
+      "monitoring/notifier.cjs"
+    ],
+    "tests": [
+      "tests/test_paper_upgrade_c.py",
+      "tests/test_combined_demo.py",
+      "monitoring/test_notifier.cjs"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_paper_upgrade_c.py:test_flag_and_live_separation",
+      "tests/test_paper_upgrade_c.py:test_each_other_gate",
+      "tests/test_paper_upgrade_c.py:test_paper_route_real_quotes_only",
+      "tests/test_paper_upgrade_c.py:test_validator_never_promotes",
+      "tests/test_paper_upgrade_c.py:test_stale_missing_greeks_and_liquidity_block_paper",
+      "tests/test_combined_demo.py:test_actual_pipeline_and_real_rejection",
+      "tests/test_combined_demo.py:test_arithmetic_labels_and_isolation",
+      "tests/test_combined_demo.py:test_user_nonce_and_duplicate_isolation",
+      "tests/test_combined_demo.py:test_all_scenarios_have_generated_ideas_or_blockers"
+    ]
+  },
+  {
+    "id": "2. HARD RULES-9-14",
+    "requirement": "Do not message the friend/guest accounts during development; real Telegram test messages go to the owner only, labelled `TEST`. Tests use fake transports.",
+    "files": [
+      "core/signals.py",
+      "core/isolation.py",
+      "monitoring/notifier.cjs"
+    ],
+    "tests": [
+      "tests/test_paper_upgrade_c.py",
+      "tests/test_combined_demo.py",
+      "monitoring/test_notifier.cjs"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_paper_upgrade_c.py:test_flag_and_live_separation",
+      "tests/test_paper_upgrade_c.py:test_each_other_gate",
+      "tests/test_paper_upgrade_c.py:test_paper_route_real_quotes_only",
+      "tests/test_paper_upgrade_c.py:test_validator_never_promotes",
+      "tests/test_paper_upgrade_c.py:test_stale_missing_greeks_and_liquidity_block_paper",
+      "tests/test_combined_demo.py:test_actual_pipeline_and_real_rejection",
+      "tests/test_combined_demo.py:test_arithmetic_labels_and_isolation",
+      "tests/test_combined_demo.py:test_user_nonce_and_duplicate_isolation",
+      "tests/test_combined_demo.py:test_all_scenarios_have_generated_ideas_or_blockers"
+    ]
+  },
+  {
+    "id": "2. HARD RULES-10-15",
+    "requirement": "Never claim profitability or validation without stored evidence.",
+    "files": [
+      "core/signals.py",
+      "core/isolation.py",
+      "monitoring/notifier.cjs"
+    ],
+    "tests": [
+      "tests/test_paper_upgrade_c.py",
+      "tests/test_combined_demo.py",
+      "monitoring/test_notifier.cjs"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_paper_upgrade_c.py:test_flag_and_live_separation",
+      "tests/test_paper_upgrade_c.py:test_each_other_gate",
+      "tests/test_paper_upgrade_c.py:test_paper_route_real_quotes_only",
+      "tests/test_paper_upgrade_c.py:test_validator_never_promotes",
+      "tests/test_paper_upgrade_c.py:test_stale_missing_greeks_and_liquidity_block_paper",
+      "tests/test_combined_demo.py:test_actual_pipeline_and_real_rejection",
+      "tests/test_combined_demo.py:test_arithmetic_labels_and_isolation",
+      "tests/test_combined_demo.py:test_user_nonce_and_duplicate_isolation",
+      "tests/test_combined_demo.py:test_all_scenarios_have_generated_ideas_or_blockers"
+    ]
+  },
+  {
+    "id": "3. METHOD-1-16",
+    "requirement": "**Backup first:** timestamped project copy (or git commit/tag plus copies of every database and JSON data file). Record the location in the final report.",
+    "files": [
+      "research/combined_backup.json",
+      "PROJECT_DOCUMENTATION.md"
+    ],
+    "tests": [
+      "tests/test_verification_packet.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_verification_packet.py:test_secret_refusal_redaction_and_allowlist",
+      "tests/test_verification_packet.py:test_tags_are_not_inflated_to_tested",
+      "tests/test_verification_packet.py:test_sqlite_inspection_is_read_only_and_no_network",
+      "tests/test_verification_packet.py:test_json_twin_and_size_guard"
+    ]
+  },
+  {
+    "id": "3. METHOD-2-17",
+    "requirement": "**Read before writing:** inspect the command registry, `/trend` handler, notifier, local setup page, config validator, provider protocol/router, Alpaca adapter, contract selector, signal/paper/proxy engines, news and Reddit modules, dashboard, the existing `/demo` and the replay provider. Conform to existing schemas and extend them additively (bump",
+    "files": [
+      "research/combined_backup.json",
+      "PROJECT_DOCUMENTATION.md"
+    ],
+    "tests": [
+      "tests/test_verification_packet.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_verification_packet.py:test_secret_refusal_redaction_and_allowlist",
+      "tests/test_verification_packet.py:test_tags_are_not_inflated_to_tested",
+      "tests/test_verification_packet.py:test_sqlite_inspection_is_read_only_and_no_network",
+      "tests/test_verification_packet.py:test_json_twin_and_size_guard"
+    ]
+  },
+  {
+    "id": "3. METHOD-3-18",
+    "requirement": "**Verify the Questrade API against the current official documentation** (fetch it if reachable). Use the real field names and endpoint shapes, parse defensively, and treat unknown fields as `UNAVAILABLE`. If the docs are unreachable, record that in `KNOWN_ISSUES.md`.",
+    "files": [
+      "research/combined_backup.json",
+      "PROJECT_DOCUMENTATION.md"
+    ],
+    "tests": [
+      "tests/test_verification_packet.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_verification_packet.py:test_secret_refusal_redaction_and_allowlist",
+      "tests/test_verification_packet.py:test_tags_are_not_inflated_to_tested",
+      "tests/test_verification_packet.py:test_sqlite_inspection_is_read_only_and_no_network",
+      "tests/test_verification_packet.py:test_json_twin_and_size_guard"
+    ]
+  },
+  {
+    "id": "3. METHOD-4-19",
+    "requirement": "Run the relevant tests after each part, fix failures, log unfixable items in `research/KNOWN_ISSUES.md`.",
+    "files": [
+      "research/combined_backup.json",
+      "PROJECT_DOCUMENTATION.md"
+    ],
+    "tests": [
+      "tests/test_verification_packet.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_verification_packet.py:test_secret_refusal_redaction_and_allowlist",
+      "tests/test_verification_packet.py:test_tags_are_not_inflated_to_tested",
+      "tests/test_verification_packet.py:test_sqlite_inspection_is_read_only_and_no_network",
+      "tests/test_verification_packet.py:test_json_twin_and_size_guard"
+    ]
+  },
+  {
+    "id": "3. METHOD-5-20",
+    "requirement": "Update `RUNBOOK.md`, `PROJECT_DOCUMENTATION.md`, `APP_GUIDE.md`, `FUNCTION_REFERENCE.md`, the user manual and `START_HERE.md`.",
+    "files": [
+      "research/combined_backup.json",
+      "PROJECT_DOCUMENTATION.md"
+    ],
+    "tests": [
+      "tests/test_verification_packet.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_verification_packet.py:test_secret_refusal_redaction_and_allowlist",
+      "tests/test_verification_packet.py:test_tags_are_not_inflated_to_tested",
+      "tests/test_verification_packet.py:test_sqlite_inspection_is_read_only_and_no_network",
+      "tests/test_verification_packet.py:test_json_twin_and_size_guard"
+    ]
+  },
+  {
+    "id": "A-1-21",
+    "requirement": "**Clock skew.** The stream rejects quotes stamped slightly ahead of the local clock (local clock measured about 0.9 s behind; Windows Time start was denied). Do not try to elevate privileges.",
+    "files": [
+      "data/clock_health.py",
+      "news/calendar_updater.py",
+      "backtesting/proxy_engine.py"
+    ],
+    "tests": [
+      "tests/test_combined_a.py",
+      "tests/test_combined_calendar.py",
+      "tests/test_combined_proxy_vwap.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_a.py:test_skew_boundary_and_clamped_watermark",
+      "tests/test_combined_a.py:test_ntp_fake_and_bad_response",
+      "tests/test_combined_a.py:test_config_closed_and_bounds",
+      "tests/test_combined_calendar.py:test_date_only_during_dst_day",
+      "tests/test_combined_calendar.py:test_failed_fetch_keeps_good",
+      "tests/test_combined_proxy_vwap.py:test_call_put_vwap_confirmation_and_news_gate"
+    ]
+  },
+  {
+    "id": "A-2-22",
+    "requirement": "**Calendar refresh and coverage.**",
+    "files": [
+      "data/clock_health.py",
+      "news/calendar_updater.py",
+      "backtesting/proxy_engine.py"
+    ],
+    "tests": [
+      "tests/test_combined_a.py",
+      "tests/test_combined_calendar.py",
+      "tests/test_combined_proxy_vwap.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_a.py:test_skew_boundary_and_clamped_watermark",
+      "tests/test_combined_a.py:test_ntp_fake_and_bad_response",
+      "tests/test_combined_a.py:test_config_closed_and_bounds",
+      "tests/test_combined_calendar.py:test_date_only_during_dst_day",
+      "tests/test_combined_calendar.py:test_failed_fetch_keeps_good",
+      "tests/test_combined_proxy_vwap.py:test_call_put_vwap_confirmation_and_news_gate"
+    ]
+  },
+  {
+    "id": "A-3-23",
+    "requirement": "**Larger honest sample.** Add VWAP reclaim and VWAP rejection to the underlying-proxy paper mode (`proxy-vwap-v1`) with the same confirmations, separate per-setup stats and the same hard gates as the opening-range proxy. The aim is more data, not looser rules.",
+    "files": [
+      "data/clock_health.py",
+      "news/calendar_updater.py",
+      "backtesting/proxy_engine.py"
+    ],
+    "tests": [
+      "tests/test_combined_a.py",
+      "tests/test_combined_calendar.py",
+      "tests/test_combined_proxy_vwap.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_a.py:test_skew_boundary_and_clamped_watermark",
+      "tests/test_combined_a.py:test_ntp_fake_and_bad_response",
+      "tests/test_combined_a.py:test_config_closed_and_bounds",
+      "tests/test_combined_calendar.py:test_date_only_during_dst_day",
+      "tests/test_combined_calendar.py:test_failed_fetch_keeps_good",
+      "tests/test_combined_proxy_vwap.py:test_call_put_vwap_confirmation_and_news_gate"
+    ]
+  },
+  {
+    "id": "A-4-24",
+    "requirement": "**Heartbeat.** Keep `heartbeat_url` optional; add step-by-step instructions for a free dead-man's-switch check in `OWNER_ACTIONS.md`.",
+    "files": [
+      "data/clock_health.py",
+      "news/calendar_updater.py",
+      "backtesting/proxy_engine.py"
+    ],
+    "tests": [
+      "tests/test_combined_a.py",
+      "tests/test_combined_calendar.py",
+      "tests/test_combined_proxy_vwap.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_a.py:test_skew_boundary_and_clamped_watermark",
+      "tests/test_combined_a.py:test_ntp_fake_and_bad_response",
+      "tests/test_combined_a.py:test_config_closed_and_bounds",
+      "tests/test_combined_calendar.py:test_date_only_during_dst_day",
+      "tests/test_combined_calendar.py:test_failed_fetch_keeps_good",
+      "tests/test_combined_proxy_vwap.py:test_call_put_vwap_confirmation_and_news_gate"
+    ]
+  },
+  {
+    "id": "A-5-25",
+    "requirement": "Tests: skew tolerance boundaries and watermark behavior, NTP offset handling with fake responses, BLS 403 fallback and last-good retention, date-only FOMC all-day blackout (including DST), daily refresh and stale warnings, proxy VWAP setups.",
+    "files": [
+      "data/clock_health.py",
+      "news/calendar_updater.py",
+      "backtesting/proxy_engine.py"
+    ],
+    "tests": [
+      "tests/test_combined_a.py",
+      "tests/test_combined_calendar.py",
+      "tests/test_combined_proxy_vwap.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_a.py:test_skew_boundary_and_clamped_watermark",
+      "tests/test_combined_a.py:test_ntp_fake_and_bad_response",
+      "tests/test_combined_a.py:test_config_closed_and_bounds",
+      "tests/test_combined_calendar.py:test_date_only_during_dst_day",
+      "tests/test_combined_calendar.py:test_failed_fetch_keeps_good",
+      "tests/test_combined_proxy_vwap.py:test_call_put_vwap_confirmation_and_news_gate"
+    ]
+  },
+  {
+    "id": "C-1-26",
+    "requirement": "Implement `QuestradeProvider` behind the existing `MarketDataProvider` protocol: `get_underlying_quote`, `get_bars` (candles), `get_option_chain`, `get_option_quote`, `get_market_status`, `health`.",
+    "files": [
+      "data/questrade.py",
+      "data/questrade_vault.py",
+      "data/local_setup.py"
+    ],
+    "tests": [
+      "tests/test_combined_questrade.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_questrade.py:test_cross_process_lock_serializes",
+      "tests/test_combined_questrade.py:test_crash_after_remote_consumption_before_persistence",
+      "tests/test_combined_questrade.py:test_http_429_cooldown_prevents_repeat_request",
+      "tests/test_combined_questrade.py:test_refresh_persisted_before_use_and_crash_journal",
+      "tests/test_combined_questrade.py:test_allowlist_and_origins",
+      "tests/test_combined_questrade.py:test_last_trade_time_is_not_quote_time",
+      "tests/test_combined_questrade.py:test_policy_expiry_and_no_token"
+    ]
+  },
+  {
+    "id": "C-2-27",
+    "requirement": "**Endpoint allowlist (enforced in code and tests):** server time, symbol search/lookup, candles, equity quotes, option chain structure, option quotes by ID or filter. Anything under accounts, balances, positions, orders, executions or activities is **forbidden**: the client module must contain no such URLs or methods, and a test scans the module to",
+    "files": [
+      "data/questrade.py",
+      "data/questrade_vault.py",
+      "data/local_setup.py"
+    ],
+    "tests": [
+      "tests/test_combined_questrade.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_questrade.py:test_cross_process_lock_serializes",
+      "tests/test_combined_questrade.py:test_crash_after_remote_consumption_before_persistence",
+      "tests/test_combined_questrade.py:test_http_429_cooldown_prevents_repeat_request",
+      "tests/test_combined_questrade.py:test_refresh_persisted_before_use_and_crash_journal",
+      "tests/test_combined_questrade.py:test_allowlist_and_origins",
+      "tests/test_combined_questrade.py:test_last_trade_time_is_not_quote_time",
+      "tests/test_combined_questrade.py:test_policy_expiry_and_no_token"
+    ]
+  },
+  {
+    "id": "C-3-28",
+    "requirement": "**Token management** (Questrade uses an OAuth refresh token that is single-use and rotates on every refresh; the access token lasts about 30 minutes and a refresh token expires after about 3 days; verify in the docs):",
+    "files": [
+      "data/questrade.py",
+      "data/questrade_vault.py",
+      "data/local_setup.py"
+    ],
+    "tests": [
+      "tests/test_combined_questrade.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_questrade.py:test_cross_process_lock_serializes",
+      "tests/test_combined_questrade.py:test_crash_after_remote_consumption_before_persistence",
+      "tests/test_combined_questrade.py:test_http_429_cooldown_prevents_repeat_request",
+      "tests/test_combined_questrade.py:test_refresh_persisted_before_use_and_crash_journal",
+      "tests/test_combined_questrade.py:test_allowlist_and_origins",
+      "tests/test_combined_questrade.py:test_last_trade_time_is_not_quote_time",
+      "tests/test_combined_questrade.py:test_policy_expiry_and_no_token"
+    ]
+  },
+  {
+    "id": "C-4-29",
+    "requirement": "**Entitlement and delay detection.** Real-time option data needs a market-data subscription; otherwise quotes may be delayed or limited. Read the quote's real-time/delay indicators and timestamps. Tag `feed_quality=OPRA_L1_QUESTRADE` only when the response is flagged real-time and fresh; otherwise `DELAYED` or `INCOMPLETE`, which can never satisfy ",
+    "files": [
+      "data/questrade.py",
+      "data/questrade_vault.py",
+      "data/local_setup.py"
+    ],
+    "tests": [
+      "tests/test_combined_questrade.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "status_override": "NOT DONE",
+    "evidence_override": "Legacy coverage mapping only. This public installation requires independent operational and external verification.",
+    "test_names": [
+      "tests/test_combined_questrade.py:test_cross_process_lock_serializes",
+      "tests/test_combined_questrade.py:test_crash_after_remote_consumption_before_persistence",
+      "tests/test_combined_questrade.py:test_http_429_cooldown_prevents_repeat_request",
+      "tests/test_combined_questrade.py:test_refresh_persisted_before_use_and_crash_journal",
+      "tests/test_combined_questrade.py:test_allowlist_and_origins",
+      "tests/test_combined_questrade.py:test_last_trade_time_is_not_quote_time",
+      "tests/test_combined_questrade.py:test_policy_expiry_and_no_token"
+    ]
+  },
+  {
+    "id": "C-5-30",
+    "requirement": "**Rate limits:** respect documented limits with a conservative cap (default 5 requests/second, configurable), batch option quotes by ID, cache symbol IDs, exponential backoff with jitter, cooldowns on 401/403/429. Chain refresh follows the existing cadence; quotes for an active idea or held contract refresh more often (default every 5–10 seconds wh",
+    "files": [
+      "data/questrade.py",
+      "data/questrade_vault.py",
+      "data/local_setup.py"
+    ],
+    "tests": [
+      "tests/test_combined_questrade.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_questrade.py:test_cross_process_lock_serializes",
+      "tests/test_combined_questrade.py:test_crash_after_remote_consumption_before_persistence",
+      "tests/test_combined_questrade.py:test_http_429_cooldown_prevents_repeat_request",
+      "tests/test_combined_questrade.py:test_refresh_persisted_before_use_and_crash_journal",
+      "tests/test_combined_questrade.py:test_allowlist_and_origins",
+      "tests/test_combined_questrade.py:test_last_trade_time_is_not_quote_time",
+      "tests/test_combined_questrade.py:test_policy_expiry_and_no_token"
+    ]
+  },
+  {
+    "id": "C-6-31",
+    "requirement": "**Verification tool:** `python -m data.questrade_check` (read-only) reports token status, whether SPY and a sample SPY option quote are real-time or delayed, quote age and which Greek fields are present, and writes `daily_reports/QUESTRADE_CHECK_<date>.md`. Without a token it reports `QUESTRADE_NOT_CONFIGURED` and fabricates nothing.",
+    "files": [
+      "data/questrade.py",
+      "data/questrade_vault.py",
+      "data/local_setup.py"
+    ],
+    "tests": [
+      "tests/test_combined_questrade.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_questrade.py:test_cross_process_lock_serializes",
+      "tests/test_combined_questrade.py:test_crash_after_remote_consumption_before_persistence",
+      "tests/test_combined_questrade.py:test_http_429_cooldown_prevents_repeat_request",
+      "tests/test_combined_questrade.py:test_refresh_persisted_before_use_and_crash_journal",
+      "tests/test_combined_questrade.py:test_allowlist_and_origins",
+      "tests/test_combined_questrade.py:test_last_trade_time_is_not_quote_time",
+      "tests/test_combined_questrade.py:test_policy_expiry_and_no_token"
+    ]
+  },
+  {
+    "id": "C-7-32",
+    "requirement": "**Routing policy** (config `option_data_provider`, default `questrade`): option quotes and chain come from Questrade only when verified real-time. The underlying may come from SIP, Questrade (if verified real-time) or IEX (proxy mode only), each with an explicit feed tag and gate rules; define in config which feed qualities satisfy paper gates; the",
+    "files": [
+      "data/questrade.py",
+      "data/questrade_vault.py",
+      "data/local_setup.py"
+    ],
+    "tests": [
+      "tests/test_combined_questrade.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "status_override": "NOT DONE",
+    "evidence_override": "Legacy coverage mapping only. This public installation requires independent operational and external verification.",
+    "test_names": [
+      "tests/test_combined_questrade.py:test_cross_process_lock_serializes",
+      "tests/test_combined_questrade.py:test_crash_after_remote_consumption_before_persistence",
+      "tests/test_combined_questrade.py:test_http_429_cooldown_prevents_repeat_request",
+      "tests/test_combined_questrade.py:test_refresh_persisted_before_use_and_crash_journal",
+      "tests/test_combined_questrade.py:test_allowlist_and_origins",
+      "tests/test_combined_questrade.py:test_last_trade_time_is_not_quote_time",
+      "tests/test_combined_questrade.py:test_policy_expiry_and_no_token"
+    ]
+  },
+  {
+    "id": "C-8-33",
+    "requirement": "**Free fallback (approximate guidance only):** with no verified real-time option data, the idea may name a **strike guideline** from the last known chain structure or indicative Greeks, labelled `approximate`, with SPY-level exits only. It must never show a premium or option-dollar target and never opens a paper option trade.",
+    "files": [
+      "data/questrade.py",
+      "data/questrade_vault.py",
+      "data/local_setup.py"
+    ],
+    "tests": [
+      "tests/test_combined_questrade.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_questrade.py:test_cross_process_lock_serializes",
+      "tests/test_combined_questrade.py:test_crash_after_remote_consumption_before_persistence",
+      "tests/test_combined_questrade.py:test_http_429_cooldown_prevents_repeat_request",
+      "tests/test_combined_questrade.py:test_refresh_persisted_before_use_and_crash_journal",
+      "tests/test_combined_questrade.py:test_allowlist_and_origins",
+      "tests/test_combined_questrade.py:test_last_trade_time_is_not_quote_time",
+      "tests/test_combined_questrade.py:test_policy_expiry_and_no_token"
+    ]
+  },
+  {
+    "id": "C-9-34",
+    "requirement": "Tests (fixtures only, no network): token rotation and atomic persistence including a crash between refresh and save, cross-process lock, expiry warnings, endpoint allowlist scan, delayed vs real-time tagging, rate limiter and backoff, option-quote parsing with missing fields, clock offset, feed-mismatch rule, fallback behavior.",
+    "files": [
+      "data/questrade.py",
+      "data/questrade_vault.py",
+      "data/local_setup.py"
+    ],
+    "tests": [
+      "tests/test_combined_questrade.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_questrade.py:test_cross_process_lock_serializes",
+      "tests/test_combined_questrade.py:test_crash_after_remote_consumption_before_persistence",
+      "tests/test_combined_questrade.py:test_http_429_cooldown_prevents_repeat_request",
+      "tests/test_combined_questrade.py:test_refresh_persisted_before_use_and_crash_journal",
+      "tests/test_combined_questrade.py:test_allowlist_and_origins",
+      "tests/test_combined_questrade.py:test_last_trade_time_is_not_quote_time",
+      "tests/test_combined_questrade.py:test_policy_expiry_and_no_token"
+    ]
+  },
+  {
+    "id": "D-1-35",
+    "requirement": "**Contract:** the best candidate from the existing selector (real quotes; spread, volume, open interest, Greek sanity) and its expiry. Respect `max_trade_premium_usd`: a contract whose ask × 100 exceeds it is rejected with reason `PREMIUM_ABOVE_CAP`. Log how often the cap rejects and the typical rejected premium; report it in the final report and `",
+    "files": [
+      "options/trade_plan.py",
+      "options/chain_sanity.py"
+    ],
+    "tests": [
+      "tests/test_combined_plan.py",
+      "tests/test_combined_evidence.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_plan.py:test_estimator_signed_theta_against_reference",
+      "tests/test_combined_plan.py:test_quote_and_greek_rejections",
+      "tests/test_combined_plan.py:test_stale_no_option_dollar_exit",
+      "tests/test_combined_evidence.py:test_neighbors_and_missing_grid_fail_closed",
+      "tests/test_combined_evidence.py:test_random_direction_baseline_separate_and_real_only",
+      "tests/test_combined_evidence.py:test_accuracy_append_only_dedupe_and_stale_rejection",
+      "tests/test_combined_evidence.py:test_fake_demo_transport_labels_every_message",
+      "tests/test_combined_evidence.py:test_measured_clock_offset_blocks_option_path",
+      "tests/test_combined_evidence.py:test_demo_does_not_override_non_data_gates"
+    ]
+  },
+  {
+    "id": "D-2-36",
+    "requirement": "**Buy:** a limit-price guideline (between mid and ask), current bid/ask and a \"do not pay above\" price (default ask + 0.10 or 4% of ask, configurable). The idea expires per `signal_expiry_seconds`.",
+    "files": [
+      "options/trade_plan.py",
+      "options/chain_sanity.py"
+    ],
+    "tests": [
+      "tests/test_combined_plan.py",
+      "tests/test_combined_evidence.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_plan.py:test_estimator_signed_theta_against_reference",
+      "tests/test_combined_plan.py:test_quote_and_greek_rejections",
+      "tests/test_combined_plan.py:test_stale_no_option_dollar_exit",
+      "tests/test_combined_evidence.py:test_neighbors_and_missing_grid_fail_closed",
+      "tests/test_combined_evidence.py:test_random_direction_baseline_separate_and_real_only",
+      "tests/test_combined_evidence.py:test_accuracy_append_only_dedupe_and_stale_rejection",
+      "tests/test_combined_evidence.py:test_fake_demo_transport_labels_every_message",
+      "tests/test_combined_evidence.py:test_measured_clock_offset_blocks_option_path",
+      "tests/test_combined_evidence.py:test_demo_does_not_override_non_data_gates"
+    ]
+  },
+  {
+    "id": "D-3-37",
+    "requirement": "**Sell targets in both units:** for T1 and T2 give the SPY level and the **estimated option bid** if SPY reaches it, from the live contract's Greeks: `ΔP ≈ delta·ΔS + ½·gamma·ΔS² − theta·Δt` (vega effect assumed zero; `Δt` from the horizon). Label every such number `est.` and note that real prices depend on IV change and spread. Validate the estima",
+    "files": [
+      "options/trade_plan.py",
+      "options/chain_sanity.py"
+    ],
+    "tests": [
+      "tests/test_combined_plan.py",
+      "tests/test_combined_evidence.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_plan.py:test_estimator_signed_theta_against_reference",
+      "tests/test_combined_plan.py:test_quote_and_greek_rejections",
+      "tests/test_combined_plan.py:test_stale_no_option_dollar_exit",
+      "tests/test_combined_evidence.py:test_neighbors_and_missing_grid_fail_closed",
+      "tests/test_combined_evidence.py:test_random_direction_baseline_separate_and_real_only",
+      "tests/test_combined_evidence.py:test_accuracy_append_only_dedupe_and_stale_rejection",
+      "tests/test_combined_evidence.py:test_fake_demo_transport_labels_every_message",
+      "tests/test_combined_evidence.py:test_measured_clock_offset_blocks_option_path",
+      "tests/test_combined_evidence.py:test_demo_does_not_override_non_data_gates"
+    ]
+  },
+  {
+    "id": "D-4-38",
+    "requirement": "**Stop in both units:** the SPY invalidation level and the estimated premium at that level; triggers on whichever comes first (SPY close beyond the level on the chosen bar, or option bid at or below the stop premium).",
+    "files": [
+      "options/trade_plan.py",
+      "options/chain_sanity.py"
+    ],
+    "tests": [
+      "tests/test_combined_plan.py",
+      "tests/test_combined_evidence.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_plan.py:test_estimator_signed_theta_against_reference",
+      "tests/test_combined_plan.py:test_quote_and_greek_rejections",
+      "tests/test_combined_plan.py:test_stale_no_option_dollar_exit",
+      "tests/test_combined_evidence.py:test_neighbors_and_missing_grid_fail_closed",
+      "tests/test_combined_evidence.py:test_random_direction_baseline_separate_and_real_only",
+      "tests/test_combined_evidence.py:test_accuracy_append_only_dedupe_and_stale_rejection",
+      "tests/test_combined_evidence.py:test_fake_demo_transport_labels_every_message",
+      "tests/test_combined_evidence.py:test_measured_clock_offset_blocks_option_path",
+      "tests/test_combined_evidence.py:test_demo_does_not_override_non_data_gates"
+    ]
+  },
+  {
+    "id": "D-5-39",
+    "requirement": "**Risk lines:** cost per contract, estimated loss at the stop (with the 0.65 USD per contract fee model) and reward/risk from these estimates, all labelled estimates.",
+    "files": [
+      "options/trade_plan.py",
+      "options/chain_sanity.py"
+    ],
+    "tests": [
+      "tests/test_combined_plan.py",
+      "tests/test_combined_evidence.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_plan.py:test_estimator_signed_theta_against_reference",
+      "tests/test_combined_plan.py:test_quote_and_greek_rejections",
+      "tests/test_combined_plan.py:test_stale_no_option_dollar_exit",
+      "tests/test_combined_evidence.py:test_neighbors_and_missing_grid_fail_closed",
+      "tests/test_combined_evidence.py:test_random_direction_baseline_separate_and_real_only",
+      "tests/test_combined_evidence.py:test_accuracy_append_only_dedupe_and_stale_rejection",
+      "tests/test_combined_evidence.py:test_fake_demo_transport_labels_every_message",
+      "tests/test_combined_evidence.py:test_measured_clock_offset_blocks_option_path",
+      "tests/test_combined_evidence.py:test_demo_does_not_override_non_data_gates"
+    ]
+  },
+  {
+    "id": "D-6-40",
+    "requirement": "**Hold horizon (chosen by the bot, stated in plain words):** `SCALP` (minutes to about 1 hour), `INTRADAY` (same day, with a stated exit time before the close) or `SWING` (2–7 days). Derive it from setup type, time of day, regime, ATR, expected move and available DTE. For example: opening-range breakouts in the first hour → intraday, 1–5 DTE; midda",
+    "files": [
+      "options/trade_plan.py",
+      "options/chain_sanity.py"
+    ],
+    "tests": [
+      "tests/test_combined_plan.py",
+      "tests/test_combined_evidence.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "status_override": "NOT DONE",
+    "evidence_override": "Legacy coverage mapping only. This public installation requires independent operational and external verification.",
+    "test_names": [
+      "tests/test_combined_plan.py:test_estimator_signed_theta_against_reference",
+      "tests/test_combined_plan.py:test_quote_and_greek_rejections",
+      "tests/test_combined_plan.py:test_stale_no_option_dollar_exit",
+      "tests/test_combined_evidence.py:test_neighbors_and_missing_grid_fail_closed",
+      "tests/test_combined_evidence.py:test_random_direction_baseline_separate_and_real_only",
+      "tests/test_combined_evidence.py:test_accuracy_append_only_dedupe_and_stale_rejection",
+      "tests/test_combined_evidence.py:test_fake_demo_transport_labels_every_message",
+      "tests/test_combined_evidence.py:test_measured_clock_offset_blocks_option_path",
+      "tests/test_combined_evidence.py:test_demo_does_not_override_non_data_gates"
+    ]
+  },
+  {
+    "id": "D-7-41",
+    "requirement": "Add `horizon`, the option plan fields (limit, max price, premium targets, premium stop, estimate method/version) and `estimate=true` markers to the signal schema (version bump; old records stay readable).",
+    "files": [
+      "options/trade_plan.py",
+      "options/chain_sanity.py"
+    ],
+    "tests": [
+      "tests/test_combined_plan.py",
+      "tests/test_combined_evidence.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_plan.py:test_estimator_signed_theta_against_reference",
+      "tests/test_combined_plan.py:test_quote_and_greek_rejections",
+      "tests/test_combined_plan.py:test_stale_no_option_dollar_exit",
+      "tests/test_combined_evidence.py:test_neighbors_and_missing_grid_fail_closed",
+      "tests/test_combined_evidence.py:test_random_direction_baseline_separate_and_real_only",
+      "tests/test_combined_evidence.py:test_accuracy_append_only_dedupe_and_stale_rejection",
+      "tests/test_combined_evidence.py:test_fake_demo_transport_labels_every_message",
+      "tests/test_combined_evidence.py:test_measured_clock_offset_blocks_option_path",
+      "tests/test_combined_evidence.py:test_demo_does_not_override_non_data_gates"
+    ]
+  },
+  {
+    "id": "D-8-42",
+    "requirement": "**Specific message format** (example values only):",
+    "files": [
+      "options/trade_plan.py",
+      "options/chain_sanity.py"
+    ],
+    "tests": [
+      "tests/test_combined_plan.py",
+      "tests/test_combined_evidence.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_plan.py:test_estimator_signed_theta_against_reference",
+      "tests/test_combined_plan.py:test_quote_and_greek_rejections",
+      "tests/test_combined_plan.py:test_stale_no_option_dollar_exit",
+      "tests/test_combined_evidence.py:test_neighbors_and_missing_grid_fail_closed",
+      "tests/test_combined_evidence.py:test_random_direction_baseline_separate_and_real_only",
+      "tests/test_combined_evidence.py:test_accuracy_append_only_dedupe_and_stale_rejection",
+      "tests/test_combined_evidence.py:test_fake_demo_transport_labels_every_message",
+      "tests/test_combined_evidence.py:test_measured_clock_offset_blocks_option_path",
+      "tests/test_combined_evidence.py:test_demo_does_not_override_non_data_gates"
+    ]
+  },
+  {
+    "id": "E-1-43",
+    "requirement": "**`✅ I bought`** starts a one-question-at-a-time flow: contract (prefilled from the idea), contracts, **actual** fill premium, fees, fill time with confirmation. Never assume the suggested or current price. Write through the existing `/option_bought` path with the signal ID; exact duplicates still need `FORCE`; `/void` works. Buttons are authentica",
+    "files": [
+      "core/fill_flow.py",
+      "monitoring/position_monitor.py"
+    ],
+    "tests": [
+      "tests/test_combined_ef_security.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_ef_security.py:test_actual_fill_auto_plan_and_idempotency",
+      "tests/test_combined_ef_security.py:test_dual_triggers_and_stale_fallback",
+      "tests/test_combined_ef_security.py:test_mismatch_and_simple_toggles_private"
+    ]
+  },
+  {
+    "id": "E-2-44",
+    "requirement": "After the fill, **auto-create the review plan** (SPY invalidation, T1, T2, max hold) and monitor the exact contract with real quotes. Recompute risk and reward from the actual fill; the SPY levels and option-value estimates stay tied to the idea, not the fill.",
+    "files": [
+      "core/fill_flow.py",
+      "monitoring/position_monitor.py"
+    ],
+    "tests": [
+      "tests/test_combined_ef_security.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_ef_security.py:test_actual_fill_auto_plan_and_idempotency",
+      "tests/test_combined_ef_security.py:test_dual_triggers_and_stale_fallback",
+      "tests/test_combined_ef_security.py:test_mismatch_and_simple_toggles_private"
+    ]
+  },
+  {
+    "id": "E-3-45",
+    "requirement": "**Exit alerts show both units**, for example: `T1 reached — SPY 768.9 / put bid 3.12 → consider selling (limit near the bid)`. Triggers: either T1/T2 condition (SPY level **or** option bid at/above target); stop (SPY level **or** option bid at/below stop); time stop; HIGH calendar event approaching; spread widening or liquidity loss; expiry approac",
+    "files": [
+      "core/fill_flow.py",
+      "monitoring/position_monitor.py"
+    ],
+    "tests": [
+      "tests/test_combined_ef_security.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "status_override": "NOT DONE",
+    "evidence_override": "Legacy coverage mapping only. This public installation requires independent operational and external verification.",
+    "test_names": [
+      "tests/test_combined_ef_security.py:test_actual_fill_auto_plan_and_idempotency",
+      "tests/test_combined_ef_security.py:test_dual_triggers_and_stale_fallback",
+      "tests/test_combined_ef_security.py:test_mismatch_and_simple_toggles_private"
+    ]
+  },
+  {
+    "id": "E-4-46",
+    "requirement": "Deduplicate by condition and contract; respect the daily cap; owner-only routing.",
+    "files": [
+      "core/fill_flow.py",
+      "monitoring/position_monitor.py"
+    ],
+    "tests": [
+      "tests/test_combined_ef_security.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_ef_security.py:test_actual_fill_auto_plan_and_idempotency",
+      "tests/test_combined_ef_security.py:test_dual_triggers_and_stale_fallback",
+      "tests/test_combined_ef_security.py:test_mismatch_and_simple_toggles_private"
+    ]
+  },
+  {
+    "id": "E-5-47",
+    "requirement": "If the quote becomes stale or delayed while a position is open, send one `DATA_WARNING` and fall back to SPY-level triggers (clearly labelled), never to guessed option prices.",
+    "files": [
+      "core/fill_flow.py",
+      "monitoring/position_monitor.py"
+    ],
+    "tests": [
+      "tests/test_combined_ef_security.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_ef_security.py:test_actual_fill_auto_plan_and_idempotency",
+      "tests/test_combined_ef_security.py:test_dual_triggers_and_stale_fallback",
+      "tests/test_combined_ef_security.py:test_mismatch_and_simple_toggles_private"
+    ]
+  },
+  {
+    "id": "E-6-48",
+    "requirement": "Tests: guided-flow auth/idempotency/expiry, actual-fill use, auto-plan creation, dual-trigger logic for calls and puts, stale-quote fallback, blocked kinds unchanged.",
+    "files": [
+      "core/fill_flow.py",
+      "monitoring/position_monitor.py"
+    ],
+    "tests": [
+      "tests/test_combined_ef_security.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_ef_security.py:test_actual_fill_auto_plan_and_idempotency",
+      "tests/test_combined_ef_security.py:test_dual_triggers_and_stale_fallback",
+      "tests/test_combined_ef_security.py:test_mismatch_and_simple_toggles_private"
+    ]
+  },
+  {
+    "id": "F-1-49",
+    "requirement": "With verified real quotes, enable the option-level paper engine (`OPTIONS_REAL_QUOTES` mode) for ideas that pass every gate: entry at ask + slippage; exits by the same dual triggers using bid minus slippage; modeled fees; sampled MFE/MAE from quote marks; multi-day holds for SWING with overnight marks and forced review before expiry. Keep separate ",
+    "files": [
+      "backtesting/paper_engine.py",
+      "backtesting/premium_accuracy.py",
+      "backtesting/option_baseline.py",
+      "ops/report.py"
+    ],
+    "tests": [
+      "tests/test_combined_evidence.py",
+      "tests/test_paper_upgrade_c.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "status_override": "NOT DONE",
+    "evidence_override": "Legacy coverage mapping only. This public installation requires independent operational and external verification.",
+    "test_names": [
+      "tests/test_combined_evidence.py:test_neighbors_and_missing_grid_fail_closed",
+      "tests/test_combined_evidence.py:test_random_direction_baseline_separate_and_real_only",
+      "tests/test_combined_evidence.py:test_accuracy_append_only_dedupe_and_stale_rejection",
+      "tests/test_combined_evidence.py:test_fake_demo_transport_labels_every_message",
+      "tests/test_combined_evidence.py:test_measured_clock_offset_blocks_option_path",
+      "tests/test_combined_evidence.py:test_demo_does_not_override_non_data_gates",
+      "tests/test_paper_upgrade_c.py:test_flag_and_live_separation",
+      "tests/test_paper_upgrade_c.py:test_each_other_gate",
+      "tests/test_paper_upgrade_c.py:test_paper_route_real_quotes_only",
+      "tests/test_paper_upgrade_c.py:test_validator_never_promotes",
+      "tests/test_paper_upgrade_c.py:test_stale_missing_greeks_and_liquidity_block_paper"
+    ]
+  },
+  {
+    "id": "F-2-50",
+    "requirement": "Record each idea's estimated premium at every target and stop and the **actual** option bid when the underlying reached that level. Produce a **premium-estimate accuracy report** (mean and spread of estimate error by DTE, delta, IV level and horizon) in `research/` and `/paper`. If systematic bias appears, flag it for review; do not silently retune",
+    "files": [
+      "backtesting/paper_engine.py",
+      "backtesting/premium_accuracy.py",
+      "backtesting/option_baseline.py",
+      "ops/report.py"
+    ],
+    "tests": [
+      "tests/test_combined_evidence.py",
+      "tests/test_paper_upgrade_c.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_evidence.py:test_neighbors_and_missing_grid_fail_closed",
+      "tests/test_combined_evidence.py:test_random_direction_baseline_separate_and_real_only",
+      "tests/test_combined_evidence.py:test_accuracy_append_only_dedupe_and_stale_rejection",
+      "tests/test_combined_evidence.py:test_fake_demo_transport_labels_every_message",
+      "tests/test_combined_evidence.py:test_measured_clock_offset_blocks_option_path",
+      "tests/test_combined_evidence.py:test_demo_does_not_override_non_data_gates",
+      "tests/test_paper_upgrade_c.py:test_flag_and_live_separation",
+      "tests/test_paper_upgrade_c.py:test_each_other_gate",
+      "tests/test_paper_upgrade_c.py:test_paper_route_real_quotes_only",
+      "tests/test_paper_upgrade_c.py:test_validator_never_promotes",
+      "tests/test_paper_upgrade_c.py:test_stale_missing_greeks_and_liquidity_block_paper"
+    ]
+  },
+  {
+    "id": "F-3-51",
+    "requirement": "Performance breakdowns by horizon, setup, delta band, DTE, regime and score bucket with sample sizes, confidence intervals and the random-direction baseline. Add a **horizon comparison** that states plainly which horizon has better evidence so far, or \"insufficient data\". No automatic promotion and no live permission.",
+    "files": [
+      "backtesting/paper_engine.py",
+      "backtesting/premium_accuracy.py",
+      "backtesting/option_baseline.py",
+      "ops/report.py"
+    ],
+    "tests": [
+      "tests/test_combined_evidence.py",
+      "tests/test_paper_upgrade_c.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_evidence.py:test_neighbors_and_missing_grid_fail_closed",
+      "tests/test_combined_evidence.py:test_random_direction_baseline_separate_and_real_only",
+      "tests/test_combined_evidence.py:test_accuracy_append_only_dedupe_and_stale_rejection",
+      "tests/test_combined_evidence.py:test_fake_demo_transport_labels_every_message",
+      "tests/test_combined_evidence.py:test_measured_clock_offset_blocks_option_path",
+      "tests/test_combined_evidence.py:test_demo_does_not_override_non_data_gates",
+      "tests/test_paper_upgrade_c.py:test_flag_and_live_separation",
+      "tests/test_paper_upgrade_c.py:test_each_other_gate",
+      "tests/test_paper_upgrade_c.py:test_paper_route_real_quotes_only",
+      "tests/test_paper_upgrade_c.py:test_validator_never_promotes",
+      "tests/test_paper_upgrade_c.py:test_stale_missing_greeks_and_liquidity_block_paper"
+    ]
+  },
+  {
+    "id": "F-4-52",
+    "requirement": "Paper `options_risk` limits and ET daily reconciliation continue to apply.",
+    "files": [
+      "backtesting/paper_engine.py",
+      "backtesting/premium_accuracy.py",
+      "backtesting/option_baseline.py",
+      "ops/report.py"
+    ],
+    "tests": [
+      "tests/test_combined_evidence.py",
+      "tests/test_paper_upgrade_c.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_combined_evidence.py:test_neighbors_and_missing_grid_fail_closed",
+      "tests/test_combined_evidence.py:test_random_direction_baseline_separate_and_real_only",
+      "tests/test_combined_evidence.py:test_accuracy_append_only_dedupe_and_stale_rejection",
+      "tests/test_combined_evidence.py:test_fake_demo_transport_labels_every_message",
+      "tests/test_combined_evidence.py:test_measured_clock_offset_blocks_option_path",
+      "tests/test_combined_evidence.py:test_demo_does_not_override_non_data_gates",
+      "tests/test_paper_upgrade_c.py:test_flag_and_live_separation",
+      "tests/test_paper_upgrade_c.py:test_each_other_gate",
+      "tests/test_paper_upgrade_c.py:test_paper_route_real_quotes_only",
+      "tests/test_paper_upgrade_c.py:test_validator_never_promotes",
+      "tests/test_paper_upgrade_c.py:test_stale_missing_greeks_and_liquidity_block_paper"
+    ]
+  },
+  {
+    "id": "F-5-53",
+    "requirement": "Tests: fills, exits in both units, overnight holds, expiry review, accuracy-report math, table separation, SIMULATED/indicative/delayed rejection.",
+    "files": [
+      "backtesting/paper_engine.py",
+      "backtesting/premium_accuracy.py",
+      "backtesting/option_baseline.py",
+      "ops/report.py"
+    ],
+    "tests": [
+      "tests/test_combined_evidence.py",
+      "tests/test_paper_upgrade_c.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "status_override": "NOT DONE",
+    "evidence_override": "Legacy coverage mapping only. This public installation requires independent operational and external verification.",
+    "test_names": [
+      "tests/test_combined_evidence.py:test_neighbors_and_missing_grid_fail_closed",
+      "tests/test_combined_evidence.py:test_random_direction_baseline_separate_and_real_only",
+      "tests/test_combined_evidence.py:test_accuracy_append_only_dedupe_and_stale_rejection",
+      "tests/test_combined_evidence.py:test_fake_demo_transport_labels_every_message",
+      "tests/test_combined_evidence.py:test_measured_clock_offset_blocks_option_path",
+      "tests/test_combined_evidence.py:test_demo_does_not_override_non_data_gates",
+      "tests/test_paper_upgrade_c.py:test_flag_and_live_separation",
+      "tests/test_paper_upgrade_c.py:test_each_other_gate",
+      "tests/test_paper_upgrade_c.py:test_paper_route_real_quotes_only",
+      "tests/test_paper_upgrade_c.py:test_validator_never_promotes",
+      "tests/test_paper_upgrade_c.py:test_stale_missing_greeks_and_liquidity_block_paper"
+    ]
+  },
+  {
+    "id": "H-1-54",
+    "requirement": "A deterministic synthetic SPY session (bars plus a fictional option chain with bid/ask, delta, gamma, theta, IV) feeds the same indicator, regime, setup, scoring, gate, verdict and option-plan code the live bot uses, through the ReplayProvider extended with `feed_quality=SIMULATED`. Messages come out of the real functions, not canned text.",
+    "files": [
+      "ops/demo.py",
+      "data/replay.py",
+      "monitoring/demo_bridge.cjs"
+    ],
+    "tests": [
+      "tests/test_combined_demo.py",
+      "tests/test_combined_evidence.py",
+      "monitoring/test_combined_menu_demo.cjs"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "evidence_override": "Legacy coverage mapping only. This public installation requires independent operational and external verification.",
+    "test_names": [
+      "tests/test_combined_demo.py:test_actual_pipeline_and_real_rejection",
+      "tests/test_combined_demo.py:test_arithmetic_labels_and_isolation",
+      "tests/test_combined_demo.py:test_user_nonce_and_duplicate_isolation",
+      "tests/test_combined_demo.py:test_all_scenarios_have_generated_ideas_or_blockers",
+      "tests/test_combined_evidence.py:test_neighbors_and_missing_grid_fail_closed",
+      "tests/test_combined_evidence.py:test_random_direction_baseline_separate_and_real_only",
+      "tests/test_combined_evidence.py:test_accuracy_append_only_dedupe_and_stale_rejection",
+      "tests/test_combined_evidence.py:test_fake_demo_transport_labels_every_message",
+      "tests/test_combined_evidence.py:test_measured_clock_offset_blocks_option_path",
+      "tests/test_combined_evidence.py:test_demo_does_not_override_non_data_gates"
+    ]
+  },
+  {
+    "id": "H-2-55",
+    "requirement": "Every demo message starts with `🧪 DEMO — SIMULATED DATA` and ends with `Nothing here is real.`",
+    "files": [
+      "ops/demo.py",
+      "data/replay.py",
+      "monitoring/demo_bridge.cjs"
+    ],
+    "tests": [
+      "tests/test_combined_demo.py",
+      "tests/test_combined_evidence.py",
+      "monitoring/test_combined_menu_demo.cjs"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "evidence_override": "Legacy coverage mapping only. This public installation requires independent operational and external verification.",
+    "test_names": [
+      "tests/test_combined_demo.py:test_actual_pipeline_and_real_rejection",
+      "tests/test_combined_demo.py:test_arithmetic_labels_and_isolation",
+      "tests/test_combined_demo.py:test_user_nonce_and_duplicate_isolation",
+      "tests/test_combined_demo.py:test_all_scenarios_have_generated_ideas_or_blockers",
+      "tests/test_combined_evidence.py:test_neighbors_and_missing_grid_fail_closed",
+      "tests/test_combined_evidence.py:test_random_direction_baseline_separate_and_real_only",
+      "tests/test_combined_evidence.py:test_accuracy_append_only_dedupe_and_stale_rejection",
+      "tests/test_combined_evidence.py:test_fake_demo_transport_labels_every_message",
+      "tests/test_combined_evidence.py:test_measured_clock_offset_blocks_option_path",
+      "tests/test_combined_evidence.py:test_demo_does_not_override_non_data_gates"
+    ]
+  },
+  {
+    "id": "H-3-56",
+    "requirement": "The user taps `Next ▶` (no timers). State is per user (owner and each guest isolated). `/demo` offers buttons: `Call trade`, `Put trade`, `Swing trade`, `No-trade day`, `Stop`.",
+    "files": [
+      "ops/demo.py",
+      "data/replay.py",
+      "monitoring/demo_bridge.cjs"
+    ],
+    "tests": [
+      "tests/test_combined_demo.py",
+      "tests/test_combined_evidence.py",
+      "monitoring/test_combined_menu_demo.cjs"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "evidence_override": "Legacy coverage mapping only. This public installation requires independent operational and external verification.",
+    "test_names": [
+      "tests/test_combined_demo.py:test_actual_pipeline_and_real_rejection",
+      "tests/test_combined_demo.py:test_arithmetic_labels_and_isolation",
+      "tests/test_combined_demo.py:test_user_nonce_and_duplicate_isolation",
+      "tests/test_combined_demo.py:test_all_scenarios_have_generated_ideas_or_blockers",
+      "tests/test_combined_evidence.py:test_neighbors_and_missing_grid_fail_closed",
+      "tests/test_combined_evidence.py:test_random_direction_baseline_separate_and_real_only",
+      "tests/test_combined_evidence.py:test_accuracy_append_only_dedupe_and_stale_rejection",
+      "tests/test_combined_evidence.py:test_fake_demo_transport_labels_every_message",
+      "tests/test_combined_evidence.py:test_measured_clock_offset_blocks_option_path",
+      "tests/test_combined_evidence.py:test_demo_does_not_override_non_data_gates"
+    ]
+  },
+  {
+    "id": "I-1-57",
+    "requirement": "**Dashboard:** a **Today card** on top (date/time ET, trend, decision, entry/exit levels, data status, next event); every other panel collapsed under \"Details\". Local-only and read-only.",
+    "files": [
+      "START_HERE.md",
+      "AEGIS_USER_MANUAL.md",
+      "PROJECT_DOCUMENTATION.md"
+    ],
+    "tests": [
+      "tests/test_verification_packet.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_verification_packet.py:test_secret_refusal_redaction_and_allowlist",
+      "tests/test_verification_packet.py:test_tags_are_not_inflated_to_tested",
+      "tests/test_verification_packet.py:test_sqlite_inspection_is_read_only_and_no_network",
+      "tests/test_verification_packet.py:test_json_twin_and_size_guard"
+    ]
+  },
+  {
+    "id": "I-2-58",
+    "requirement": "**`START_HERE.md`** (one page, plain language): how to start, what `/trend` says, what the three decisions mean, how to open the demo, where news and WSB live (`/more`), what \"unvalidated\" means, and that you place orders yourself. Update the user manual so daily use is at the top. Keep existing long documentation.",
+    "files": [
+      "START_HERE.md",
+      "AEGIS_USER_MANUAL.md",
+      "PROJECT_DOCUMENTATION.md"
+    ],
+    "tests": [
+      "tests/test_verification_packet.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_verification_packet.py:test_secret_refusal_redaction_and_allowlist",
+      "tests/test_verification_packet.py:test_tags_are_not_inflated_to_tested",
+      "tests/test_verification_packet.py:test_sqlite_inspection_is_read_only_and_no_network",
+      "tests/test_verification_packet.py:test_json_twin_and_size_guard"
+    ]
+  },
+  {
+    "id": "I-3-59",
+    "requirement": "**Config and validator:** add keys with defaults and validation: `option_data_provider`, a `questrade` block (keep-alive hours, request cap, token-warning hours), `price_mismatch_tolerance`, `buy_limit_buffer`, `horizons` rules, `notifications.profile`, `max_future_skew_seconds`.",
+    "files": [
+      "START_HERE.md",
+      "AEGIS_USER_MANUAL.md",
+      "PROJECT_DOCUMENTATION.md"
+    ],
+    "tests": [
+      "tests/test_verification_packet.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_verification_packet.py:test_secret_refusal_redaction_and_allowlist",
+      "tests/test_verification_packet.py:test_tags_are_not_inflated_to_tested",
+      "tests/test_verification_packet.py:test_sqlite_inspection_is_read_only_and_no_network",
+      "tests/test_verification_packet.py:test_json_twin_and_size_guard"
+    ]
+  },
+  {
+    "id": "I-4-60",
+    "requirement": "**`research/OWNER_ACTIONS.md`** must contain: (1) in the Questrade web account open the API Hub, activate API access and generate a refresh token; (2) enter it only in the local setup page launched by `Configure Market Data.cmd`, never in chat; (3) confirm a real-time market-data package that includes OPRA Level 1 for options (check Questrade's cur",
+    "files": [
+      "START_HERE.md",
+      "AEGIS_USER_MANUAL.md",
+      "PROJECT_DOCUMENTATION.md"
+    ],
+    "tests": [
+      "tests/test_verification_packet.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_verification_packet.py:test_secret_refusal_redaction_and_allowlist",
+      "tests/test_verification_packet.py:test_tags_are_not_inflated_to_tested",
+      "tests/test_verification_packet.py:test_sqlite_inspection_is_read_only_and_no_network",
+      "tests/test_verification_packet.py:test_json_twin_and_size_guard"
+    ]
+  },
+  {
+    "id": "I-5-61",
+    "requirement": "Never create or request a password file. Never log into the owner's account.",
+    "files": [
+      "START_HERE.md",
+      "AEGIS_USER_MANUAL.md",
+      "PROJECT_DOCUMENTATION.md"
+    ],
+    "tests": [
+      "tests/test_verification_packet.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_verification_packet.py:test_secret_refusal_redaction_and_allowlist",
+      "tests/test_verification_packet.py:test_tags_are_not_inflated_to_tested",
+      "tests/test_verification_packet.py:test_sqlite_inspection_is_read_only_and_no_network",
+      "tests/test_verification_packet.py:test_json_twin_and_size_guard"
+    ]
+  },
+  {
+    "id": "VERIFICATION-1-62",
+    "requirement": "Create `ops/verification_packet.py`, run as `python -m ops.verification_packet [--run-tests] [--live]`. It writes `research/verification/VERIFICATION_PACKET_<UTC timestamp>.md` and a `.json` twin. It is **read-only**: no orders, no Telegram messages, no config or data changes, and no network calls except in `--live` mode, which only runs existing r",
+    "files": [
+      "ops/verification_packet.py",
+      "VERIFICATION.md"
+    ],
+    "tests": [
+      "tests/test_verification_packet.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_verification_packet.py:test_secret_refusal_redaction_and_allowlist",
+      "tests/test_verification_packet.py:test_tags_are_not_inflated_to_tested",
+      "tests/test_verification_packet.py:test_sqlite_inspection_is_read_only_and_no_network",
+      "tests/test_verification_packet.py:test_json_twin_and_size_guard"
+    ]
+  },
+  {
+    "id": "VERIFICATION-2-63",
+    "requirement": "**Contents.** Label every claim `VERIFIED` (observed now), `TESTED` (passing tests only), `IMPLEMENTED` (code exists, not run) or `NOT DONE`.",
+    "files": [
+      "ops/verification_packet.py",
+      "VERIFICATION.md"
+    ],
+    "tests": [
+      "tests/test_verification_packet.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_verification_packet.py:test_secret_refusal_redaction_and_allowlist",
+      "tests/test_verification_packet.py:test_tags_are_not_inflated_to_tested",
+      "tests/test_verification_packet.py:test_sqlite_inspection_is_read_only_and_no_network",
+      "tests/test_verification_packet.py:test_json_twin_and_size_guard"
+    ]
+  },
+  {
+    "id": "VERIFICATION-3-64",
+    "requirement": "**Redaction and safety of the packet:** allowlist-only config; strip tokens, keys and secret-like strings, Telegram numeric IDs, emails, access IDs and personal identifiers. The generator runs a secret scanner over its own output and **refuses to write the file** (printing the reason, never the secret) if anything matches. Keep the packet under abo",
+    "files": [
+      "ops/verification_packet.py",
+      "VERIFICATION.md"
+    ],
+    "tests": [
+      "tests/test_verification_packet.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_verification_packet.py:test_secret_refusal_redaction_and_allowlist",
+      "tests/test_verification_packet.py:test_tags_are_not_inflated_to_tested",
+      "tests/test_verification_packet.py:test_sqlite_inspection_is_read_only_and_no_network",
+      "tests/test_verification_packet.py:test_json_twin_and_size_guard"
+    ]
+  },
+  {
+    "id": "VERIFICATION-4-65",
+    "requirement": "Run it once at the end with `--run-tests` and print the packet path. Never describe anything marked `IMPLEMENTED` or `NOT DONE` as working.",
+    "files": [
+      "ops/verification_packet.py",
+      "VERIFICATION.md"
+    ],
+    "tests": [
+      "tests/test_verification_packet.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_verification_packet.py:test_secret_refusal_redaction_and_allowlist",
+      "tests/test_verification_packet.py:test_tags_are_not_inflated_to_tested",
+      "tests/test_verification_packet.py:test_sqlite_inspection_is_read_only_and_no_network",
+      "tests/test_verification_packet.py:test_json_twin_and_size_guard"
+    ]
+  },
+  {
+    "id": "VERIFICATION-5-66",
+    "requirement": "**Documentation:** add `VERIFICATION.md` (how to run the tool, what each tag means, what to send to the reviewer, and that the reviewer sees only the packet). Update `RUNBOOK.md`, `START_HERE.md`, `FUNCTION_REFERENCE.md` and the final report. Add unit tests for the generator: redaction, refusal on secret detection, tag logic, read-only behavior, no",
+    "files": [
+      "ops/verification_packet.py",
+      "VERIFICATION.md"
+    ],
+    "tests": [
+      "tests/test_verification_packet.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "gap": "Review requirement-specific tests and the new installation's evidence independently; this map does not certify completion.",
+    "test_names": [
+      "tests/test_verification_packet.py:test_secret_refusal_redaction_and_allowlist",
+      "tests/test_verification_packet.py:test_tags_are_not_inflated_to_tested",
+      "tests/test_verification_packet.py:test_sqlite_inspection_is_read_only_and_no_network",
+      "tests/test_verification_packet.py:test_json_twin_and_size_guard"
+    ]
+  },
+  {
+    "id": "B-text",
+    "requirement": "All unnumbered B behavior in the supplied prompt",
+    "files": [
+      "core/verdict.py",
+      "monitoring/command_registry.cjs",
+      "monitoring/simple_notifications.py"
+    ],
+    "tests": [
+      "tests/test_combined_verdict.py",
+      "monitoring/test_combined_menu_demo.cjs"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "test_names": [
+      "tests/test_combined_verdict.py:test_three_states_and_line_cap",
+      "tests/test_combined_verdict.py:test_closed_and_simulated_rejection"
+    ]
+  },
+  {
+    "id": "G-text",
+    "requirement": "All unnumbered G behavior in the supplied prompt",
+    "files": [
+      "options/trade_plan.py",
+      "options/chain_sanity.py",
+      "core/isolation.py"
+    ],
+    "tests": [
+      "tests/test_combined_plan.py",
+      "tests/test_combined_evidence.py"
+    ],
+    "reproduce": "python -m ops.verification_packet --run-tests",
+    "test_names": [
+      "tests/test_combined_plan.py:test_estimator_signed_theta_against_reference",
+      "tests/test_combined_plan.py:test_quote_and_greek_rejections",
+      "tests/test_combined_plan.py:test_stale_no_option_dollar_exit",
+      "tests/test_combined_evidence.py:test_neighbors_and_missing_grid_fail_closed",
+      "tests/test_combined_evidence.py:test_random_direction_baseline_separate_and_real_only",
+      "tests/test_combined_evidence.py:test_accuracy_append_only_dedupe_and_stale_rejection",
+      "tests/test_combined_evidence.py:test_fake_demo_transport_labels_every_message",
+      "tests/test_combined_evidence.py:test_measured_clock_offset_blocks_option_path",
+      "tests/test_combined_evidence.py:test_demo_does_not_override_non_data_gates"
+    ]
+  }
+]

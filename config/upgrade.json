@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "symbols": [
+    "SPY"
+  ],
+  "future_scan_horizons": [
+    "SHORT_TERM",
+    "SWING",
+    "LONG_TERM"
+  ],
+  "primary_provider": "alpaca",
+  "secondary_provider": "UNCONFIGURED",
+  "price_poll_seconds": 45,
+  "high_volatility_seconds": 10,
+  "option_poll_seconds": 45,
+  "chain_refresh_seconds": 300,
+  "bars_refresh_seconds": 60,
+  "daily_refresh_seconds": 21600,
+  "analysis_seconds": 60,
+  "closed_poll_seconds": 1800,
+  "actionable_threshold": 75,
+  "min_dte": 1,
+  "max_contract_subscriptions": 30,
+  "options_risk": {
+    "max_trade_premium_usd": 100,
+    "max_exposure_usd": 300,
+    "max_daily_loss_usd": 100,
+    "max_consecutive_losses": 3
+  },
+  "premarket_report": {
+    "enabled": true,
+    "lead_minutes": 15,
+    "catchup_minutes": 5
+  },
+  "research_notifications": {
+    "enabled": true,
+    "regular_seconds": 1800,
+    "change_seconds": 600,
+    "move_alert_pct": 0.3,
+    "premarket_seconds": 3600,
+    "after_hours_seconds": 7200,
+    "closed_seconds": 21600
+  },
+  "paper_slippage_per_share": "0.01",
+  "paper_fee_per_contract": "0.65",
+  "live_signal_enabled": false,
+  "order_execution_enabled": false,
+  "options_risk_live_confirmed": false,
+  "allow_unvalidated_paper_trading": true,
+  "signal_expiry_seconds": 600,
+  "paper_daily_message_cap": 8,
+  "signals": {
+    "shared": false
+  },
+  "proxy_paper": {
+    "enabled": true,
+    "mode": "UNDERLYING_PROXY_ONLY",
+    "quantity": 1,
+    "slippage_per_share": 0.01,
+    "max_holding_minutes": 60,
+    "max_open_positions": 1,
+    "max_risk_per_share_usd": 5.0
+  },
+  "heartbeat_url": "",
+  "calendar_official_extra_sources": [],
+  "calendar_event_overrides": {},
+  "max_future_skew_seconds": 2.0,
+  "option_data_provider": "alpaca",
+  "questrade": {
+    "keep_alive_hours": 12,
+    "request_cap_per_second": 5,
+    "token_warning_hours": 24,
+    "conservative_refresh_lifetime_hours": 72,
+    "active_quote_seconds": 10
+  },
+  "price_mismatch_tolerance": {
+    "percent": 0.1,
+    "usd": 0.5
+  },
+  "buy_limit_buffer": {
+    "usd": 0.1,
+    "percent": 4.0
+  },
+  "horizons": {
+    "scalp_minutes": 60,
+    "intraday_exit_minutes_before_close": 30,
+    "swing_days": 3,
+    "swing_enabled": false
+  },
+  "notifications": {
+    "profile": "simple",
+    "categories": {
+      "ideas": true,
+      "idea_updates": true,
+      "morning": true,
+      "system": true,
+      "periodic": false,
+      "changes": false,
+      "extended": false,
+      "news": false,
+      "sentiment": false,
+      "trend_lines": true
+    }
+  },
+  "require_chain_sanity": true,
+  "idea_engine_enabled": true,
+  "trend_lines_silent": true,
+  "idea_daily_cap": null,
+  "idea_cooldown_minutes": 10,
+  "cooloff_minutes": 60,
+  "cooloff_losses": 3,
+  "min_rr": 1.5,
+  "early_session_ideas": true,
+  "rough_risk_delta_range": [
+    0.4,
+    0.6
+  ],
+  "premium_cap_mode": "warn",
+  "report_time": "09:15",
+  "recap_time": "16:15",
+  "idea_runaway_limit": 40,
+  "idea_stop_atr_fraction": 0.5,
+  "setup_enabled": {
+    "OPENING_RANGE_BREAKOUT": true,
+    "OPENING_RANGE_BREAKDOWN": true,
+    "VWAP_RECLAIM": true,
+    "VWAP_REJECTION": true,
+    "TREND_CONTINUATION": true,
+    "SUPPORT_BOUNCE": true,
+    "RESISTANCE_REJECTION": true,
+    "BREAKOUT_RETEST": true
+  },
+  "negative_setup_overrides": []
+}

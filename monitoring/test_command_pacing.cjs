@@ -1,0 +1,5 @@
+process.env.AEGIS_TELEGRAM_BOT_USERNAME ||= 'FixtureResearchBot';
+const {test}=require('node:test'),assert=require('node:assert/strict');const {pace,parse}=require('./commands.cjs');
+test('valid queued commands are paced rather than dropped',async()=>{let now=100000;const waits=[],handled=[],throttles=new Map();const sleep=async ms=>{waits.push(ms);now+=ms;};for(const command of ['status','feed','news']){await pace(throttles,42,()=>now,sleep);handled.push(command);}assert.deepEqual(handled,['status','feed','news']);assert.deepEqual(waits,[1000,1000]);});
+test('different senders and normal spaced messages are not delayed',async()=>{let now=100000;const waits=[],m=new Map();const sleep=async ms=>waits.push(ms);await pace(m,1,()=>now,sleep);await pace(m,2,()=>now,sleep);now+=2000;await pace(m,1,()=>now,sleep);assert.deepEqual(waits,[]);});
+test('pacing does not weaken stale-message protection',()=>{const u={update_id:1,message:{chat:{id:42,type:'private'},from:{id:42},date:100,text:'/status'}};assert.ok(parse(u,42,399));assert.equal(parse(u,42,401),null);});

@@ -1,0 +1,5 @@
+process.env.AEGIS_TELEGRAM_BOT_USERNAME ||= 'FixtureResearchBot';
+const {test}=require('node:test'),assert=require('node:assert/strict');
+const r=require('./command_registry.cjs'),d=require('./demo_bridge.cjs');
+test('six-entry owner and guest menus; advanced commands retained',()=>{for(const owner of [true,false])assert.deepEqual(r.menu(owner).map(x=>x.command),['trend','score','demo','news','more','help']);for(const c of r.commands)assert.ok(r.knows(c.command));assert.ok(r.more(true).includes('/alerts'));assert.ok(!r.more(false).includes('/alerts'));});
+test('demo callbacks authenticate human, expected bot and recipient; no guest broadcast',()=>{const u={update_id:1,callback_query:{id:'fixture',data:'demo:'+'a'.repeat(24)+':next',from:{id:42},message:{date:100,chat:{id:42,type:'private'},from:{is_bot:true,username:'FixtureResearchBot'}}}};assert.ok(d.parse(u,42,()=>false,()=>'',100));assert.equal(d.parse(u,99,()=>false,()=>'',100),null);assert.ok(d.parse(u,99,()=>true,()=> 'b'.repeat(24),100));u.callback_query.message.chat.id=99;assert.equal(d.parse(u,42,()=>true,()=>'',100),null);});

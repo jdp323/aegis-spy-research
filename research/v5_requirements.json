@@ -1,0 +1,187 @@
+[
+  {
+    "id": "A1",
+    "requirement": "Preopen, silent current slots, early closes, once-only recap",
+    "files": [
+      "monitoring/day_schedule.py",
+      "core/idea_service.py"
+    ],
+    "test_names": [
+      "test_slot_counts_restart_weekend_holiday_early_close_dst"
+    ]
+  },
+  {
+    "id": "A2",
+    "requirement": "Current fresh trend, conditional enabled levels, early read, stale once/recovery",
+    "files": [
+      "core/idea_service.py",
+      "strategies/idea_setups.py"
+    ],
+    "test_names": [
+      "test_stale_once_recovery_and_simulated_rejected"
+    ]
+  },
+  {
+    "id": "A3",
+    "requirement": "Instant unvalidated idea and SPY lifecycle messages, optional contracts",
+    "files": [
+      "core/idea_service.py",
+      "backtesting/idea_tracker.py"
+    ],
+    "test_names": [
+      "test_long_short_stop_first_mfe_mae_and_separation"
+    ]
+  },
+  {
+    "id": "A4",
+    "requirement": "Scoreboard, cap/cooloff/cooldown/runaway and silent transport",
+    "files": [
+      "backtesting/idea_tracker.py",
+      "monitoring/notifier.cjs"
+    ],
+    "test_names": [
+      "test_evidence_tags_negative_override_cooldown_cooloff_runaway"
+    ]
+  },
+  {
+    "id": "B1",
+    "requirement": "Eight completed confirmed setups, failed-break warning and level rules",
+    "files": [
+      "strategies/idea_setups.py"
+    ],
+    "test_names": [
+      "test_each_enabled_setup_and_volume_higher_frame_rejection"
+    ]
+  },
+  {
+    "id": "B2",
+    "requirement": "Separate append-only tracker, UTC, same-feed bar outcomes, early tags",
+    "files": [
+      "backtesting/idea_tracker.py"
+    ],
+    "test_names": [
+      "test_expired_no_entry_forced_flat_and_same_feed"
+    ]
+  },
+  {
+    "id": "B3",
+    "requirement": "Evidence heuristics and negative suppression override",
+    "files": [
+      "core/idea_service.py",
+      "monitoring/simple_notifications.py"
+    ],
+    "test_names": [
+      "test_evidence_tags_negative_override_cooldown_cooloff_runaway"
+    ]
+  },
+  {
+    "id": "C1",
+    "requirement": "SPY independent of option data; premium warning, old paper caps",
+    "files": [
+      "options/trade_plan.py",
+      "core/idea_service.py"
+    ],
+    "test_names": [
+      "test_config_validation_and_live_flags_never_changed"
+    ]
+  },
+  {
+    "id": "D1",
+    "requirement": "Official file fallback, encrypted optional FRED date-only, warnings",
+    "files": [
+      "news/calendar_import.py",
+      "news/fred_calendar.py",
+      "news/calendar_updater.py"
+    ],
+    "test_names": [
+      "test_v5_import"
+    ]
+  },
+  {
+    "id": "D2",
+    "requirement": "Full labelled demo, distinct scene chart hashes",
+    "files": [
+      "ops/demo.py"
+    ],
+    "test_names": [
+      "test_distinct_scenario_chart_hashes",
+      "test_v5_flow_labelled_and_no_trade_progresses"
+    ]
+  },
+  {
+    "id": "D3",
+    "requirement": "Before/after every ledger/control counts; clock offset retained",
+    "files": [
+      "ops/hygiene.py",
+      "core/feed_health.py"
+    ],
+    "test_names": [
+      "test_sqlite_inspection_is_read_only_and_no_network"
+    ]
+  },
+  {
+    "id": "D4",
+    "requirement": "New config validation and existing live gates unchanged",
+    "files": [
+      "core/idea_config.py",
+      "core/upgrade_service.py"
+    ],
+    "test_names": [
+      "test_config_validation_and_live_flags_never_changed"
+    ]
+  },
+  {
+    "id": "E1",
+    "requirement": "Six menu entries, all retained routes and role scope",
+    "files": [
+      "monitoring/command_registry.cjs"
+    ],
+    "test_names": [
+      "six-entry owner and guest menus; advanced commands retained"
+    ]
+  },
+  {
+    "id": "F1",
+    "requirement": "Actual handler role/argument fake transport verification",
+    "files": [
+      "ops/verify_commands.py",
+      "ops/command_harness.cjs"
+    ],
+    "test_names": [
+      "Generated 315-case command report"
+    ]
+  },
+  {
+    "id": "F2",
+    "requirement": "Nine real-clock synthetic full-day timelines",
+    "files": [
+      "ops/day_simulation.py"
+    ],
+    "test_names": [
+      "Generated nine-scenario schedule report"
+    ]
+  },
+  {
+    "id": "F3",
+    "requirement": "Read-only allowlisted packet, <150KB, evidence and tests",
+    "files": [
+      "ops/verification_packet.py",
+      "ops/v5_verification.py"
+    ],
+    "test_names": [
+      "test_whole_collection_offline_does_not_change_operational_files"
+    ]
+  },
+  {
+    "id": "F4",
+    "requirement": "Updated docs/manual/report, retained history",
+    "files": [
+      "AEGIS_USER_MANUAL.md",
+      "COMMANDS.md",
+      "VERIFICATION.md"
+    ],
+    "test_names": [
+      "Registry-generated command docs"
+    ]
+  }
+]

@@ -1,0 +1,35 @@
+name: Isolated verification
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: python -m pip install -r requirements-upgrade.txt
+      - run: python -m ops.setup init
+      - name: Scan committed public content
+        run: python -m ops.release_guard --working-tree
+      - name: Require update report and setup instructions
+        shell: python
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          import os, subprocess
+          base = os.environ.get('BASE_SHA', '')
+          if base and set(base) != {'0'}:
+              subprocess.run(['python', '-m', 'ops.release_guard', '--base', base], check=True)
+      - name: Full isolated Python and explicit Node suites
+        run: python -m ops.ci_tests
+      - run: python -m ops.verify_commands
+      - run: python -m ops.day_simulation

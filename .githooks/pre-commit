@@ -1,0 +1,8 @@
+#!/bin/sh
+if [ -x .venv/Scripts/python.exe ]; then
+  .venv/Scripts/python.exe -m ops.release_guard
+elif [ -x .venv/bin/python ]; then
+  .venv/bin/python -m ops.release_guard
+else
+  python -m ops.release_guard
+fi
