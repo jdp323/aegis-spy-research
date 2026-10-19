@@ -30,4 +30,4 @@ The publication guard rejects known paths and secret patterns; it cannot prove t
 
 ## Setup impact
 
-CHANGED. Follow the separate SETUP.md. Use normal Python 3.12 and Node.js 22, install pinned dependencies plus Windows timezone data, initialize the incomplete local calendar, pair your own bot and configure your own market-data access. No original credentials, destinations or private configuration are distributed. GitHub is the public source/update-report destination; local operational diagnostic packets remain private.
+CHANGED. Follow the separate SETUP.md. Use normal Python 3.12 and Node.js 24, install pinned dependencies plus Windows timezone data, initialize the incomplete local calendar, pair your own bot and configure your own market-data access. No original credentials, destinations or private configuration are distributed. GitHub is the public source/update-report destination; local operational diagnostic packets remain private.
