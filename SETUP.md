@@ -71,3 +71,5 @@ Stop services, take a SQLite online backup of committed WAL data plus private co
 ## Operator review queue
 
 /request saves local feedback for the installation owner to review. This repository does not install an AI agent or a hosted review service, and saving a request does not promise a response. No AI key is requested.
+
+Status interpretation: python -m ops.supervisor status takes its evaluation clock after the file/database reads and bounded HTTP probe. Ages remain signed; a genuinely future timestamp remains negative, and an unavailable time stays unavailable. Process status is separate from market-data eligibility.

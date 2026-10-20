@@ -115,7 +115,6 @@ def start():
     print('Supervisor launched; PID',p.pid,'Check runtime/services.json and logs/services.')
 def status(root=ROOT,clock=None,probe=True):
     """Read-only service/heartbeat observation; never starts a Store or service."""
-    now=(clock or (lambda:datetime.now(timezone.utc)))()
     def read(name):
         try:return json.loads((Path(root)/name).read_text(encoding='utf-8'))
         except (OSError,ValueError):return {}
@@ -125,18 +124,14 @@ def status(root=ROOT,clock=None,probe=True):
     hearts={}
     from data.models import stamp
     for name,path in (('supervisor','runtime/services.json'),('listener','runtime/telegram_health.json'),('dispatcher','runtime/dispatcher_health.json')):
-        r=read(path)
-        try:age=(now-stamp(r['at'])).total_seconds()
-        except (KeyError,ValueError,TypeError):age=None
-        hearts[name]={'at':r.get('at'),'age_seconds':round(age,3) if age is not None else None,'state':r.get('state','UNAVAILABLE')}
+        r=value if name=='supervisor' else read(path)
+        hearts[name]={'at':r.get('at'),'age_seconds':None,'state':r.get('state','UNAVAILABLE')}
     # This JSON progress path is independent of a blocked market database. A
     # phase-start timestamp is not represented as completed useful work.
     progress=read('runtime/worker_progress.json');worker={}
     for key in ('phase','state','at','phase_started_at','started_at','last_completed_at','duration_seconds','budget_seconds','deadline_missed','error_type','sqlite_errorcode','sqlite_errorname'):
         if key in progress:worker[key]=progress[key]
-    for field,label in (('last_completed_at','completed_work_age_seconds'),('phase_started_at','active_phase_age_seconds')):
-        try:worker[label]=round((now-stamp(progress[field])).total_seconds(),3)
-        except (KeyError,ValueError,TypeError):worker[label]=None
+    worker.update(completed_work_age_seconds=None,active_phase_age_seconds=None)
     path=Path(root)/'runtime/aegis.sqlite'
     if path.is_file():
         try:
@@ -146,8 +141,6 @@ def status(root=ROOT,clock=None,probe=True):
                 health=json.loads(row[0]) if row else {}
             finally:db.close()
             worker['cycle']={key:health[key] for key in ('state','at','cycle_seconds','cycle_budget_seconds','cycle_deadline_missed','error_type','sqlite_errorcode','sqlite_errorname','database') if key in health}
-            try:worker['cycle']['age_seconds']=round((now-stamp(health['at'])).total_seconds(),3)
-            except (KeyError,ValueError,TypeError):worker['cycle']['age_seconds']=None
         except (OSError,sqlite3.Error,ValueError):worker['database_read']='UNAVAILABLE'
     hearts['worker']=worker or {'state':'UNAVAILABLE'}
     http='NOT_PROBED'
@@ -156,6 +149,20 @@ def status(root=ROOT,clock=None,probe=True):
         try:
             with urllib.request.urlopen('http://127.0.0.1:8767/healthz',timeout=2) as response:http=response.status;response.read(4096)
         except (OSError,TimeoutError):http='UNAVAILABLE'
+    # Sample the evaluation clock after every file/database read and bounded
+    # HTTP probe. Concurrent writers may publish newer timestamps during reads;
+    # taking it earlier would manufacture negative ages. Real future times stay
+    # signed: this diagnostic neither clamps ages nor changes freshness gates.
+    now=(clock or (lambda:datetime.now(timezone.utc)))()
+    for name in ('supervisor','listener','dispatcher'):
+        try:hearts[name]['age_seconds']=round((now-stamp(hearts[name]['at'])).total_seconds(),3)
+        except (KeyError,ValueError,TypeError):pass
+    for field,label in (('last_completed_at','completed_work_age_seconds'),('phase_started_at','active_phase_age_seconds')):
+        try:worker[label]=round((now-stamp(progress[field])).total_seconds(),3)
+        except (KeyError,ValueError,TypeError):worker[label]=None
+    if 'cycle' in worker:
+        try:worker['cycle']['age_seconds']=round((now-stamp(worker['cycle']['at'])).total_seconds(),3)
+        except (KeyError,ValueError,TypeError):worker['cycle']['age_seconds']=None
     return {'at':now.isoformat(),'read_only':True,'components':components,'heartbeats':hearts,'dashboard_http':http,'LIVE_SIGNAL_READY':False,'order_execution_enabled':False,'limitation':'Process existence and local HTTP do not establish live market readiness.'}
 def main(argv=None):
     parser=argparse.ArgumentParser(description='AEGIS research services; no trading execution. Default is read-only status.')
