@@ -22,6 +22,7 @@ monitoring/demo_sessions/
 monitoring/*.lock
 monitoring/*state.json
 monitoring/*receipts*
+!monitoring/test_v6_receipts.cjs
 config/telegram.json
 config/news_calendar.json
 research/verification/
