@@ -20,7 +20,9 @@ def execute(data):
             from news.engine import NewsProvider
             from monitoring.message_format import diagnostics_text
             now=datetime.now(timezone.utc);ctx=context(s,now)
-            return diagnostics_text(ctx,now,NewsProvider(ROOT/'config/news_calendar.json').snapshot(now))
+            text=diagnostics_text(ctx,now,NewsProvider(ROOT/'config/news_calendar.json').snapshot(now))
+            pause=s.get('research-pause:v2') or {};episode=pause.get('episode') or {}
+            return text[:3100]+'\nResearch pause policy '+str(pause.get('version','not yet evaluated'))+'; start '+et_text(episode.get('start'))+'; end '+et_text(episode.get('end'))+'; reason '+str(episode.get('reason','no recorded pause'))
         if command=='score':
             from backtesting.idea_tracker import IdeaTracker
             from monitoring.message_format import score_summary_text

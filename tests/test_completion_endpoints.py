@@ -9,10 +9,10 @@ class EndpointTests(unittest.TestCase):
     def test_health_route_is_bounded_read_only_no_provider(self):
         server=ThreadingHTTPServer(('127.0.0.1',0),Handler);t=threading.Thread(target=server.serve_forever,daemon=True);t.start()
         try:
-            with patch('ops.supervisor.status',return_value={'read_only':True,'LIVE_SIGNAL_READY':False}) as status,patch('core.upgrade_service.snapshot',side_effect=AssertionError('heavy provider path forbidden')):
+            with patch('ops.supervisor.status',side_effect=AssertionError('process enumeration forbidden in health HTTP')) as status,patch('core.upgrade_service.snapshot',side_effect=AssertionError('heavy provider path forbidden')):
                 opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
                 with opener.open('http://127.0.0.1:'+str(server.server_port)+'/healthz',timeout=2) as response:d=json.load(response)
-                status.assert_called_once_with(probe=False);self.assertTrue(d['read_only']);self.assertFalse(d['LIVE_SIGNAL_READY'])
+                status.assert_not_called();self.assertTrue(d['read_only']);self.assertFalse(d['LIVE_SIGNAL_READY'])
         finally:server.shutdown();server.server_close();t.join(2)
     def test_capability_probe_uses_only_market_paths_and_preserves_refusal(self):
         calls=[];old=(datetime.now(timezone.utc)-timedelta(days=1)).isoformat()

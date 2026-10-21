@@ -11,7 +11,7 @@ from data.models import stamp
 FIELDS = {'reason','close_code','attempt','backoff_seconds','latency_ms','count',
           'payload_type','duration_seconds','wall_gap_seconds','monotonic_gap_seconds',
           'clock_jump_seconds','source_age_seconds','receipt_age_seconds','source_receipt_skew_seconds',
-          'predicate','provider','snapshot_id','source','feed_quality','recorded','confirmed','state'}
+          'provider_code','predicate','provider','snapshot_id','source','feed_quality','recorded','confirmed','state'}
 def active(now):
     local=now.astimezone(ET); noon=local.replace(hour=12,minute=0,second=0,microsecond=0)
     session=market_session(noon)
@@ -31,7 +31,7 @@ class Events:
         now=now or datetime.now(timezone.utc)
         if now.tzinfo is None:raise ValueError('AWARE_TIME_REQUIRED')
         if feed not in ('iex','sip','opra','worker','supervisor'):raise ValueError('INVALID_EVENT_FEED')
-        if event not in {'CONNECT','AUTHENTICATED','SUBSCRIBED','FIRST_MARKET_MESSAGE','MINUTE_MESSAGES','DISCONNECT','RECONNECT','PERMISSION_ERROR','CLOCK_REJECTION','PROCESS_PAUSED','WATCHDOG_RECONNECT','WATCHDOG_RESTART','BACKFILL','BACKFILL_FAILED','DATA_REJECTION','PREOPEN_CHECK'}:raise ValueError('INVALID_EVENT')
+        if event not in {'CONNECT','AUTHENTICATED','SUBSCRIBED','FIRST_MARKET_MESSAGE','MINUTE_MESSAGES','DISCONNECT','RECONNECT','PERMISSION_ERROR','CLOCK_REJECTION','PROCESS_PAUSED','WATCHDOG_RECONNECT','WATCHDOG_RESTART','BACKFILL','BACKFILL_FAILED','DATA_REJECTION','PREOPEN_CHECK','PROVIDER_REJECTION'}:raise ValueError('INVALID_EVENT')
         if set(fields)-FIELDS:raise ValueError('EVENT_FIELD_FORBIDDEN')
         # Free-form errors are forbidden; codes are short, restricted diagnostics.
         for k,v in fields.items():

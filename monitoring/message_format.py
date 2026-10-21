@@ -137,7 +137,11 @@ def idea_text(idea, evidence, config):
     return '\n'.join(lines)
 
 def diagnostics_text(ctx, now, news, horizons=None, extra=None):
+    from core.directional_research import VERSION,view
+    measured_view=view(ctx,now)
     lines = ['SPY RESEARCH DETAILS · ' + et(now.isoformat(), True),
+             'Current trend rule '+VERSION+': completed close and 15m change must agree with session VWAP; disagreement = SIDEWAYS; missing inputs = DATA UNAVAILABLE.',
+             'Forward outlook: conditional hypothesis with VWAP invalidation, exact H60/H120/session deadlines; not calibrated odds. Current trend '+measured_view['trend'],
              'New-entry predicate: ' + plain(ctx.get('failed_predicate') or ctx.get('reason') or 'underlying checks passed'),
              'Event gate: ' + plain(news.get('quality')) + ' / ' + plain(news.get('risk')),
              'Calendar verified ' + et(news.get('verified_at'), True) + '; coverage ' + et(news.get('coverage_through'), True)]
@@ -241,3 +245,6 @@ def position_review_text(position, condition, plan, underlying, option_quote, no
         lines.append('Monitoring limited: missing current prices; no exit or position closure inferred.')
     lines.append('User-reported holding, not broker verified. Full-exit/manual review only; no order placed.')
     return '\n'.join(lines)
+
+# Production defaults use the bounded owner experience; diagnostics stay above.
+from monitoring.owner_messages import status_text, idea_text, update_text

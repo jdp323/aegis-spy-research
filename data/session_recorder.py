@@ -21,11 +21,18 @@ class Recorder:
   from core.isolation import assert_real
   assert_real(rows)
   if feed not in ('SIP','IEX'):raise ValueError('UNVERIFIED_BAR_FEED')
-  normalized=normalize(rows,now=now);count=0;originals={stamp(r['t']).timestamp():r for r in rows}
+  completed=int(now.timestamp()//60)*60
+  latest=stamp(rows[-1]['t']).timestamp()+60 if rows else 0
+  fingerprint=hashlib.sha256((encode(rows)+str(min(completed,latest))).encode()).hexdigest()
+  if self.store.get('recorded-batch:'+feed)==fingerprint:return 0
+  normalized=normalize(rows,now=now);originals={stamp(r['t']).timestamp():r for r in rows};prepared=[]
+  for b in normalized:
+   source=datetime.fromtimestamp(b['timestamp'],timezone.utc).isoformat();original=originals.get(b['timestamp'],{});payload=encode({**b,'source':original.get('source','STREAM'),'provider':'alpaca-'+feed.lower(),'feed_quality':feed});ident=hashlib.sha256((feed+source+payload).encode()).hexdigest()
+   prepared.append((ident,'alpaca-'+feed.lower(),feed,source,now.isoformat(),payload))
+  # Parse/hash before locking; controls live alongside the append-only recorder.
   with self.db:
-   for b in normalized:
-    source=datetime.fromtimestamp(b['timestamp'],timezone.utc).isoformat();original=originals.get(b['timestamp'],{});payload=encode({**b,'source':original.get('source','STREAM'),'provider':'alpaca-'+feed.lower(),'feed_quality':feed});id=hashlib.sha256((feed+source+payload).encode()).hexdigest()
-    count+=self.db.execute('INSERT OR IGNORE INTO session_bars VALUES(?,?,?,?,?,?)',(id,'alpaca-'+feed.lower(),feed,source,now.isoformat(),payload)).rowcount
+   count=self.db.executemany('INSERT OR IGNORE INTO session_bars VALUES(?,?,?,?,?,?)',prepared).rowcount
+  self.store.put('recorded-batch:'+feed,fingerprint)
   return count
  def chain(self,datum,spot,now):
   from core.isolation import assert_real

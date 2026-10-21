@@ -45,12 +45,21 @@ function validateEvent(event, now=Date.now()) {
   if(!event || !/^[A-Za-z0-9_-]{1,100}$/.test(event.id || ''))throw new Error('INVALID_EVENT_ID');
   if(event.parent_event_id!==undefined&&(!/^[A-Za-z0-9_-]{1,100}$/.test(event.parent_event_id)||event.parent_event_id===event.id))throw new Error('INVALID_PARENT_EVENT_ID');
   if(['IDEA_UPDATE','PAPER_UPDATE'].includes(event.alert_type)&&!event.parent_event_id)throw new Error('PARENT_EVENT_REQUIRED');
+  if(event.presentation_version!==undefined){
+    const caps={PREOPEN:7,TREND_LINE:5,SPY_IDEA:9,IDEA_UPDATE:3,RECAP:6};
+    if(event.presentation_version!=='owner-compact-v1'||event.kind!=='RESEARCH'||!caps[event.alert_type])throw Error('INVALID_COMPACT_PRESENTATION');
+    if(typeof event.text!=='string'||event.text.split('\n').length>caps[event.alert_type])throw Error('COMPACT_LINE_LIMIT');
+  }
   // Actionable trade alerts remain unavailable until the proposal/risk migration is validated.
   if(!['INFO','RESEARCH','INTERVENTION','TEST'].includes(event.kind))throw new Error('TRADE_PROPOSAL_GATE_NOT_READY');
   if(['SPY_IDEA','IDEA_UPDATE','IDEA_WARNING','TREND_LINE','PREOPEN','RECAP'].includes(event.alert_type)){
     if(event.kind!=='RESEARCH'||event.tenant!=='owner')throw new Error('V5_RESEARCH_OWNER_REQUIRED');
-    if(event.alert_type==='SPY_IDEA'&&(!event.text?.includes('(PAPER / UNVALIDATED)')||!event.text?.includes('Unvalidated research. You place orders yourself.')))throw new Error('V5_IDEA_LABEL_REQUIRED');
-    if(event.alert_type==='IDEA_UPDATE'&&!event.text?.includes('Unvalidated research.'))throw new Error('V5_UPDATE_LABEL_REQUIRED');
+    if(event.alert_type==='SPY_IDEA'){
+      const compact=event.presentation_version==='owner-compact-v1';
+      const labeled=compact?/^(CALL|PUT) RESEARCH · ID [a-f0-9]{24}\n/.test(event.text||'')&&event.text.includes('Experimental · manual review'):event.text?.includes('(PAPER / UNVALIDATED)')&&event.text?.includes('Unvalidated research. You place orders yourself.');
+      if(!labeled)throw new Error('V5_IDEA_LABEL_REQUIRED');
+    }
+    if(event.alert_type==='IDEA_UPDATE'&&!(event.presentation_version==='owner-compact-v1'?event.text?.startsWith('ID ')&&event.text?.includes('Research update; your fills remain separate.'):event.text?.includes('Unvalidated research.')))throw new Error('V5_UPDATE_LABEL_REQUIRED');
     if(event.audience==='SHARED'){
       let c;try{c=JSON.parse(fs.readFileSync(path.join(ROOT,'config/upgrade.json'),'utf8'));}catch{throw new Error('V5_SHARING_NOT_AUTHORIZED');}
       if(c.signals?.shared!==true)throw new Error('V5_SHARING_NOT_AUTHORIZED');
@@ -108,7 +117,7 @@ async function sendSingle(event, credentials, directory=path.join(ROOT,'logs','n
    if(clock()>=Date.parse(event.expires_at)){status={...status,status:'FAILED_NOT_ACCEPTED',failure_class:'EXPIRED_BEFORE_SEND'};fs.writeFileSync(record,JSON.stringify(status,null,2));return {status:status.status,id:event.id};}
    status.attempts=attempt;fs.writeFileSync(record,JSON.stringify(status,null,2));
    try{
-    const payload={chat_id:credentials.chat_id,text:event.text.startsWith('🧪 DEMO — SIMULATED DATA')?event.text:'AEGIS '+event.kind+'\n'+event.text,disable_notification:event.disable_notification===true,...(event.reply_markup?{reply_markup:event.reply_markup}:{})};
+    const payload={chat_id:credentials.chat_id,text:(event.presentation_version==='owner-compact-v1'||event.text.startsWith('🧪 DEMO — SIMULATED DATA'))?event.text:'AEGIS '+event.kind+'\n'+event.text,disable_notification:event.disable_notification===true,...(event.reply_markup?{reply_markup:event.reply_markup}:{})};
     let message;
     if(event.photo){const photo={chat_id:credentials.chat_id,caption:event.text.slice(0,1024)};message=client===api?await apiPhoto(credentials.token,photo,fs.readFileSync(event.photo)):await client(credentials.token,'sendPhoto',photo);}
     else message=await client(credentials.token,'sendMessage',payload);

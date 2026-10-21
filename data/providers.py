@@ -26,7 +26,7 @@ class AlpacaProvider(UnconfiguredProvider):
         super().__init__('alpaca');self.transport=transport;self.retry_at=0;self.last_error=None;self.latency_ms=None
     def health(self):return {'provider':self.name,'status':Quality.OK if self.transport or (os.getenv('APCA_API_KEY_ID') and os.getenv('APCA_API_SECRET_KEY')) else Quality.UNCONFIGURED,'entitlement':'UNVERIFIED_UNTIL_RESPONSE','last_error':self.last_error,'retry_after_seconds':max(0,self.retry_at-time.monotonic()),'request_latency_ms':self.latency_ms}
     def get(self,path,params):
-        if not re.fullmatch(r'/v2/stocks/SPY/(?:quotes/latest|bars)|/v1beta1/options/(?:quotes/latest|snapshots/SPY|bars)|/v1beta1/news',path):raise ValueError('MARKET_ENDPOINT_FORBIDDEN')
+        if not re.fullmatch(r'/v2/stocks/SPY/(?:quotes/latest|bars)|/v1beta1/options/(?:quotes/latest|snapshots/SPY|bars)|/v1beta1/news|/v1/corporate-actions',path):raise ValueError('MARKET_ENDPOINT_FORBIDDEN')
         if self.health()['status']==Quality.UNCONFIGURED:raise RuntimeError('FEED_NOT_CONFIGURED')
         if time.monotonic()<self.retry_at:raise RuntimeError('RATE_LIMIT_COOLDOWN')
         start=time.monotonic()

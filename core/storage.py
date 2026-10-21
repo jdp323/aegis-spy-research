@@ -10,6 +10,7 @@ def encode(v): return json.dumps(v,sort_keys=True,allow_nan=False,default=str)
 class Store:
     def __init__(self,path=None,lock_timeout=.5,retry_attempts=3,sleep=time.sleep):
         path=Path(path or ROOT/'runtime/aegis.sqlite');path.parent.mkdir(parents=True,exist_ok=True)
+        self._closers=[]
         self.path=path;self.retry_attempts=retry_attempts;self.sleep=sleep
         if not 0<=lock_timeout<=2 or type(retry_attempts) is not int or not 1<=retry_attempts<=5:raise ValueError('INVALID_DATABASE_RETRY_POLICY')
         self.metrics={'transactions':0,'busy_retries':0,'failures':0,'last_duration_seconds':0,'maximum_duration_seconds':0,'lock_timeout_seconds':lock_timeout,'maximum_attempts':retry_attempts}
@@ -21,7 +22,10 @@ class Store:
         CREATE TABLE IF NOT EXISTS audit(seq INTEGER PRIMARY KEY,id TEXT UNIQUE,kind TEXT,actor TEXT,payload TEXT,created TEXT,previous TEXT,hash TEXT);
         CREATE TRIGGER IF NOT EXISTS audit_no_update BEFORE UPDATE ON audit BEGIN SELECT RAISE(ABORT,'append only'); END;
         CREATE TRIGGER IF NOT EXISTS audit_no_delete BEFORE DELETE ON audit BEGIN SELECT RAISE(ABORT,'append only'); END;''')
-    def close(self):self.db.close()
+    def close(self):
+        for close in self._closers:close()
+        self._closers=[]
+        self.db.close()
     def transaction(self,work):
         """Retry only SQLite busy/locked transactions after rollback, within bounds."""
         started=transaction_clock()
@@ -47,6 +51,13 @@ class Store:
         def write():
             with self.db:self.db.execute('INSERT INTO state VALUES(?,?,?) ON CONFLICT(key) DO UPDATE SET payload=excluded.payload,updated=excluded.updated',(key,body,at))
         self.transaction(write)
+    def put_many(self,values):
+        from core.isolation import assert_real
+        assert_real(values)
+        at=iso();rows=[(k,encode(v),at) for k,v in values.items()]
+        def write():
+            with self.db:self.db.executemany('INSERT INTO state VALUES(?,?,?) ON CONFLICT(key) DO UPDATE SET payload=excluded.payload,updated=excluded.updated',rows)
+        self.transaction(write)
     def get(self,key,default=None):
         r=self.db.execute('SELECT payload FROM state WHERE key=?',(key,)).fetchone();return json.loads(r[0]) if r else default
     def merge_rows(self,key,rows,maximum=20000,incoming_wins=False,timestamp_key='t'):
@@ -55,16 +66,32 @@ class Store:
         from data.models import stamp
         assert_real(rows)
         if type(maximum) is not int or not 1<=maximum<=50000:raise ValueError('INVALID_HISTORY_LIMIT')
-        def write():
-            self.db.execute('BEGIN IMMEDIATE')
-            current=self.get(key,[]) or []
+        # Build outside the writer lock. CAS prevents a concurrent stream/backfill
+        # update from being lost; retry rebuilds from the new committed snapshot.
+        started=transaction_clock()
+        for conflict in range(self.retry_attempts):
+            raw=self.db.execute('SELECT payload FROM state WHERE key=?',(key,)).fetchone()
+            before=raw[0] if raw else None
+            current=json.loads(before) if before else []
+            def canonical(row):return stamp(row[timestamp_key]).astimezone(timezone.utc).isoformat()
             first,second=(current,rows) if incoming_wins else (rows,current)
-            merged={stamp(row[timestamp_key]).astimezone(timezone.utc).isoformat():row for row in first}
-            merged.update({stamp(row[timestamp_key]).astimezone(timezone.utc).isoformat():row for row in second})
-            result=sorted(merged.values(),key=lambda row:stamp(row[timestamp_key]))[-maximum:]
-            self.db.execute('INSERT INTO state VALUES(?,?,?) ON CONFLICT(key) DO UPDATE SET payload=excluded.payload,updated=excluded.updated',(key,encode(result),iso()));self.db.commit()
-            return result
-        return self.transaction(write)
+            merged={canonical(row):row for row in first}
+            merged.update({canonical(row):row for row in second})
+            result=[merged[t] for t in sorted(merged)][-maximum:]
+            body=encode(result);at=iso()
+            def write():
+                self.db.execute('BEGIN IMMEDIATE')
+                live=self.db.execute('SELECT payload FROM state WHERE key=?',(key,)).fetchone()
+                if (live[0] if live else None)!=before:
+                    self.db.rollback();return False
+                self.db.execute('INSERT INTO state VALUES(?,?,?) ON CONFLICT(key) DO UPDATE SET payload=excluded.payload,updated=excluded.updated',(key,body,at))
+                self.db.commit();return True
+            if self.transaction(write):
+                self.metrics['merge_total_seconds']=transaction_clock()-started
+                self.metrics['merge_rows']=len(result)
+                return result
+            self.metrics['merge_conflicts']=self.metrics.get('merge_conflicts',0)+1
+        raise sqlite3.OperationalError('HISTORY_MERGE_CONCURRENT_UPDATE')
     def snapshot(self,keys):
         # One SQLite read transaction, clock taken by caller after this returns.
         self.db.execute('BEGIN')

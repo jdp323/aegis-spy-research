@@ -20,9 +20,8 @@ def underlying(now=NOW):
     return quote('alpaca-iex', 'SPY', {'bp': 499.99, 'ap': 500.01, 't': now.isoformat()}, received=now.isoformat()).view(now)
 
 def context():
-    return {'quote': underlying(), 'feed_quality': 'IEX', 'reason': None,
-            'horizons': {'H60': {'bias': 'UP', 'version': 'fixture-h60'}, 'H120': {'bias': 'MIXED', 'version': 'fixture-h120'}, 'SESSION': {'bias': 'DOWN', 'version': 'fixture-session'}},
-            'features': {'1m': {'trend': 'BULL'}}, 'heartbeat_age_seconds': 1, 'bar_end_age_seconds': 20}
+    bars=[dict(timestamp=NOW.timestamp()-(31-n)*60,open=499.,high=501.,low=498.,close=499.7+n*.01,volume=100) for n in range(31)]
+    return {'quote':underlying(),'feed_quality':'IEX','reason':None,'bar_research':{'quality':'COMPLETED_BAR_RESEARCH_ONLY','reason':None,'bars':bars,'features':{'1m':{'vwap_approx':499.5}},'feed_quality':'IEX'},'features':{'1m':{'trend':'BULL'}}}
 
 def idea():
     return {'signal_id': 'a' * 24, 'strategy_version': 'spy-ideas-v2-observed', 'setup_type': 'TREND_CONTINUATION',
@@ -35,41 +34,39 @@ def idea():
 class SemanticMessageTests(unittest.TestCase):
     def test_status_names_separate_horizons_without_probabilities_or_option_premium(self):
         text = status_text(context(), NOW, {'quality': 'DATA_OK', 'risk': 'NORMAL'})
-        for expected in ('Next 60m: UP', 'Next 120m: MIXED', 'Remaining session: DOWN', 'Watch only—option pricing unavailable.', 'New entry: WAIT'):
+        for expected in ('Current trend: UP', 'Next hour: upward bias', 'Research · IEX', 'New entry: WAIT'):
             self.assertIn(expected, text)
         self.assertNotIn('win chance', text)
-        self.assertLessEqual(len(text.splitlines()), 12)
+        self.assertLessEqual(len(text.splitlines()), 5)
         self.assertNotIn('None', text)
 
     def test_confirmed_underlying_candidate_is_watch_only_not_contradictory_wait_buy(self):
         text = status_text(context(), NOW, {'quality': 'DATA_OK', 'risk': 'NORMAL'}, entry_reason='BUY CALL idea (unvalidated)')
-        self.assertIn('New entry: WATCH ONLY — CALL underlying setup confirmed', text)
+        self.assertIn('New entry: WAIT — underlying watch; option gates separate', text)
         self.assertNotIn('WAIT — BUY', text)
-        self.assertIn('Watch only—option pricing unavailable.', text)
+        self.assertNotIn('BUY CALL', text)
 
     def test_completed_bar_view_does_not_promote_stale_quote_or_calendar(self):
-        ctx = context();ctx.update(quote=underlying(NOW - timedelta(seconds=40)), reason='data not fresh', failed_predicate='SOURCE_TOO_OLD',
-            bar_research={'provider': 'alpaca-iex', 'last_completed_close': 498.75, 'source_timestamp': (NOW - timedelta(minutes=1)).isoformat(), 'quality': 'COMPLETED_BARS_ONLY'})
-        text = status_text(ctx, NOW, {'quality': 'DATA_INCOMPLETE', 'risk': 'UNAVAILABLE'})
-        self.assertIn('498.75 USD', text)
-        self.assertIn('descriptive bar close', text)
-        self.assertIn('not an executable quote', text)
-        self.assertIn('New entry: WAIT — SOURCE_TOO_OLD', text)
-        self.assertIn('calendar unverified; entry ideas blocked', text)
-        self.assertNotIn('500.00 USD', text)
+        ctx=context();ctx.update(quote=underlying(NOW-timedelta(seconds=40)),reason='data not fresh',failed_predicate='SOURCE_TOO_OLD')
+        text=status_text(ctx,NOW,{'quality':'DATA_INCOMPLETE','risk':'UNAVAILABLE'})
+        self.assertIn('SPY $500.00',text);self.assertIn('Current trend: UP',text)
+        self.assertIn('WAIT — fresh price unavailable',text);self.assertNotIn('SOURCE_TOO_OLD',text)
+        details=diagnostics_text(ctx,NOW,{'quality':'DATA_INCOMPLETE','risk':'UNAVAILABLE'})
+        self.assertIn('SOURCE_TOO_OLD',details);self.assertIn('DATA_INCOMPLETE',details)
 
     def test_missing_horizon_remains_unavailable_and_closed_session_blocks_entries(self):
         ctx = context();ctx['horizons'] = {'H60': {'bias': 'UP'}}
         text = status_text(ctx, NOW.replace(day=17), {'quality': 'DATA_OK', 'risk': 'NORMAL'})
-        self.assertIn('Next 120m: UNAVAILABLE', text)
-        self.assertIn('Remaining session: UNAVAILABLE', text)
+        self.assertIn('Current trend: DATA UNAVAILABLE', text)
+        self.assertIn('Next hour: unavailable', text)
         self.assertIn('WAIT — market closed', text)
 
     def test_idea_named_prices_and_watch_only_no_guessed_contract(self):
         row = idea();row['actual_reported_fill'] = 999.99
         text = idea_text(row, {'evidence_tag': 'INSUFFICIENT', 'closed': 3}, {})
-        for expected in ('ID ' + 'a' * 24, '60 minutes', 'SPY trigger: above 499.50', 'Reference midpoint: 500.00', 'modeled fill: 500.02', 'Watch only—option pricing unavailable.', '(PAPER / UNVALIDATED)', 'Unvalidated research. You place orders yourself.'):
+        for expected in ('ID ' + 'a' * 24, '60 minutes', 'above SPY $499.50', 'Underlying watch only · option contract unavailable.', 'Experimental'):
             self.assertIn(expected, text)
+        self.assertEqual(row['reference_midpoint'],500);self.assertEqual(row['modeled_entry_fill'],500.02);self.assertEqual(row['actual_reported_fill'],999.99)
         self.assertNotIn('999.99', text)
         self.assertNotIn('Pick the option yourself', text)
         self.assertNotIn('Rough risk', text)
@@ -77,13 +74,13 @@ class SemanticMessageTests(unittest.TestCase):
     def test_verified_option_plan_distinguishes_premium_at_risk_from_modeled_stop(self):
         row = idea();symbol = 'SPY261016C00500000'
         oq = quote('alpaca-opra', symbol, {'bp': 1.9, 'ap': 2.1, 't': NOW.isoformat()}, received=NOW.isoformat()).view(NOW)
-        row.update(option_contract={'symbol': symbol, 'quote': oq}, option_plan={'limit': 2., 'stop_bid': 1.5})
+        row.update(option_contract={'symbol':symbol,'quote':oq,'type':'C','expiry':'2026-10-16','strike':500,'bid':1.95,'ask':2.05,'mid':2.,'delta':.5,'gamma':.01,'theta':-.1,'vega':.1,'iv':.2,'greeks_timestamp':NOW.isoformat()},option_plan={'limit':2.,'stop_bid':1.5},option_verification='FRESH_QUOTE_GREEKS_CHAIN_SANITY_PASSED')
         text = idea_text(row, {'closed': 0}, {})
         self.assertIn(symbol, text)
-        self.assertIn('Premium at risk: 200.00 USD/contract, plus fees', text)
-        self.assertIn('estimate only, not maximum loss or an exit quote', text)
+        self.assertIn('premium at risk $200.00 + fees', text)
+        self.assertIn('no guaranteed stop-loss cap', text)
         row['option_contract']['quote'] = quote('alpaca-opra', symbol, {'bp': 1.9, 'ap': 2.1, 't': (NOW - timedelta(minutes=1)).isoformat()}, received=NOW.isoformat()).view(NOW)
-        self.assertIn('Watch only—option pricing unavailable.', idea_text(row, {'closed': 0}, {}))
+        self.assertIn('Underlying watch only · option contract unavailable.', idea_text(row, {'closed': 0}, {}))
 
     def test_details_preserve_signed_ages_and_never_print_raw_objects(self):
         ctx = context();ctx['diagnostics'] = [{'provider': 'alpaca-iex', 'source_age_seconds': -.125, 'receipt_age_seconds': -.01, 'source_receipt_skew_seconds': .115, 'predicate': 'RECEIPT_FUTURE'}]
@@ -100,7 +97,7 @@ class SemanticMessageTests(unittest.TestCase):
         self.assertIn('worker: RUNNING', text)
         self.assertIn('offset 0.123 s', text)
         self.assertNotIn("{'", text)
-        self.assertIn('no exit or closed position inferred', update_text(idea(), 'MONITORING_UNAVAILABLE'))
+        self.assertIn('no exit confirmed', update_text(idea(), 'MONITORING_UNAVAILABLE'))
         for bad in (None, float('nan'), float('inf'), {}, True):self.assertEqual(number(bad), 'UNAVAILABLE')
 
     def test_stale_position_inputs_leave_reported_holding_open_and_unmarked(self):

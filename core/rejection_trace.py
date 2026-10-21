@@ -62,10 +62,16 @@ def persist(path,traces,now):
         db.executescript('''CREATE TABLE IF NOT EXISTS rejection_traces(minute TEXT,setup TEXT,direction TEXT,version TEXT,snapshot_id TEXT,payload TEXT,evaluation_count INTEGER,PRIMARY KEY(minute,setup,direction,version));
         CREATE INDEX IF NOT EXISTS rejection_trace_time ON rejection_traces(minute);
         CREATE VIEW IF NOT EXISTS active_rejection_traces AS SELECT * FROM rejection_traces WHERE julianday(minute)>=julianday('now','-14 days');''')
+        db.executescript('''CREATE TABLE IF NOT EXISTS rejection_trace_revisions(snapshot_id TEXT PRIMARY KEY,minute TEXT NOT NULL,payload TEXT NOT NULL);
+        CREATE TRIGGER IF NOT EXISTS trace_revision_no_update BEFORE UPDATE ON rejection_trace_revisions BEGIN SELECT RAISE(ABORT,'append only'); END;
+        CREATE TRIGGER IF NOT EXISTS trace_revision_no_delete BEFORE DELETE ON rejection_trace_revisions BEGIN SELECT RAISE(ABORT,'append only'); END;''')
         with db:
             for t in traces:
                 body=json.dumps(t,sort_keys=True,allow_nan=False);sid=hashlib.sha256(body.encode()).hexdigest()[:24]
-                db.execute('INSERT INTO rejection_traces VALUES(?,?,?,?,?,?,1) ON CONFLICT(minute,setup,direction,version) DO UPDATE SET payload=excluded.payload,snapshot_id=excluded.snapshot_id,evaluation_count=evaluation_count+1',(minute,t['setup'],t['direction'],t['engine_version'],sid,body))
+                db.execute('INSERT OR IGNORE INTO rejection_trace_revisions VALUES(?,?,?)',(sid,minute,body))
+                # The legacy minute aggregate is now the first observed snapshot.
+                # Later decisions are immutable revisions, not replacements.
+                db.execute('INSERT OR IGNORE INTO rejection_traces VALUES(?,?,?,?,?,?,1)',(minute,t['setup'],t['direction'],t['engine_version'],sid,body))
     finally:db.close()
 def summary(path,now):
     import collections

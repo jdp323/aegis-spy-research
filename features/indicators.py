@@ -41,7 +41,7 @@ def ema(values,n):
 def calculate(bars):
     if not bars:return {'status':'UNAVAILABLE','bars':0}
     c=[b['close'] for b in bars];n=len(c);last=bars[-1];day=datetime.fromtimestamp(last['timestamp'],timezone.utc).astimezone(ET).date()
-    current=[b for b in bars if datetime.fromtimestamp(b['timestamp'],timezone.utc).astimezone(ET).date()==day];prior=[b for b in bars if b not in current]
+    current=[b for b in bars if datetime.fromtimestamp(b['timestamp'],timezone.utc).astimezone(ET).date()==day];current_ids={id(b) for b in current};prior=[b for b in bars if id(b) not in current_ids]
     v=sum(b['volume'] for b in current);vwap=sum((b['high']+b['low']+b['close'])/3*b['volume'] for b in current)/v if v else None
     changes=[c[i]-c[i-1] for i in range(1,n)];rsi=None;atr=None
     if len(changes)>=14:

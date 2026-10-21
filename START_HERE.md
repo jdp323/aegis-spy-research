@@ -1,3 +1,5 @@
+> Implemented update: [October21 Telegram experience](reports/updates/2026-10-21_telegram-experience.md), including production changes, fixtures, tests and readiness limits.
+
 > Current evidence: [October21 complete project report](reports/updates/2026-10-21_project-status-report.md). Older reports remain dated evidence.
 
 # Start here

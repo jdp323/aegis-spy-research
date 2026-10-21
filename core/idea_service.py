@@ -24,6 +24,7 @@ def context(store,now,simulation=False):
     return result
 def candidates(ctx,news,config,now,simulation=False):
     if ctx['reason'] or not market_session(now)['active']:return [],ctx['reason'] or 'outside trading window'
+    if not simulation and not quote_valid(ctx.get('quote') or {},now,5):return [],'fresh underlying quote unavailable'
     if news.get('quality')!='DATA_OK' or news.get('risk') not in ('NORMAL','MODERATE'):return [],'calendar not verified' if news.get('quality')!='DATA_OK' else 'event blackout active'
     from options.trade_plan import mismatch
     ideas=detect(ctx['features'],ctx['bars'],ctx['quote'],now,config,ctx['early'])
@@ -90,53 +91,10 @@ def recap_levels(store,now,simulation=False):
         except (ValueError,KeyError,TypeError,IndexError):continue
     return 'UNAVAILABLE — complete contiguous current-session bars missing'
 def preopen_text(store,news,now,config,report=None):
-    r=report or store.get('premarket_report:'+now.astimezone(ET).date().isoformat()) or {};l=r.get('levels') or {};prior=r.get('prior') or {};f=(store.get('features') or {}).get('daily',{});atr=f.get('atr14')
-    fmt=lambda x:'%.2f'%x if finite(x) else 'UNAVAILABLE'
-    lines=['SPY · PRE-OPEN · '+now.astimezone(ET).strftime('%a %b %d, %H:%M ET'),'Premarket '+fmt(l.get('last'))+' · gap '+('%.2f%%'%l['gap_pct'] if finite(l.get('gap_pct')) else 'UNAVAILABLE')+' vs prior close proxy '+fmt(prior.get('close_proxy')),'Bias: '+r.get('bias','UNAVAILABLE')+' · daily '+f.get('trend','UNAVAILABLE')+' / hourly '+(store.get('features') or {}).get('1h',{}).get('trend','UNAVAILABLE'),'Levels: prior low/high '+fmt(prior.get('low'))+' / '+fmt(prior.get('high'))+'; premarket low/high '+fmt(l.get('low'))+' / '+fmt(l.get('high')),'Scenarios:','▲ Holds above '+fmt(l.get('high'))+' → CALL context; targets '+fmt(f.get('resistance')),'▼ Loses '+fmt(l.get('low'))+' → PUT context; targets '+fmt(f.get('support'))]
-    outlook=r.get('market_outlook') or store.get('market_outlook') or {}
-    market=outlook.get('market') or {}
-    price_bias={'BULLISH':'UP','BEARISH':'DOWN'}.get(r.get('bias'),r.get('bias','UNAVAILABLE'))
-    if price_bias.startswith('MIXED'):price_bias='MIXED'
-    overall=outlook.get('bias',price_bias)
-    lines[2:3]=['OUTLOOK: '+overall+' | price evidence: '+price_bias,'Up/down forecast probabilities: NOT ESTABLISHED; evidence counts below are not odds.']
-    checks=[]
-    for frame in ('15m','30m'):
-        direction=r.get('timeframes',{}).get(frame,{}).get('trend')
-        if direction in ('UP','DOWN','FLAT'):checks.append('NEUTRAL' if direction=='FLAT' else direction)
-    if finite(l.get('last')) and finite(l.get('vwap_approx')):checks.append('UP' if l['last']>l['vwap_approx'] else 'DOWN' if l['last']<l['vwap_approx'] else 'NEUTRAL')
-    if finite(l.get('gap_pct')):checks.append('UP' if l['gap_pct']>=.1 else 'DOWN' if l['gap_pct']<=-.1 else 'NEUTRAL')
-    from news.market_outlook import clean,ratio_line,shares
-    lines.insert(4,ratio_line('Price checks (15m, 30m, VWAP, gap; available inputs only)',shares(checks)))
-    if r.get('quality') not in ('PUBLIC_RESEARCH_ONLY','IEX_RESEARCH_ONLY','SIMULATED'):
-        # A valid price-only fallback cannot establish the detailed volume/gap
-        # report. Show its own source, timestamp and counts instead of mixing them.
-        lines[2]='OUTLOOK: '+overall+' | price evidence: '+market.get('bias','UNAVAILABLE')
-        lines[4]=ratio_line('Fallback price checks',shares([side for side,count in market.get('counts',{}).items() for _ in range(count)]))
-        details=['Detailed premarket summary: UNAVAILABLE — '+r.get('reason','verified inputs missing')]
-        if market.get('as_of'):
-            details+=['Price source: '+market.get('mode','UNAVAILABLE')+'; observed through '+stamp(market['as_of']).astimezone(ET).strftime('%H:%M ET')]
-            if finite(market.get('price')):details+=['Last observed price: '+fmt(market['price'])+'; not an executable quote.']
-        lines[5:9]=details+['CALL / PUT triggers: UNAVAILABLE; no volume-confirmed premarket setup.']
-    if finite(atr) and finite(l.get('last')):lines+=['ATR range estimate (not prediction): '+fmt(l['last']-atr)+'–'+fmt(l['last']+atr)]
-    else:lines+=['ATR range estimate: UNAVAILABLE']
-    events=[e for e in news.get('events',[]) if stamp(e['time_utc']).astimezone(ET).date()==now.astimezone(ET).date()]
-    headlines=outlook.get('news',{})
-    lines+=['Events today: '+('NEWS_DATA_UNAVAILABLE — calendar not verified' if news.get('quality')!='DATA_OK' else '; '.join(e['type']+' '+('all-day' if e.get('all_day') else stamp(e['time_utc']).astimezone(ET).strftime('%H:%M ET')) for e in events) or 'none listed; optional categories unknown'),'Calendar verified: '+(stamp(news['verified_at']).astimezone(ET).strftime('%b %d ET') if news.get('verified_at') else 'UNAVAILABLE'),'News context: '+str(headlines.get('bias','UNAVAILABLE'))+'; details /news',ratio_line('News language',headlines.get('support')),'Data: '+r.get('quality','UNAVAILABLE')+'; public premarket bars are not live executable quotes','Option contract/premium: UNAVAILABLE unless separately verified quotes support an option plan.','First trend line at 09:45 ET, if fresh data and sufficient completed bars exist.','Unvalidated research. You place orders yourself.']
-    items=headlines.get('items',[])
-    if items:
-        item=items[0]
-        try:published=stamp(item['published_at']).astimezone(ET).strftime('%m-%d %H:%M ET')
-        except (KeyError,ValueError):published='UNAVAILABLE'
-        lines.insert(-4,'Headline context: '+' '.join(clean(item.get('headline',''),160).split()[:8])+'… ('+str(item.get('provider','source'))+'); publication '+published+'. Headline language is not a forecast.')
-    if overall in ('UP','DOWN') and price_bias=='UNAVAILABLE' and market.get('bias','UNAVAILABLE')=='UNAVAILABLE':lines[2]='OUTLOOK: NEWS CONTEXT ONLY — '+overall+' | current price evidence UNAVAILABLE'
-    source=r.get('source') or market.get('mode','UNAVAILABLE');asof=r.get('as_of_bar') or market.get('as_of')
-    lines=[line+' [source: '+str(source)+'; as-of: '+(stamp(asof).astimezone(ET).strftime('%H:%M ET') if asof else 'UNAVAILABLE')+']' if line.startswith(('Premarket ','Levels:','Bias:','OUTLOOK:','▲','▼')) else line for line in lines]
-    if r.get('as_of_bar'):lines.insert(2,'Premarket bar starts '+stamp(r['as_of_bar']).astimezone(ET).strftime('%H:%M ET')+'; public delivery delay unverified. Daily/hourly context is historical.')
-    if r.get('quality')=='IEX_RESEARCH_ONLY':lines=[line.replace('public delivery delay unverified','authorized IEX historical bars; single exchange').replace('public premarket bars are not live executable quotes','historical premarket bars are not live executable quotes') for line in lines]
-    for frame,value in r.get('timeframes',{}).items():
-        through=value.get('as_of');lines.append(frame+' price trend: '+str(value.get('trend','UNAVAILABLE'))+' [source: '+str(source)+'; as-of: '+(stamp(through).astimezone(ET).strftime('%H:%M ET') if through else 'UNAVAILABLE')+']')
-    lines.append('Premarket VWAP: '+fmt(l.get('vwap_approx'))+(' (zero reported volume)' if l.get('vwap_approx') is None and r.get('quality') in ('IEX_RESEARCH_ONLY','PUBLIC_RESEARCH_ONLY') else ' (volume evidence unavailable)' if l.get('vwap_approx') is None else '')+' [source: '+str(source)+'; as-of: '+(stamp(asof).astimezone(ET).strftime('%H:%M ET') if asof else 'UNAVAILABLE')+']')
-    return '\n'.join(lines)
+    from monitoring.owner_messages import premarket_text
+    r=report or store.get('premarket_report:'+now.astimezone(ET).date().isoformat()) or {}
+    return premarket_text(r,news,now)
+
 def scheduled_preopen(store,news,now,config,simulation=False):
     """Validate against the post-fetch clock; never reserve a late morning slot."""
     from monitoring.day_schedule import due
@@ -145,18 +103,17 @@ def scheduled_preopen(store,news,now,config,simulation=False):
     if ('PREOPEN',day) not in due(now,config):return None
     report=store.get('premarket_report:'+day)
     if not report and not simulation:
-        from monitoring.premarket_brief import build
-        from data.premarket_spy import collect_once
+        # Preparation runs in a bounded background job, never blocks this slot.
+        report=store.get('premarket_prepared:'+day) or {}
+        effective=datetime.now(timezone.utc)
         try:
-            from data.premarket_authorized import collect as authorized_collect
-            raw=authorized_collect(day,now) or collect_once(day,now)
-            effective=datetime.now(timezone.utc)
-            report=build(raw,news,effective)
-        except (OSError,ValueError,KeyError):
-            effective=datetime.now(timezone.utc);report={}
+            if not 0<=(effective-stamp(report['generated_at'])).total_seconds()<=600:report={}
+        except (KeyError,ValueError,TypeError):report={}
+        effective=datetime.now(timezone.utc)
     elif not simulation:effective=datetime.now(timezone.utc)
     if ('PREOPEN',day) not in due(effective,config):return None
-    report=dict(report or {},message_version='spy-preopen-v4-observed')
+    report=dict({'quality':'UNAVAILABLE','reason':'prepared premarket evidence unavailable'},**(report or {}))
+    report['message_version']='spy-preopen-compact-v1'
     if not simulation:
         from news.market_outlook import build as outlook_build
         report['market_outlook']=outlook_build(store,effective,premarket=report)
@@ -164,13 +121,13 @@ def scheduled_preopen(store,news,now,config,simulation=False):
     report['message']=message;store.put('premarket_report:'+day,report)
     return message
 def permit(store,tracker,i,config,now,preview=False):
-    c=settings(config);day=now.astimezone(ET).date().isoformat();state=store.get('idea-control:'+day) or {'alerts':0,'last':{},'cooloff_until':None,'loss_checkpoint':None};rows=tracker.positions();closed=sorted([r for r in rows if r.get('status')=='CLOSED'],key=lambda x:x['closed_at']);streak=0
-    for r in reversed(closed):
-        if r['r_multiple']>=0:break
-        streak+=1
-    warnings=[]
-    if streak>=c['cooloff_losses'] and closed and state['loss_checkpoint']!=closed[-1]['signal_id']:
-        state.update(cooloff_until=(now+timedelta(minutes=c['cooloff_minutes'])).isoformat(),loss_checkpoint=closed[-1]['signal_id']);warnings.append('COOL-OFF — '+str(streak)+' losing underlying ideas; new ideas paused '+str(c['cooloff_minutes'])+' minutes. Trend lines continue.')
+    from core.research_pause import advance
+    c=settings(config);day=now.astimezone(ET).date().isoformat()
+    state=store.get('idea-control:'+day) or {'alerts':0,'last':{},'cooloff_until':None,'loss_checkpoint':None}
+    rows=tracker.positions()
+    pause,paused,warnings=advance(store.get('research-pause:v2'),rows,now,c['cooloff_losses'],c['cooloff_minutes'])
+    if not preview:store.put('research-pause:v2',pause)
+    state['cooloff_until']=(pause.get('episode') or {}).get('end');state['loss_checkpoint']=(pause.get('episode') or {}).get('id')
     tag=evidence([r for r in rows if r['setup_type']==i['setup_type'] and bool(r.get('early'))==bool(i.get('early'))]);blocked=None
     if state['cooloff_until'] and now<stamp(state['cooloff_until']):blocked='COOL_OFF'
     if tag['evidence_tag']=='NEGATIVE' and i['setup_type'] not in config.get('negative_setup_overrides',[]):blocked='NEGATIVE_EVIDENCE';warnings.append('Evidence NEGATIVE — '+i['setup_type']+' alerts suppressed; still tracked silently. /alerts setup '+i['setup_type']+' on to override deliberately.')
@@ -184,11 +141,26 @@ def permit(store,tracker,i,config,now,preview=False):
 def tick(store,news,config,now,publish,root=ROOT,tracker=None,simulation=False):
     if not config.get('idea_engine_enabled',False):return []
     if simulation and tracker is None:raise ValueError('SIMULATION_MEMORY_TRACKER_REQUIRED')
-    owned=tracker is None;tracker=tracker or IdeaTracker(Path(root)/'runtime/ideas.sqlite');ctx=context(store,now,simulation);ctx['calendar_status']=news;events=[]
-    def emit(event):publish(event);events.append(event)
+    owned=tracker is None;tracker=tracker or IdeaTracker(Path(root)/'runtime/ideas.sqlite');ctx=context(store,now,simulation)
+    if not simulation and getattr(store,'path',None) is not None:now=datetime.now(timezone.utc)
+    ctx['calendar_status']=news;events=[]
+    def emit(event):
+        from core.directional_research import view,record
+        if event.get('alert_type')=='TREND_LINE':
+            r=view(ctx,now)
+            for h in ('H60','H120','SESSION'):record(store,event['id']+':'+h,now,r,h)
+        elif event.get('alert_type')=='PREOPEN':
+            report=store.get('premarket_report:'+now.astimezone(ET).date().isoformat()) or {}
+            session=market_session(now.astimezone(ET).replace(hour=10,minute=0))
+            end=now.astimezone(ET).replace(hour=session['close_minute']//60,minute=session['close_minute']%60,second=0,microsecond=0)
+            bias={'BULLISH':'UP','BEARISH':'DOWN'}.get(report.get('bias'),'ABSTAIN')
+            r={'provider':'IEX' if report.get('quality')=='IEX_RESEARCH_ONLY' else 'PUBLIC_DELAY_UNVERIFIED','as_of':report.get('as_of_bar'),'outlooks':{'PREMARKET':{'bias':bias,'target_at':end.isoformat(),'invalidation':(report.get('levels') or {}).get('low' if bias=='UP' else 'high')}}}
+            record(store,event['id'],now,r,'PREMARKET',premarket=True)
+        publish(event);events.append(event)
     def send(key,text,type_,silent=False,buttons=None,parent=None):
         if store.get(key):return
         store.put(key,{'reserved_at':now.isoformat()});e={'id':key,'kind':'RESEARCH','audience':'SHARED' if config.get('signals',{}).get('shared',False) else 'PRIVATE','tenant':'owner','text':text,'alert_type':type_,'expires_at':(now+timedelta(minutes=10)).isoformat(),'disable_notification':silent}
+        if type_ in ('SPY_IDEA','IDEA_UPDATE'):e['presentation_version']='owner-compact-v1'
         if buttons:e['reply_markup']=buttons
         if parent:e['parent_event_id']=parent
         emit(e)
@@ -217,10 +189,19 @@ def tick(store,news,config,now,publish,root=ROOT,tracker=None,simulation=False):
                     for comparison in comparisons:with_tracker.register(comparison,ctx['quote'],now,False)
                 store.put('horizon_research',{'at':now.isoformat(),'variants':ctx['horizons'],'candidate_count':len(comparisons),'population':'HORIZON_COMPARISON_UNDERLYING_ONLY','alerts_enabled':False,'option_performance':'UNAVAILABLE','validated':False})
             finally:with_tracker.close()
+        if not simulation and store.get('published-comparison-minute')!=now.replace(second=0,microsecond=0).isoformat():
+            from strategies.published_baselines import compare_context
+            store.put('published_baselines',{'at':now.isoformat(),**compare_context(ctx.get('bar_research') or {},now,store.get('corporate_action_history'))})
+            store.put('published-comparison-minute',now.replace(second=0,microsecond=0).isoformat())
         if not simulation:
             from core.rejection_trace import measure,persist
             traces=measure(ctx,news,config,now);persist(Path(root)/'runtime/observability.sqlite',traces,now)
             store.put('v6-latest-setup-traces',traces)
+        from core.directional_research import resolve
+        minute_id=now.replace(second=0,microsecond=0).isoformat()
+        if store.get('directional-resolve-minute')!=minute_id:
+            resolve(store,(ctx.get('bar_research') or {}).get('bars',[]),now,quote=ctx.get('quote'))
+            store.put('directional-resolve-minute',minute_id)
         ideas,reason=candidates(ctx,news,config,now,simulation)
         from options.trade_plan import mismatch
         if not simulation and mismatch([store.get('quote:SPY') or {},store.get('research_quote:SPY:iex') or {}],config,now):ideas=[];reason='feed mismatch'
@@ -228,7 +209,7 @@ def tick(store,news,config,now,publish,root=ROOT,tracker=None,simulation=False):
             if any(x['signal_id']==i['signal_id'] for x in tracker.positions()):continue
             category_on=config.get('notifications',{}).get('categories',{}).get('ideas',True)
             blocked,tag,warnings=permit(store,tracker,i,config,now,preview=not category_on)
-            for w in warnings:send('v5-warning-'+now.astimezone(ET).date().isoformat()+'-'+('negative-'+i['setup_type'] if 'NEGATIVE' in w else 'cooloff-'+str((store.get('idea-control:'+now.astimezone(ET).date().isoformat()) or {}).get('loss_checkpoint','preview')) if 'COOL-OFF' in w else 'runaway'),w,'IDEA_WARNING')
+            for w in warnings:send('v5-warning-'+now.astimezone(ET).date().isoformat()+'-'+('negative-'+i['setup_type'] if 'NEGATIVE' in w else 'cooloff-'+str((store.get('idea-control:'+now.astimezone(ET).date().isoformat()) or {}).get('loss_checkpoint','preview')) if 'Research entries paused' in w else 'runaway'),w,'IDEA_WARNING')
             alerted=not blocked and config.get('notifications',{}).get('categories',{}).get('ideas',True)
             i['alert_blocker']=blocked or (None if category_on else 'ALERTS_DISABLED')
             i.update(trigger_level=i['trigger'],reference_midpoint=ctx['quote']['payload']['mid'],modeled_entry_fill=ctx['quote']['payload']['ask' if i['direction']=='CALL' else 'bid']+(1 if i['direction']=='CALL' else -1)*.01,actual_reported_fill=None,idea_event_id='v5-idea-'+i['signal_id']+'-'+i['strategy_version'])
@@ -238,11 +219,11 @@ def tick(store,news,config,now,publish,root=ROOT,tracker=None,simulation=False):
                     from options.trade_plan import build as plan_build
                     contracts=(store.get('chain') or {}).get('payload',{}).get('contracts',{})
                     selection=store.get('selection') or {}
-                    if not selection.get('best_contract') or not option_quote_valid(selection['best_contract'].get('quote',{}),now):selection=select(contracts,i['spy_price'],i['direction'],now,min_dte=config.get('min_dte',1),max_premium=None if config.get('premium_cap_mode')=='warn' else config['options_risk']['max_trade_premium_usd'])
+                    if not selection.get('best_contract') or selection['best_contract'].get('type')!=('C' if i['direction']=='CALL' else 'P') or not option_quote_valid(selection['best_contract'].get('quote',{}),now):selection=select(contracts,i['spy_price'],i['direction'],now,min_dte=config.get('min_dte',1),max_premium=None if config.get('premium_cap_mode')=='warn' else config['options_risk']['max_trade_premium_usd'])
                     best=selection.get('best_contract')
                     greek_age=(now-stamp(best['greeks_timestamp'])).total_seconds() if best and best.get('greeks_timestamp') else None
                     if best and best.get('type')==('C' if i['direction']=='CALL' else 'P') and option_quote_valid(best.get('quote',{}),now) and greek_age is not None and 0<=greek_age<=60 and selection.get('chain_sanity_reasons')==[]:
-                        i['option_contract']=best;i['option_plan']=plan_build(i,now,config,news)
+                        i['option_contract']=best;i['option_plan']=plan_build(i,now,config,news);i['option_verification']='FRESH_QUOTE_GREEKS_CHAIN_SANITY_PASSED'
                 except (ValueError,KeyError,TypeError):pass
             tracker.register(i,ctx['quote'],now,alerted)
             if alerted:
@@ -251,16 +232,14 @@ def tick(store,news,config,now,publish,root=ROOT,tracker=None,simulation=False):
                 buttons={'inline_keyboard':[[{'text':'📊 Chart','callback_data':'aegis:chart:'+i['signal_id']},{'text':'🚫 Skip','callback_data':'aegis:skip:'+i['signal_id']},{'text':'More ▸','callback_data':'aegis:more:'+i['signal_id']}]]}
                 if i.get('option_contract'):buttons['inline_keyboard'].append([{'text':'✅ I bought','callback_data':'aegis:log:'+i['signal_id']}])
                 send('v5-idea-'+i['signal_id']+'-'+i['strategy_version'],idea_text(i,tag,config),'SPY_IDEA',buttons=buttons)
-                send('v5-entry-'+i['signal_id'],'ENTRY TRIGGERED — '+i['direction']+' · SPY entry reference %.2f'%i['entry']+'\nUNDERLYING (not option P&L). Unvalidated research. You place orders yourself.','IDEA_UPDATE',parent=i['idea_event_id'])
+                # Confirmation is already in the initial watch; no redundant entry update.
         from monitoring.day_schedule import dispatch
         def compose(kind):
             if kind=='PREOPEN':
                 return scheduled_preopen(store,news,now,config,simulation)
             if kind=='RECAP':
-                from core.rejection_trace import summary as trace_summary
-                from monitoring.sharing import display
-                from monitoring.message_format import score_summary_text
-                return 'SPY CLOSE RECAP · '+now.astimezone(ET).strftime('%H:%M ET')+'\n'+score_summary_text(tracker.summary(now))+'\nTomorrow reference levels: '+recap_levels(store,now,simulation)+'\n'+('Calendar not verified' if news.get('quality')!='DATA_OK' else 'Official calendar currently verified; optional events unknown.')+'\n'+trace_summary(Path(root)/'runtime/observability.sqlite',now)+'\n'+display(config,Path(root))
+                from monitoring.owner_messages import recap_text
+                return recap_text(tracker.positions(),now,recap_levels(store,now,simulation))
             if not config.get('notifications',{}).get('categories',{}).get('trend_lines',True):return None
             key='v5-stale:'+now.astimezone(ET).date().isoformat()
             if ctx['reason']:
@@ -271,7 +250,9 @@ def tick(store,news,config,now,publish,root=ROOT,tracker=None,simulation=False):
                 from monitoring.trend_evidence import record
                 slot=now.astimezone(ET).date().isoformat()+'-'+str((now.astimezone(ET).hour*60+now.astimezone(ET).minute)//15*15)
                 record(Path(root)/'runtime/observability.sqlite','v5-trend-'+slot,now,ctx,news)
-            return trend_line(ctx,now,config,active,'NO TRADE — '+reason if reason else None)
+            episode=(store.get('research-pause:v2') or {}).get('episode') or {}
+            entry_reason='research pause active until '+stamp(episode['end']).astimezone(ET).strftime('%H:%M ET') if episode.get('end') and now<stamp(episode['end']) else 'NO TRADE — '+reason if reason else None
+            return trend_line(ctx,now,config,active,entry_reason)
         dispatch(store,now,config,compose,emit)
         store.put('v5-idea-health',{'at':now.isoformat(),'reason':reason or ctx['reason'],'feed_quality':ctx['feed_quality'],'candidates':len(ideas),'live_signal_ready':False})
         return events

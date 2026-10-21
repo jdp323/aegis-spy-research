@@ -148,7 +148,7 @@ def enqueue(store,id,text,audience='SHARED',tenant=None,kind='INFO',**metadata):
 
     if tenant:event['tenant']=tenant
 
-    for key in ('alert_type','signal_id','strategy_version','reply_markup','disable_notification','expires_at','parent_event_id'):
+    for key in ('alert_type','signal_id','strategy_version','presentation_version','reply_markup','disable_notification','expires_at','parent_event_id'):
 
         if key in metadata:event[key]=metadata[key]
 
@@ -310,11 +310,24 @@ class Engine:
 
         self.phases.start('reliability')
         self.reliability.tick(now,enqueue);now=datetime.now(timezone.utc);session=market_session(now)
+        local=now.astimezone(__import__('core.sessions',fromlist=['ET']).ET)
+        if self.background and 540<=local.hour*60+local.minute<560:
+            day=local.date().isoformat();prepared=self.store.get('premarket_prepared:'+day) or {}
+            try:prepare_due=(now-stamp(prepared['generated_at'])).total_seconds()>=60
+            except (KeyError,ValueError,TypeError):prepare_due=True
+            if prepare_due:
+                def prepare():
+                    from data.premarket_authorized import collect
+                    from data.premarket_spy import collect_once
+                    from monitoring.premarket_brief import build
+                    raw=collect(day,now) or collect_once(day,now)
+                    return build(raw,NewsProvider(ROOT/'config/news_calendar.json').snapshot(),datetime.now(timezone.utc))
+                self.collect('premarket_prepare',prepare,lambda value:self.store.put('premarket_prepared:'+day,value),15)
         self.phases.start('idea_schedule')
         if c.get('idea_engine_enabled',False):
             from core.idea_service import tick as idea_tick
             def idea_publish(event):
-                enqueue(self.store,event['id'],event['text'],event['audience'],event['tenant'],kind='RESEARCH',alert_type=event['alert_type'],disable_notification=event['disable_notification'],expires_at=event['expires_at'],**({key:event[key] for key in ('reply_markup','parent_event_id') if event.get(key)}))
+                enqueue(self.store,event['id'],event['text'],event['audience'],event['tenant'],kind='RESEARCH',alert_type=event['alert_type'],disable_notification=event['disable_notification'],expires_at=event['expires_at'],**({key:event[key] for key in ('reply_markup','parent_event_id','presentation_version') if event.get(key)}))
             self.store.put('v5_skew_budget',c.get('max_future_skew_seconds',2))
             idea_tick(self.store,NewsProvider(ROOT/'config/news_calendar.json').snapshot(now),c,now,idea_publish,root=ROOT)
 
@@ -468,7 +481,8 @@ class Engine:
 
         news=NewsProvider(ROOT/'config/news_calendar.json').snapshot(now)
 
-        if c.get('idea_engine_enabled',False):idea_tick(self.store,news,c,now,idea_publish,root=ROOT)
+        # The idea engine already ran in idea_schedule this cycle. Do not repeat
+        # its full history/ledger scans; fresh quotes are rechecked next cycle.
 
         from monitoring.simple_notifications import calendar_warning
 

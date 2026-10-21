@@ -1,0 +1,11 @@
+# Predeclared owner-experience experiments
+
+Registered2026-10-21 before the new retained-data replay. Existing October dates are retrospective development, never final evaluation. Trend rule completed-vwap-change15-v1 preserves the prior VWAP/15m-change idea but uses completed prices; SIDEWAYS means disagreement, DATA UNAVAILABLE means absent eligible candles. Compare later against completed EMA9/21 agreement, using chronological sessions and no tuning on the supplied transcript. Neither rule is calibrated.
+
+Published baselines v1: Concretum IMP decision mathematics, QuantRocket first/last with and without VIX20, SPY-only deterministic adaptation of LumiBot ORB. Existing pullback/retest populations remain separate. Three independently labelled holding variants H60/H120/SESSION; SESSION cutoff close minus5m, H60/H120 require complete interval; no automatic stretching or live promotion. Published first-last naturally has30m left, so fullH60/H120 are excluded.
+
+Research costs for underlying replay: adverse$0.01/share each side and$0.005/share each side commission, delays0/15/60s; minute data cannot model15s fills, so those cases are unavailable unless timestamped quotes exist. No bar-touch limit fills. Evaluate earliest following eligible observation; missing/ambiguous exits unresolved, no implicit capital release. Actual option costs require genuine BBO and existing registered option study.
+
+All trials/counts and missingness are retained. Genuine previous-day dividends and VIX are mandatory for exact published variants; unavailable inputs must not silently becomezero or a passed filter. Concretum full vol-target/leverage sizing and separate overnight reversal sleeve are outside this reproduction: decision-rule reproduction is not a reproduction of advertised returns. LumiBot AI ranking/account sizing/order execution is not imported.
+
+Forecast population conditional-direction-v1 records premarket regular open→final regular-minute close, H60 issue reference→exact60m future observation, and remaining session→final regular-minute close. Missing references/outcomes and abstentions persist. Directional accuracy is separate from costs and option profit. Existing research protocol governs chronological20/10/20-session development/validation/sealedfinal, purging, day blocks and all comparisons; no new final performance is claimed.

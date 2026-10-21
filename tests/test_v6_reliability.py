@@ -117,7 +117,7 @@ class ReliabilityTests(unittest.TestCase):
  def test_trace_persists_blocked_before_return_and_aggregates(self):
   from core.rejection_trace import measure,persist
   with tempfile.TemporaryDirectory() as d:
-   traces=measure({'reason':'missing quote'}, {},config(),NOW);p=Path(d)/'o.sqlite';persist(p,traces,NOW);persist(p,traces,NOW+timedelta(seconds=1));db=sqlite3.connect(p);rows=db.execute('SELECT payload,evaluation_count FROM rejection_traces').fetchall();self.assertTrue(rows);self.assertTrue(all(n==2 and json.loads(t)['blocker']=='missing quote' for t,n in rows));db.close()
+   traces=measure({'reason':'missing quote'}, {},config(),NOW);p=Path(d)/'o.sqlite';persist(p,traces,NOW);persist(p,traces,NOW+timedelta(seconds=1));db=sqlite3.connect(p);rows=db.execute('SELECT payload,evaluation_count FROM rejection_traces').fetchall();self.assertTrue(rows);self.assertTrue(all(n==1 and json.loads(t)['blocker']=='missing quote' for t,n in rows));self.assertEqual(db.execute('SELECT COUNT(*) FROM rejection_trace_revisions').fetchone()[0],len(traces));db.close()
  def test_no_level_evaluations_go_to_reason_counters(self):
   from backtesting.forward_validation import ForwardValidation
   with tempfile.TemporaryDirectory() as d:

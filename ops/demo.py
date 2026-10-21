@@ -150,10 +150,11 @@ def v5_scene(scenario,stage):
     types=('PREOPEN','TREND_LINE','TREND_LINE','SPY_IDEA','IDEA_UPDATE','IDEA_UPDATE','IDEA_UPDATE','IDEA_UPDATE','RECAP')
     matches=[e for e in r['timeline'] if e['alert_type']==types[stage]]
     if stage==1:
-        early=[e for e in matches if 'EARLY READ' in e['text']]
+        early=[e for e in matches if 'limited early read' in e['text']]
         matches=early or matches
-    if stage==2:matches=[e for e in matches if 'EARLY READ' not in e['text']]
-    if stage in (4,5):
+    if stage==2:matches=[e for e in matches if 'limited early read' not in e['text']]
+    if stage==4:return 'EXAMPLE — confirmation is shown in the initial research watch; no duplicate production entry update. No actual user fill is assumed.'
+    if stage in (5,):
         condition='ENTRY TRIGGERED' if stage==4 else 'TARGET_1_HIT'
         matches=[e for e in matches if condition in e['text']]
     if stage in (5,6,7):return v5_variant(('TARGET_1_HIT','STOP HIT','IDEA EXPIRED')[stage-5])

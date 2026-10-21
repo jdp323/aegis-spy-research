@@ -28,7 +28,7 @@ class V5Controls(unittest.TestCase):
   for n in range(50):t.append(dict(i,signal_id=str(n),status='CLOSED',r_multiple=-1,closed_at=NOW.isoformat()),'fixture',NOW)
   day=NOW.astimezone(__import__('core.sessions',fromlist=['ET']).ET).date().isoformat();s.put('idea-control:'+day,{'alerts':0,'last':{},'cooloff_until':None,'loss_checkpoint':'49'})
   self.assertEqual(permit(s,t,i,c,NOW)[0],'NEGATIVE_EVIDENCE')
-  c['negative_setup_overrides']=['VWAP_RECLAIM'];self.assertIsNone(permit(s,t,i,c,NOW)[0])
+  c['negative_setup_overrides']=['VWAP_RECLAIM'];self.assertEqual(permit(s,t,i,c,NOW)[0],'COOL_OFF') # evidence override never overrides a distinct research pause
  def test_new_ideas_not_old_eight_cap_owner_only_and_toggle(self):
   c=config();s=MemoryStore();t=IdeaTracker(simulation=True);early=NOW-timedelta(minutes=30);inputs(s,early);base=candidates(context(s,early,True),{'quality':'DATA_OK','risk':'NORMAL'},c,early,True)[0][0];messages=[]
   for n in range(9):

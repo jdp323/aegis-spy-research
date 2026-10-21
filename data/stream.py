@@ -1,5 +1,5 @@
 """Read-only SIP/OPRA streams, bounded reconnects, no broker endpoints."""
-import asyncio,json,os,random,sys,time,signal
+import asyncio,json,os,random,sys,time,signal,sqlite3
 from pathlib import Path
 from datetime import datetime,timezone
 from core.storage import Store,ROOT,iso
@@ -26,9 +26,15 @@ class Stream:
         self.probe=PauseProbe();self.first=False;self.minute=None;self.message_count=0;self.connection_id=None;self.started=datetime.now(timezone.utc)
     def log(self,event,**fields):
         if self.event_path:
-            events=Events(self.event_path)
-            try:events.add(event,self.name,**fields)
-            finally:events.close()
+            try:
+                if not hasattr(self,'_events'):
+                    self._events=Events(self.event_path);self._events.db.execute('PRAGMA busy_timeout=250')
+                    self.store._closers.append(self._events.close)
+                    # Close alongside the owning Store (also isolated fixtures).
+                    self.store.db.execute('PRAGMA busy_timeout=500')
+                self._events.add(event,self.name,**fields)
+            except sqlite3.OperationalError:
+                self.telemetry_failures=getattr(self,'telemetry_failures',0)+1
     def pulse(self,now=None):
         now=now or datetime.now(timezone.utc);pause=self.probe.check(now)
         if pause:self.log('PROCESS_PAUSED',**pause)
@@ -59,7 +65,7 @@ class Stream:
         self.store.audit('clock-clear-'+self.name+'-'+received,'future_timestamp_condition_cleared','stream',{'feed':self.name,'at':received,'basis':'VALID_QUOTE_ONLY'})
     def ingest(self,msg):
         if not isinstance(msg,dict):return False
-        kind=msg.get('T');symbol=msg.get('S');received=iso()
+        kind=msg.get('T');symbol=msg.get('S');received=iso();ingest_started=time.perf_counter();writes={}
         if kind not in ('q','t','b','u') or not isinstance(symbol,str) or not symbol:return False
         if symbol not in self.symbols():return False
         try:
@@ -84,11 +90,11 @@ class Stream:
                 if d['quality']!=Quality.OK:
                     self.log('DATA_REJECTION',reason='QUOTE_QUALITY_REJECTED',payload_type=kind,source_age_seconds=latency)
                     return False
-                self.store.put(self.key('quote',symbol),d)
+                writes[self.key('quote',symbol)]=d
                 self.clock_recovered(received)
             elif kind=='t':
                 if not finite(msg.get('p')) or msg['p']<=0:return False
-                self.store.put(self.key('trade',symbol),Datum('alpaca-'+self.name,symbol,'trade',msg['t'],received,Quality.OK,'REALTIME',{'price':msg['p'],'size':msg.get('s')},msg.get('i')).view())
+                writes[self.key('trade',symbol)]=Datum('alpaca-'+self.name,symbol,'trade',msg['t'],received,Quality.OK,'REALTIME',{'price':msg['p'],'size':msg.get('s')},msg.get('i')).view()
             else:
                 # Reject bad aggregates before persisting history or refreshing health.
                 if not all(finite(msg.get(k)) and msg[k]>0 for k in ('o','h','l','c')):return False
@@ -103,10 +109,20 @@ class Stream:
             self.last_source[key]=source
             # Only fresh market payloads reset the watchdog; heartbeat/control frames do not.
             if latency<=15:
-                self.store.put('last_market:'+self.name,{'source_timestamp':msg['t'],'received_timestamp':received,'latency_ms':latency*1000})
+                writes['last_market:'+self.name]={'source_timestamp':msg['t'],'received_timestamp':received,'latency_ms':latency*1000}
                 self.pulse(stamp(received));self.message_count+=1
                 if not self.first:self.log('FIRST_MARKET_MESSAGE',latency_ms=latency*1000);self.first=True
-            self.status('CONNECTED',market_latency_ms=latency*1000,reconnect_attempt=self.attempt);return True
+            writes['stream:'+self.name]={'state':'CONNECTED','at':received,'connection_id':self.connection_id,'market_latency_ms':latency*1000,'ingest_processing_ms':(time.perf_counter()-ingest_started)*1000,'payload_type':kind,'reconnect_attempt':self.attempt}
+            if hasattr(self.store,'put_many'):self.store.put_many(writes)
+            else:
+                for k,v in writes.items():self.store.put(k,v)
+            if not self.options and kind=='q':
+                from core.directional_research import capture_future_quote
+                capture_future_quote(self.store,d,stamp(received))
+            if self.options and kind=='q':
+                # Prospective genuine observations only; no entitlement inference.
+                self.store.event('option-observation:'+symbol+':'+msg['t'],'prospective_option_bbo',{'contract':symbol,'quote':d,'captured_at':received,'source':'AUTHENTICATED_OPRA_STREAM','entitlement_proof':'UNESTABLISHED','strategy_qualified':False})
+            return True
         except (ValueError,KeyError,TypeError):return False
     async def run(self):
         if not os.getenv('APCA_API_KEY_ID') or not os.getenv('APCA_API_SECRET_KEY'):
@@ -141,9 +157,20 @@ class Stream:
                             self.status('CONNECTED_IDLE',connection_latency_ms=connection_latency)
                             if self.symbols()!=symbols:break
                             continue
-                        for msg in decode(raw,self.options):
-                            if msg.get('T')=='error':raise PermissionError('PROVIDER_STREAM_REJECTED')
-                            self.ingest(msg)
+                        messages=decode(raw,self.options)
+                        if not isinstance(messages,list):raise ValueError('MALFORMED_STREAM_BATCH')
+                        # Quote updates precede heavier bar merges in a provider batch.
+                        messages.sort(key=lambda m:0 if isinstance(m,dict) and m.get('T')=='q' else 1)
+                        for msg in messages:
+                            if msg.get('T')=='error':
+                                code=msg.get('code');self.log('PROVIDER_REJECTION',provider_code=code if isinstance(code,int) else None)
+                                raise PermissionError('PROVIDER_STREAM_REJECTED')
+                            try:self.ingest(msg)
+                            except sqlite3.OperationalError:
+                                self.log('DATA_REJECTION',reason='SQLITE_INGEST_FAILED',payload_type=msg.get('T'))
+                                # Preserve the failure, not an unrelated network reconnect.
+                                # Strict freshness naturally blocks the uncommitted quote.
+                                continue
                         if time.monotonic()-connected>60:self.attempt=0
                         if self.symbols()!=symbols:break
             except asyncio.CancelledError:break
@@ -155,6 +182,7 @@ class Stream:
                 self.status('FEED_DISCONNECTED',reconnect_attempt=self.attempt,next_retry_seconds=delay,error_type=type(e).__name__)
                 self.store.audit('reconnect-'+self.name+'-'+str(time.time_ns()),'provider_reconnect','stream',{'feed':self.name,'attempt':self.attempt,'error_type':type(e).__name__});await self.wait(delay)
         self.pulse();self.log('MINUTE_MESSAGES',count=self.message_count);self.status('STOPPED')
+        if hasattr(self,'_events'):self._events.close()
     async def wait(self,seconds):
         try:await asyncio.wait_for(self.stop.wait(),seconds)
         except asyncio.TimeoutError:pass

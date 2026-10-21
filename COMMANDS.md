@@ -89,7 +89,7 @@ Name: pending profile update
 Username: not available
 Telegram ID: [EXAMPLE ID]
 Access ID: [EXAMPLE ID]
-Joined (UTC): 2026-10-19T05:39:40.991Z
+Joined (UTC): 2026-10-21T07:05:16.237Z
 Last bot message (UTC): not recorded
 Names are self-reported Telegram profiles, not verified identities.
 /users PAGE_NUMBER for more; /revoke ACCESS_ID removes access.
@@ -133,14 +133,13 @@ Automatic morning br
 ```text
 EXAMPLE — fixture response
 AEGIS STATUS — signals.shared: OFF
-SPY 01:39 ET · UNAVAILABLE USD [UNAVAILABLE]
-Quote as-of UNAVAILABLE · not entry-fresh
-Next 60m: UNAVAILABLE — descriptive bars
-Next 120m: UNAVAILABLE — descriptive bars
-Remaining session: UNAVAILABLE — descriptive bars
+03:05 ET · SPY unavailable
+Current trend: DATA UNAVAILABLE
+Next hour: unavailable — insufficient time or data
 New entry: WAIT — market closed
-Watch only—option pricing unavailable.
-Event data warning: calend
+Research · UNAVAILABLE · as of unavailable
+Worker: UNVERIFIED_HEARTBEAT
+Automatic public research: silent every 15 minutes 09:45 to close−15; qualifying research alerts when el
 ```
 
 ### /feed
@@ -158,7 +157,7 @@ SIP stream: UNAVAILABLE (heartbeat unverifie
 ### /health
 ```text
 EXAMPLE — fixture response
-AEGIS HEALTH · 01:39 ET
+AEGIS HEALTH · 03:05 ET
 Clock: UNAVAILABLE; NTP offset UNAVAILABLE s; skew limit 2.000 s.
 services: UNAVAILABLE; heartbeat UNAVAILABLE; fresh not verified
 telegram: UNAVAILABLE; heartbeat UNAVAILABLE; fresh not verified
@@ -176,30 +175,27 @@ REVERSAL_APPENDED. Original event preserved. No order placed.
 ### /trend
 ```text
 EXAMPLE — fixture response
-SPY · 01:39 ET
+SPY · 03:05 ET
 Trend: MIXED — timeframe agreement UNAVAILABLE
 DECISION: NO TRADE
 Market closed — saved context only; no live verdict.
-Next open: Mon 09:30 ET
-Next morning message: Mon 09:15 ET
+Next open: Wed 09:30 ET
+Next morning message: Wed 09:15 ET
 Data: UNAVAILABLE
 ```
 
 ### /details
 ```text
 EXAMPLE — fixture response
-SPY RESEARCH DETAILS · 2026-10-19 01:39:56 ET
-New-entry predicate: QUOTE_TIMESTAMP_UNAVAILABLE
-Event gate: DATA_INCOMPLETE / UNAVAILABLE
-Calendar verified UNAVAILABLE; coverage UNAVAILABLE
-UNAVAILABLE: source age UNAVAILABLE s; receipt age UNAVAILABLE s; source−receipt skew UNAVAILABLE s; QUOTE_TIMESTAMP_UNAVAILABLE
-UNAVAILABLE: source age UNAVAILABLE s
+SPY RESEARCH DETAILS · 2026-10-21 03:05:33 ET
+Current trend rule completed-vwap-change15-v1: completed close and 15m change must agree with session VWAP; disagreement = SIDEWAYS; missing inputs = DATA UNAVAILABLE.
+Forward outlook: conditional hypothesis with VWAP invalidation, exact H60/H120/session deadlines; not calibrated odds. Current trend DATA UNAVAI
 ```
 
 ### /why
 ```text
 EXAMPLE — fixture response
-SPY IDEA CHECKS · 2026-10-19 01:40:00 ET
+SPY IDEA CHECKS · 2026-10-21 03:05:37 ET
 Fresh price/bar inputs: data not fresh — Quote rejected: quote timestamp unavailable; source age UNAVAILABLE, receipt age UNAVAILABLE, skew UNAVAILABLE; UNAVAILABLE
 Official calendar: DATA_INCOMPLETE / UNAVAILABLE
 Confirmed setups: 0
@@ -254,18 +250,18 @@ signals.shared: OFF
 ### /outlook
 ```text
 EXAMPLE — fixture response
-SPY OUTLOOK | 2026-10-19 01:40 ET
+SPY OUTLOOK | 2026-10-21 03:05 ET
 BIAS: UNAVAILABLE — News language only; current price trend missing.
 PRICE TREND: UNAVAILABLE | NO USABLE CURRENT PRICE TREND.
 SESSION: CLOSED — regular-session trend is not running now.
-Next regular open: Mon 2026-10-19 09:30 ET; morning outlook: 09:15 ET.
+Next regular open: Wed 2026-10-21 09:30 ET; morning outlook: 09:15 ET.
 Overnight news is context; it cannot confirm the direction of t
 ```
 
 ### /sentiment
 ```text
 EXAMPLE — fixture response
-WALLSTREETBETS | 2026-10-19 01:40 ET
+WALLSTREETBETS | 2026-10-21 03:05 ET
 SENTIMENT: UNAVAILABLE | FEED_NOT_CONFIGURED
 Authorized Reddit API access is not configured.
 SETUP: owner needs Reddit-approved Data API access and read-only OAuth credentials in the encrypted local setup form. A Reddit website login alone does not enable the API.
@@ -332,8 +328,8 @@ No closing price was invented. ACTION: NO TRADE.
 EXAMPLE — fixture response
 SPY PREMARKET REPORT
 NOT DUE YET — the scheduled report is at 09:15 ET today.
-No report saved for 2026-10-19.
-Next scheduled report: Mon 2026-10-19 09:15 ET.
+No report saved for 2026-10-21.
+Next scheduled report: Wed 2026-10-21 09:15 ET.
 Computer must remain awake/online. /outlook and /news show current available news context.
 Current-session public premarket bars start at 04:00 ET; sufficient completed bars are required. Public da
 ```
@@ -357,11 +353,11 @@ Command not applied. Check /help and the required fields; no order placed.
 ### /news
 ```text
 EXAMPLE — fixture response
-SPY NEWS | 2026-10-19 01:40 ET
+SPY NEWS | 2026-10-21 03:06 ET
 BIAS: UNAVAILABLE — News language only; current price trend missing.
 PRICE TREND: UNAVAILABLE | NO USABLE CURRENT PRICE TREND.
 SESSION: CLOSED — regular-session trend is not running now.
-Next regular open: Mon 2026-10-19 09:30 ET; morning outlook: 09:15 ET.
+Next regular open: Wed 2026-10-21 09:30 ET; morning outlook: 09:15 ET.
 Overnight news is context; it cannot confirm the direction of the 
 ```
 

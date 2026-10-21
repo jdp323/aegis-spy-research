@@ -23,8 +23,8 @@ class Handler(BaseHTTPRequestHandler):
         if route == '/healthz':
             # A bounded local probe does not run strategy/provider code or inspect
             # private position ledgers. It must not recursively probe itself.
-            from ops.supervisor import status
-            payload = json.dumps(status(probe=False), allow_nan=False).encode(); kind = 'application/json'
+            from datetime import datetime,timezone
+            payload = json.dumps({'read_only':True,'state':'HTTP_RESPONSIVE','at':datetime.now(timezone.utc).isoformat(),'LIVE_SIGNAL_READY':False,'order_execution_enabled':False}).encode(); kind = 'application/json'
         elif route == '/api/upgrade':
             # Heavy study summaries refresh once in the background. Every
             # response rechecks original quote/receipt/expiry timestamps.

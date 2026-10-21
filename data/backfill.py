@@ -2,6 +2,7 @@
 import hashlib,json,sqlite3,math,time,threading,queue
 from datetime import datetime,timezone,timedelta
 from core.sessions import ET,market_session
+from data.reliability import active
 from core.isolation import assert_real
 from data.models import stamp,finite
 
@@ -60,9 +61,12 @@ class Backfill:
         CREATE TRIGGER IF NOT EXISTS confirmation_no_delete BEFORE DELETE ON bar_confirmations BEGIN SELECT RAISE(ABORT,'append only'); END;
         CREATE TRIGGER IF NOT EXISTS confirmation_no_update BEFORE UPDATE ON bar_confirmations BEGIN SELECT RAISE(ABORT,'append only'); END;''')
     def close(self):self.db.close()
-    def run(self,store,now,feed='iex',warmup=False,opening_only=False):
+    def run(self,store,now,feed='iex',warmup=False,opening_only=False,tail_only=False):
         end=now.replace(second=0,microsecond=0)-timedelta(minutes=2)
         start=now.astimezone(ET).replace(hour=4,minute=0,second=0,microsecond=0).astimezone(timezone.utc)
+        if tail_only:
+            end=now.replace(second=0,microsecond=0)-timedelta(minutes=1)
+            start=max(start,end-timedelta(minutes=4))
         if warmup:start=end-timedelta(days=45)
         if opening_only:
             start=now.astimezone(ET).replace(hour=9,minute=30,second=0,microsecond=0).astimezone(timezone.utc)
@@ -97,7 +101,7 @@ class Backfill:
             if warmup:
                 daily=history(self.provider,end-timedelta(days=400),end,feed,'1Day')
                 store.put('history_daily:'+feed,daily)
-            if not opening_only:
+            if not opening_only and not tail_only:
                 frames=store.get('history_frames:'+feed,{}) or {}
                 for label,timeframe in (('5m','5Min'),('15m','15Min'),('30m','30Min'),('1h','1Hour')):
                     incoming=history(self.provider,start,end,feed,timeframe)
@@ -145,8 +149,8 @@ class BackgroundBackfill:
     adapter timeouts; an over-budget request is reported, never called canceled.
     Warmup/cooldowns survive across tasks within this history worker.
     """
-    def __init__(self,path,store_path,provider):
-        self.path=path;self.store_path=store_path;self.provider=provider
+    def __init__(self,path,store_path,provider,tail_only=False):
+        self.path=path;self.store_path=store_path;self.provider=provider;self.tail_only=tail_only;self.tail_minute=None
         self.pending=queue.Queue(maxsize=1);self.stop=threading.Event();self.thread=None
         self.lock=threading.Lock();self.progress={'state':'IDLE','at':datetime.now(timezone.utc).isoformat()}
     def _run(self):
@@ -161,7 +165,11 @@ class BackgroundBackfill:
                 started=time.monotonic()
                 with self.lock:self.progress={'state':'RUNNING','at':datetime.now(timezone.utc).isoformat(),'started_monotonic':started}
                 try:
-                    backfill.tick(store,now)
+                    if self.tail_only:
+                        key=now.replace(second=0,microsecond=0).isoformat()
+                        if active(now) and now.astimezone(ET).hour*60+now.astimezone(ET).minute>=571 and key!=self.tail_minute:
+                            self.tail_minute=key;backfill.run(store,now,'iex',tail_only=True)
+                    else:backfill.tick(store,now)
                     result={'state':'COMPLETED'}
                 except Exception as error:result={'state':'FAILED',**error_fields(error)}
                 with self.lock:self.progress={**result,'at':datetime.now(timezone.utc).isoformat(),'duration_seconds':time.monotonic()-started}

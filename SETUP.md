@@ -73,3 +73,13 @@ Stop services, take a SQLite online backup of committed WAL data plus private co
 /request saves local feedback for the installation owner to review. This repository does not install an AI agent or a hosted review service, and saving a request does not promise a response. No AI key is requested.
 
 Status interpretation: python -m ops.supervisor status takes its evaluation clock after the file/database reads and bounded HTTP probe. Ages remain signed; a genuinely future timestamp remains negative, and an unavailable time stays unavailable. Process status is separate from market-data eligibility.
+
+## Owner experience update — October21
+
+Default scheduled Telegram messages use compact presentation v1: premarket7 lines, silent status5, research watch9 and recap6. Existing commands/sharing defaults remain unchanged. Restart dashboard, worker, stream and dispatcher together using the supervisor after upgrading; compact metadata must reach the updated notifier. Existing queued/uncertain messages retain their IDs and old presentation and must not be replayed.
+
+The worker prepares premarket data asynchronously09:00–09:20 ET; missing preparation yields an honest unavailable outlook rather than blocking the09:15 slot. Independent latest-minute IEX repair runs alongside longer history warmup. Research pause v2 persists under its own control key, consumes each closed observation once and does not roll from silent losses during the same episode. /details describes the rule/episode. No private actual-position risk limits are reset.
+
+/healthz now tests bounded HTTP responsiveness only; use python -m ops.supervisor status for process/heartbeat progress. Neither proves market freshness. New prospective forecast/option observations stay in private local events. No genuine option access is bundled. For reproducible underlying diagnostics see python -m ops.published_replay --help; use read-only source databases and keep raw results private. The dividend adapter permits only the documented market-data corporate-action endpoint, not account endpoints. Current provider response did not establish complete dividend history; exact Concretum evaluation remains unavailable until verified inputs exist.
+
+Large installations can generate a bounded current packet with python -m ops.verification_packet --run-tests --compact. The ordinary150KB refusal remains unchanged; the explicit profile scans original fields for secrets before summarizing long repeated material and retains change-manifest hashes. Rejection decisions now retain append-only revision rows; legacy minute aggregates are frozen at their first snapshot. Existing traces and backup snapshots are not overwritten.

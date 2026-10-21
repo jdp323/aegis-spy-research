@@ -98,7 +98,9 @@ def verify(root=ROOT):
     node=Path(__import__('core.runtime_paths',fromlist=['node_executable']).node_executable())
     transport=subprocess.run([str(node),'ops/schedule_transport.cjs'],cwd=root,input=json.dumps({'scenarios':results,'directory':str(directory.resolve())}),capture_output=True,text=True,encoding='utf-8',timeout=60)
     data['notifier_transport']=json.loads(transport.stdout)
-    if transport.returncode or data['notifier_transport']['status']!='PASS':raise ValueError('SCHEDULE_FAKE_TRANSPORT_FAILED')
+    if transport.returncode or data['notifier_transport']['status']!='PASS':
+        data['status']='FAIL';base.with_suffix('.json').write_text(json.dumps(data,indent=2),encoding='utf-8')
+        raise ValueError('SCHEDULE_FAKE_TRANSPORT_FAILED:'+str(data['notifier_transport']))
     base.with_suffix('.json').write_text(json.dumps(data,indent=2),encoding='utf-8');lines=['# V6 schedule verification','',data['tag'],json.dumps(data['notifier_transport']),'']
     for r in results:
         lines+=['## '+r['name']+' · '+r['date'],json.dumps(r['message_counts']),'']

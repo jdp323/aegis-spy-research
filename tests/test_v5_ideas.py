@@ -76,5 +76,5 @@ class V5Ideas(unittest.TestCase):
    r=run_scenario(name,datetime.fromisoformat(day).date(),start,restart);self.assertTrue(r['PASS'])
    if name=='early_close':self.assertIn('13:15:00-05:00',[e['at_et'][-14:] for e in r['timeline'] if e['alert_type']=='RECAP'])
  def test_stale_once_recovery_and_simulated_rejected(self):
-  r=run_scenario('stale',datetime(2026,10,9).date());stale=[e for e in r['timeline'] if e['alert_type']=='TREND_LINE' and 'New entry: WAIT' in e['text'] and 'SOURCE_TOO_OLD' in e['text']];self.assertEqual(len(stale),4)
+  r=run_scenario('stale',datetime(2026,10,9).date());stale=[e for e in r['timeline'] if e['alert_type']=='TREND_LINE' and 'New entry: WAIT' in e['text'] and 'fresh price unavailable' in e['text']];self.assertEqual(len(stale),4)
   s=MemoryStore();inputs(s,NOW);self.assertIsNotNone(context(s,NOW)['reason'])
