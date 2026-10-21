@@ -1,5 +1,7 @@
 # Current project status
 
+Latest operational evidence: [first post-update live session](updates/2026-10-21_first-live-session-review.md). All 25 silent status slots, 14 underlying watches, 16 owner follow-ups and the recap were accepted. The first-hour verifier still failed; timing, option-data and strategy qualifications remain.
+
 Current implementation: [October21 Telegram experience handoff](updates/2026-10-21_telegram-experience.md). Earlier reports retain their as-of meaning.
 
 - Compact messages deployed through the real formatter/notifier.
