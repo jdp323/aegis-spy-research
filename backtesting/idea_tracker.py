@@ -24,6 +24,7 @@ class IdeaTracker:
             self.db=sqlite3.connect(path,timeout=15)
             self.db.executescript(f'''PRAGMA journal_mode=WAL;
             CREATE TABLE IF NOT EXISTS {self.table}(id TEXT PRIMARY KEY,signal_id TEXT NOT NULL,event_type TEXT NOT NULL,payload TEXT NOT NULL,created TEXT NOT NULL);
+            CREATE INDEX IF NOT EXISTS {self.table}_signal ON {self.table}(signal_id);
             CREATE TRIGGER IF NOT EXISTS {self.table}_no_update BEFORE UPDATE ON {self.table} BEGIN SELECT RAISE(ABORT,'append only'); END;
             CREATE TRIGGER IF NOT EXISTS {self.table}_no_delete BEFORE DELETE ON {self.table} BEGIN SELECT RAISE(ABORT,'append only'); END;''')
     def close(self):
@@ -43,7 +44,11 @@ class IdeaTracker:
             if not any(x[0]==key for x in self.memory):self.memory.append((key,dict(p)))
     def positions(self):
         result={}
-        rows=(json.loads(r[0]) for r in self.db.execute('SELECT payload FROM '+getattr(self,'table','idea_events')+' ORDER BY rowid')) if self.db else (x[1] for x in self.memory)
+        # Select the latest immutable snapshot in SQL. Re-decoding every historical
+        # OBSERVE event starved the worker as ledgers grew. External appends remain
+        # visible; there is no process-local cache that can hide a closure.
+        table=getattr(self,'table','idea_events')
+        rows=(json.loads(r[0]) for r in self.db.execute('SELECT payload FROM '+table+' WHERE rowid IN (SELECT MAX(rowid) FROM '+table+' GROUP BY signal_id) ORDER BY rowid')) if self.db else (x[1] for x in self.memory)
         for row in rows:
             if not self.simulation:assert_real(row)
             result[row['signal_id']]=row

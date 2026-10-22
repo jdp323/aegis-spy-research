@@ -63,9 +63,10 @@ class Stream:
         self.store.put(key,{**old,'state':'CLEARED_BY_VALID_QUOTE','quality':'DATA_OK','at':received,'cleared_at':received,'note':'A fresh valid bid/ask was received without a future timestamp. This is not proof of system-clock synchronization.'})
         self.next_clock_record=0
         self.store.audit('clock-clear-'+self.name+'-'+received,'future_timestamp_condition_cleared','stream',{'feed':self.name,'at':received,'basis':'VALID_QUOTE_ONLY'})
-    def ingest(self,msg):
+    def ingest(self,msg,received=None):
         if not isinstance(msg,dict):return False
-        kind=msg.get('T');symbol=msg.get('S');received=iso();ingest_started=time.perf_counter();writes={}
+        kind=msg.get('T');symbol=msg.get('S');received=received or iso();ingest_started=time.perf_counter();writes={}
+        queue_ms=(datetime.now(timezone.utc)-stamp(received)).total_seconds()*1000
         if kind not in ('q','t','b','u') or not isinstance(symbol,str) or not symbol:return False
         if symbol not in self.symbols():return False
         try:
@@ -112,7 +113,7 @@ class Stream:
                 writes['last_market:'+self.name]={'source_timestamp':msg['t'],'received_timestamp':received,'latency_ms':latency*1000}
                 self.pulse(stamp(received));self.message_count+=1
                 if not self.first:self.log('FIRST_MARKET_MESSAGE',latency_ms=latency*1000);self.first=True
-            writes['stream:'+self.name]={'state':'CONNECTED','at':received,'connection_id':self.connection_id,'market_latency_ms':latency*1000,'ingest_processing_ms':(time.perf_counter()-ingest_started)*1000,'payload_type':kind,'reconnect_attempt':self.attempt}
+            writes['stream:'+self.name]={'state':'CONNECTED','at':received,'connection_id':self.connection_id,'market_latency_ms':latency*1000,'local_queue_delay_ms':queue_ms,'ingest_processing_ms':(time.perf_counter()-ingest_started)*1000,'payload_type':kind,'reconnect_attempt':self.attempt}
             if hasattr(self.store,'put_many'):self.store.put_many(writes)
             else:
                 for k,v in writes.items():self.store.put(k,v)
@@ -157,15 +158,18 @@ class Stream:
                             self.status('CONNECTED_IDLE',connection_latency_ms=connection_latency)
                             if self.symbols()!=symbols:break
                             continue
+                        received=iso() # Transport receipt, before decode, sorting or SQLite work.
                         messages=decode(raw,self.options)
                         if not isinstance(messages,list):raise ValueError('MALFORMED_STREAM_BATCH')
                         # Quote updates precede heavier bar merges in a provider batch.
                         messages.sort(key=lambda m:0 if isinstance(m,dict) and m.get('T')=='q' else 1)
                         for msg in messages:
+                            if not isinstance(msg,dict):
+                                self.log('DATA_REJECTION',reason='MALFORMED_STREAM_ITEM');continue
                             if msg.get('T')=='error':
                                 code=msg.get('code');self.log('PROVIDER_REJECTION',provider_code=code if isinstance(code,int) else None)
                                 raise PermissionError('PROVIDER_STREAM_REJECTED')
-                            try:self.ingest(msg)
+                            try:self.ingest(msg,received=received)
                             except sqlite3.OperationalError:
                                 self.log('DATA_REJECTION',reason='SQLITE_INGEST_FAILED',payload_type=msg.get('T'))
                                 # Preserve the failure, not an unrelated network reconnect.
@@ -186,14 +190,27 @@ class Stream:
     async def wait(self,seconds):
         try:await asyncio.wait_for(self.stop.wait(),seconds)
         except asyncio.TimeoutError:pass
+def run_feed(feed,options,budget,shutdown):
+    """Each feed owns its event loop and SQLite connection.
+
+    A rejected SIP connection or a heavy bar merge cannot block IEX socket reads.
+    This isolates local scheduling; it cannot repair delay at the provider.
+    """
+    async def run():
+        store=Store();stream=Stream(store,options,feed=feed,max_future_skew_seconds=budget)
+        async def watch():
+            while not shutdown.is_set() and not (ROOT/'runtime/shutdown.request').exists() and not stream.stop.is_set():await asyncio.sleep(.5)
+            stream.stop.set()
+        try:await asyncio.gather(stream.run(),watch())
+        finally:store.close()
+    asyncio.run(run())
+
 async def main():
     from core.upgrade_service import read_config
-    store=Store();budget=read_config().get('max_future_skew_seconds',2.0);streams=[Stream(store,max_future_skew_seconds=budget),Stream(store,True,max_future_skew_seconds=budget),Stream(store,feed='iex',max_future_skew_seconds=budget)];loop=asyncio.get_running_loop()
-    def stop(*args):
-        for s in streams:loop.call_soon_threadsafe(s.stop.set)
+    import threading
+    budget=read_config().get('max_future_skew_seconds',2.0);shutdown=threading.Event()
+    def stop(*args):shutdown.set()
     signal.signal(signal.SIGINT,stop);signal.signal(signal.SIGTERM,stop)
-    async def shutdown_watch():
-        while not (ROOT/'runtime/shutdown.request').exists() and not streams[0].stop.is_set():await asyncio.sleep(1)
-        for s in streams:s.stop.set()
-    await asyncio.gather(*(s.run() for s in streams),shutdown_watch());store.close()
+    try:await asyncio.gather(*(asyncio.to_thread(run_feed,feed,options,budget,shutdown) for feed,options in [('sip',False),('sip',True),('iex',False)]))
+    finally:shutdown.set()
 if __name__=='__main__':asyncio.run(main())

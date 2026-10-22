@@ -33,6 +33,11 @@ class V5Controls(unittest.TestCase):
   c=config();s=MemoryStore();t=IdeaTracker(simulation=True);early=NOW-timedelta(minutes=30);inputs(s,early);base=candidates(context(s,early,True),{'quality':'DATA_OK','risk':'NORMAL'},c,early,True)[0][0];messages=[]
   for n in range(9):
    now=early+timedelta(seconds=n);inputs(s,now);i=dict(base,signal_id=hashlib.sha256(str(n).encode()).hexdigest()[:24],trigger=base['trigger']+n,timestamp=now.isoformat())
+   # Nine sequential plans still have no obsolete eight-alert cap. Close the
+   # previous isolated observation; concurrent plans now belong in the separate
+   # one-primary-plan regression, not this daily-cap scenario.
+   for prior in t.positions():
+    if prior.get('status') in ('OPEN','PENDING'):t.append(dict(prior,status='CLOSED',closed_at=now.isoformat(),r_multiple=1,exit_reason='TARGET_2_HIT'),'FIXTURE_TERMINAL',now)
    with patch('core.idea_service.candidates',return_value=([i],None)):tick(s,{'quality':'DATA_OK','risk':'NORMAL'},c,now,messages.append,tracker=t,simulation=True)
   self.assertEqual(sum(e['alert_type']=='SPY_IDEA' for e in messages),9);self.assertTrue(all(e['audience']=='PRIVATE' for e in messages));self.assertFalse(c.get('live_signal_enabled',False));self.assertFalse(c.get('order_execution_enabled',False))
   c['notifications']['categories']['ideas']=False;day=early.astimezone(__import__('core.sessions',fromlist=['ET']).ET).date().isoformat();before=s.get('idea-control:'+day)['alerts'];i=dict(base,signal_id='f'*24,trigger=600)

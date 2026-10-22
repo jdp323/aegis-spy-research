@@ -60,6 +60,14 @@ class Store:
         self.transaction(write)
     def get(self,key,default=None):
         r=self.db.execute('SELECT payload FROM state WHERE key=?',(key,)).fetchone();return json.loads(r[0]) if r else default
+    def reserve(self,key,value):
+        """Claim a durable slot once, including competing local producers."""
+        from core.isolation import assert_real
+        assert_real(value);body=encode(value);at=iso()
+        def write():
+            with self.db:cur=self.db.execute('INSERT OR IGNORE INTO state VALUES(?,?,?)',(key,body,at))
+            return cur.rowcount==1
+        return self.transaction(write)
     def merge_rows(self,key,rows,maximum=20000,incoming_wins=False,timestamp_key='t'):
         """Atomic history merge prevents a stream/backfill read-modify-write loss."""
         from core.isolation import assert_real

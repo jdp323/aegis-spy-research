@@ -75,7 +75,7 @@ def run_scenario(name,day,start_minute=555,restart=False):
             assert len(trends)==len(expected),(name,len(trends),len(expected))
             assert [datetime.fromisoformat(e['at_et']).hour*60+datetime.fromisoformat(e['at_et']).minute//15*15 for e in trends]==expected,'wrong trend slots'
         assert all(585<=datetime.fromisoformat(e['at_et']).hour*60+datetime.fromisoformat(e['at_et']).minute<=session['close_minute']-15 for e in trends)
-    controls={k:sum(p.get('alert_blocker')==k for p in tracker.positions()) for k in ('DIRECTION_COOLDOWN','COOL_OFF','NEGATIVE_EVIDENCE','RUNAWAY_BREAKER')}
+    controls={k:sum(p.get('alert_blocker')==k or k in p.get('additional_alert_blockers',[]) for p in tracker.positions()) for k in ('DIRECTION_COOLDOWN','COOL_OFF','NEGATIVE_EVIDENCE','RUNAWAY_BREAKER')}
     if name=='several':
         assert controls['DIRECTION_COOLDOWN']>0,'cooldown case absent'
         assert controls['NEGATIVE_EVIDENCE']>0,'negative suppression case absent: '+str(controls)+'; setups '+str(tracker.summary(now)['setups'])

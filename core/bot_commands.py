@@ -50,8 +50,11 @@ def execute(data):
                         blocked,_,_=permit(s,tracker,ideas[0],c,now,preview=True)
                         if blocked:ideas=[];reason=blocked.lower().replace('_',' ')
                 finally:tracker.close()
-                active=s.get('v5-latest-idea')
-                return trend_line(ctx,now,c,active if active and __import__('data.models',fromlist=['stamp']).stamp(active['signal_expiry'])>now and not s.get('paper_terminal:'+active['signal_id']) else None,'BUY '+ideas[0]['direction']+' idea (unvalidated)' if ideas else 'NO TRADE — '+(reason or 'no confirmed setup'))
+                from core.primary_plan import current as primary_current
+                tracker=IdeaTracker(ROOT/'runtime/ideas.sqlite')
+                try:active=primary_current(s,tracker.positions(),now)
+                finally:tracker.close()
+                return trend_line(ctx,now,c,active,'NO TRADE — '+(reason or 'setup confirmed; option eligibility separate') if ideas else 'NO TRADE — '+(reason or 'no confirmed setup'))
         if command=='fill':
             from core.fill_flow import execute as fill_execute
             return fill_execute(s,data.get('text',''),tenant,data['id'])

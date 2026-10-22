@@ -27,6 +27,7 @@ def deadline(now,horizon):
 def from_snapshot(snapshot,now,simulation=False):
     """Quote-independent view: same-session, genuine contiguous completed bars."""
     out={'quality':'UNAVAILABLE','reason':'NO_COMPLETED_CURRENT_SESSION_BARS','features':{},'bars':[],'rows':[], 'provider':'UNAVAILABLE','feed_quality':'UNAVAILABLE','entry_eligible':False}
+    if not market_session(now)['active']:out['reason']='OUTSIDE_REGULAR_SESSION';return out
     choices=[]
     for feed,key in (('SIP','stream_bars:SPY'),('IEX','research_stream_bars:SPY:iex')):
         raw=snapshot.get(key) or []
@@ -46,7 +47,8 @@ def from_snapshot(snapshot,now,simulation=False):
         out['reason']='31_GENUINE_COMPLETED_MINUTES_REQUIRED_FOR_BAR_RESEARCH';return out
     daily=snapshot.get('history_daily:'+feed.lower()) or ((snapshot.get('daily') or {}).get('payload',{}).get('bars',[]) if feed=='SIP' else [])
     try:
-        fs=multi_timeframe(raw,daily,now,simulation)
+        from features.indicators import from_normalized
+        fs=from_normalized(bars,normalize(daily,1440,now,simulation),now)
         for frame,minutes in (('5m',5),('15m',15),('30m',30),('1h',60)):
             if fs[frame].get('trend') not in (None,'UNAVAILABLE'):continue
             native=(snapshot.get('history_frames:'+feed.lower()) or {}).get(frame,[])

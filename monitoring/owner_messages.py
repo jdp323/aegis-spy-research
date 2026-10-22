@@ -14,7 +14,7 @@ def reason(text):
         if key in text:return label
     return text.removeprefix('NO TRADE — ').replace('_',' ').lower()[:85] or 'setup not confirmed'
 
-def status_text(ctx,now,news,horizons=None,entry_reason=None):
+def status_text(ctx,now,news,horizons=None,entry_reason=None,plan=None):
     r=view(ctx,now);out=r.get('outlooks',{}).get('H60',{})
     bias={'UP':'upward bias','DOWN':'downward bias','SIDEWAYS':'no directional edge'}.get(out.get('bias'),'unavailable — insufficient time or data')
     if not market_session(now)['active']:why='market closed'
@@ -24,9 +24,12 @@ def status_text(ctx,now,news,horizons=None,entry_reason=None):
     elif entry_reason and entry_reason.startswith(('BUY CALL','BUY PUT')):why='underlying watch; option gates separate'
     else:why=reason(entry_reason)
     source=r.get('provider','UNAVAILABLE')+(' · limited early read' if r.get('limited') else '')
+    from core.primary_plan import state as plan_state
+    plan_line=('Plan '+str(plan['signal_id'])+': '+plan_state(plan,now)+' — underlying research; no new entry') if plan else 'New entry: WAIT — '+why
+    if plan and ctx.get('reason'):plan_line='New entry: WAIT — '+why+'; plan '+str(plan['signal_id'])+' monitoring limited'
     return '\n'.join([now.astimezone(ET).strftime('%H:%M ET')+' · SPY '+price(r['price']),
         'Current trend: '+r['trend'], 'Next hour: '+bias,
-        'New entry: WAIT — '+why, 'Research · '+source+' · as of '+clock(r['as_of'])])
+        plan_line, 'Research · '+source+' · as of '+clock(r['as_of'])])
 
 def premarket_text(report,news,now):
     l=report.get('levels') or {};px=l.get('last');low=l.get('low');high=l.get('high')
@@ -80,26 +83,28 @@ def idea_text(i,tag,config):
         c,p=verified;cost=p['limit']*100;fee=float(config.get('paper_fee_per_contract',.65))
         option='Option: '+c['symbol']+' limit '+price(p['limit'])+'/share · 100× = '+price(cost)+' + '+price(fee)+' entry fee; premium at risk '+price(cost)+' + fees'
     return '\n'.join([i['direction']+' RESEARCH · ID '+str(i['signal_id']),
-        'Enter after '+entry, 'Do not enter '+side+' SPY '+price(i.get('do_not_chase')),
+        ('ENTRY CONFIRMED · ' if i.get('entry_mode')=='ENTER NOW' else 'WAIT · Enter after ')+entry, 'Do not enter '+side+' SPY '+price(i.get('do_not_chase')),
         'SPY target: '+price(i.get('t2')), 'Exit condition: SPY at or '+('below ' if side=='above' else 'above ')+price(i.get('invalidation')),
         'Planned hold: up to '+label+'; exit by '+clock(i['max_hold_until']),
         'Entry expires: '+clock(i['signal_expiry']),option,'Experimental · manual review; underlying levels; no guaranteed stop-loss cap'])
 
 def update_text(i,condition):
-    changes={'TARGET_1_HIT':'SPY target 1 reached; full-exit policy unchanged','TARGET_2_HIT':'SPY target reached in research',
-        'STOP_HIT':'SPY invalidation reached in research','TIME_EXIT':'Holding deadline reached',
-        'ENTRY_TRIGGERED':'Underlying entry condition confirmed','IDEA_EXPIRED':'Entry cancelled — validity expired',
+    changes={'TARGET_1_HIT':'SPY target 1 reached; full-exit policy unchanged','TARGET_2_HIT':'EXIT CONDITION REACHED — SPY target reached in research',
+        'STOP_HIT':'EXIT CONDITION REACHED — SPY invalidation reached in research','TIME_EXIT':'EXIT CONDITION REACHED — holding deadline reached',
+        'ENTRY_TRIGGERED':'ENTRY CONFIRMED — underlying research only','IDEA_EXPIRED':'Entry cancelled — validity expired',
         'IDEA_CANCELLED':'Entry cancelled','MONITORING_UNAVAILABLE':'Monitoring unavailable; no exit confirmed',
         'NEWS_EXIT_REVIEW':'Event risk changed; review monitoring'}
     return 'ID '+str(i.get('signal_id','unavailable'))+' · '+changes.get(condition,str(condition).replace('_',' ').lower())+'\nResearch update; your fills remain separate.'
 
 def recap_text(rows,now,reference):
     day=now.astimezone(ET).date();today=[r for r in rows if stamp(r['timestamp']).astimezone(ET).date()==day]
-    closed=sum(r.get('status')=='CLOSED' for r in today);open_=sum(r.get('status') in ('OPEN','PENDING') for r in today)
-    unresolved=sum(r.get('status') not in ('CLOSED','OPEN','PENDING','EXPIRED','CANCELLED') for r in today)
+    alerted=[r for r in today if r.get('alerted')]
+    closed=sum(r.get('status')=='CLOSED' for r in alerted);open_=sum(r.get('status') in ('OPEN','PENDING') and r.get('coverage_status')!='UNRESOLVED_GAP' for r in alerted)
+    unresolved=sum(r.get('coverage_status')=='UNRESOLVED_GAP' or r.get('status') not in ('CLOSED','OPEN','PENDING','EXPIRED','EXPIRED_NO_ENTRY','CANCELLED') for r in alerted)
+    no_entry=sum(r.get('status') in ('EXPIRED','EXPIRED_NO_ENTRY','CANCELLED') for r in alerted)
     return '\n'.join(['SPY RECAP · '+now.astimezone(ET).strftime('%b %d'),
-        'Ideas alerted: '+str(sum(bool(r.get('alerted')) for r in today)),
-        'Underlying research: '+str(closed)+' closed · '+str(open_)+' open · '+str(unresolved)+' unresolved',
+        'Ideas alerted: '+str(len(alerted))+(' · expired/cancelled: '+str(no_entry) if no_entry else ''),
+        'Alerted research: '+str(closed)+' closed · '+str(open_)+' open · '+str(unresolved)+' unresolved',
         'Option-paper dollars: unavailable without genuine quotes',
         'Next session: '+('review retained session levels in /details' if reference and not reference.startswith('UNAVAILABLE') else 'wait for genuine opening-range data'),
-        'Data quality varies · /score for detailed statistics'])
+        str(len(today)-len(alerted))+' silent observations separate · /score · data quality varies'])

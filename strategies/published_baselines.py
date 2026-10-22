@@ -53,7 +53,8 @@ def opening_range(today):
         version=VERSION,adaptation='SPY-only deterministic long ORB; no AI ranking, account sizing or execution')
 
 def compare(rows, previous_days=(), previous_close=None, dividend=None):
-    return {'version':VERSION,'concretum_imp':concretum_signal(rows,previous_days,previous_close,dividend),
+    from strategies.concretum import decision
+    return {'version':VERSION,'concretum_paper':decision(rows,previous_days,previous_close,dividend), 'concretum_article_diagnostic':concretum_signal(rows,previous_days,previous_close,dividend),
         'first_last_unfiltered':first_last(rows,previous_close,require_vix=False),
         'first_last_vix20':first_last(rows,previous_close), 'lumibot_spy_adaptation':opening_range(rows),
         'alerts_enabled':False,'live_signal_ready':False}

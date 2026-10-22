@@ -29,6 +29,8 @@ def candidate(store,news,config,now):
     if live['status']!='LIVE_TREND' or not quote_valid(q,now):reasons.append('PROXY_FRESH_FEED_AND_31_BAR_TAIL_REQUIRED')
     if not session['active'] or now.astimezone(ET).hour*60+now.astimezone(ET).minute>=session['close_minute']-5:reasons.append('OUTSIDE_PROXY_ENTRY_SESSION')
     if news['quality']!='DATA_OK' or news['risk'] not in ('NORMAL','MODERATE'):reasons.append('NEWS_UNAVAILABLE_OR_BLACKOUT')
+    if not session['active']:
+        finalize(s,reasons,config);return s,q,rows
     try:
         bars=normalize(rows,now=now);bars=[b for b in bars if datetime.fromtimestamp(b['timestamp'],timezone.utc).astimezone(ET).date()==now.astimezone(ET).date()];f=calculate(bars)
         first=bars[:15];opening={'high':max(b['high'] for b in first),'low':min(b['low'] for b in first)} if len(first)==15 and first[0]['timestamp']==datetime.combine(now.astimezone(ET).date(),datetime.min.time(),ET).timestamp()+570*60 else None

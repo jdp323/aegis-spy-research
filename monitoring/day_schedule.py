@@ -20,7 +20,10 @@ def dispatch(store,now,config,compose,publish):
         response=compose(kind)
         if not response:continue
         # Reservation precedes transport/outbox. Uncertain delivery never replays a slot.
-        store.put(key,{'reserved_at':now.isoformat(),'status':'RESERVED_NO_BLIND_RETRY'})
+        reservation={'reserved_at':now.isoformat(),'status':'RESERVED_NO_BLIND_RETRY','producer':'core.idea_service','version':'scheduled-authority-v2'}
+        if hasattr(store,'reserve'):
+            if not store.reserve(key,reservation):continue
+        else:store.put(key,reservation)
         event={'id':'v5-'+kind.lower()+'-'+slot,'kind':'RESEARCH','presentation_version':'owner-compact-v1','tenant':'owner','audience':'SHARED' if config.get('signals',{}).get('shared',False) else 'PRIVATE','text':response,'expires_at':(now+timedelta(minutes=5)).isoformat(),'disable_notification':kind=='TREND' and config.get('trend_lines_silent',True),'alert_type':'TREND_LINE' if kind=='TREND' else kind}
         publish(event);result.append(event)
     return result

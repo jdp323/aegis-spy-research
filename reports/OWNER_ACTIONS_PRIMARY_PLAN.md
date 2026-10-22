@@ -1,0 +1,9 @@
+# Remaining external actions
+
+1. For consolidated underlying and genuine real-time option research, confirm that the existing configured Alpaca API environment has SIP and OPRA market-data authorization. Both market-data probes returned403 on October22. Alpaca documents these feeds under its applicable market-data plan; check existing entitlement with provider support before considering any purchase. AEGIS has not changed subscriptions or permissions. After authorization, repeat the market-data-only probes in a genuine session, then verify actual timestamps, chain coverage, liquidity and current Greeks. [Official data plans](https://docs.alpaca.markets/us/docs/about-market-data-api) · [Official FAQ](https://docs.alpaca.markets/us/docs/market-data-faq).
+
+2. To reproduce publisher historical results or assess option profitability, provide an authorized, audited dataset covering raw intraday/daily SPY prices and complete dividends, plus point-in-time option chains and historical bid/ask where option results are required. The current corporate-action response is empty and retained option snapshots are absent. No keys should be sent in chat. No dataset purchase is required to keep underlying watch research available.
+
+No AI key is needed by the current rule-based engine. Local deployment, setup instructions, code fixes, backups and tests are complete. A new genuine market session remains an observation requirement, not an account setting or permission request. The official calendar was refreshed from actual sources; there is no immediate owner calendar action from the older expiry warning.
+
+Historical SIP access is already available and requires no new account action for the inspected window. The remaining historical-data dependency is complete audited corporate-action coverage and the required broader span/option chain-BBO evidence, not a blanket claim that all SIP history is inaccessible.

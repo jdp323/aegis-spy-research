@@ -7,7 +7,7 @@ def normalize(rows,minutes=1,now=None,simulation=False):
     if not simulation:
         from core.isolation import assert_real
         assert_real(rows)
-    now=now or datetime.now(timezone.utc);out=[];previous=None
+    now=now or datetime.now(timezone.utc);out=[];previous=None;windows={}
     for r in rows:
         t=stamp(r['t']) if 't' in r else datetime.fromtimestamp(r['timestamp'],timezone.utc)
         fraction=re.search(r'[T ]\d{2}:\d{2}:\d{2}[.,](\d+)',r.get('t',''))
@@ -18,7 +18,13 @@ def normalize(rows,minutes=1,now=None,simulation=False):
         previous=t.timestamp()
         if minutes>=1440:
             if t.astimezone(ET).date()>=now.astimezone(ET).date():continue
-        elif t+timedelta(minutes=minutes)>now or not market_session(t)['active']:continue
+        else:
+            local=t.astimezone(ET);day=local.date()
+            if day not in windows:
+                session=market_session(local.replace(hour=10,minute=0))
+                windows[day]=(session['active'],session['close_minute'])
+            active,close=windows[day]
+            if t+timedelta(minutes=minutes)>now or not active or not 570<=local.hour*60+local.minute<close:continue
         out.append(b)
     return out
 def resample(bars,minutes):
@@ -67,8 +73,15 @@ def calculate(bars):
     result['trend']='UNAVAILABLE' if result['ema50'] is None else 'BULL' if c[-1]>result['ema9']>result['ema21']>result['ema50'] else 'BEAR' if c[-1]<result['ema9']<result['ema21']<result['ema50'] else 'NEUTRAL'
     return result
 def multi_timeframe(minute_rows,daily_rows=None,now=None,simulation=False):
-    bars=normalize(minute_rows,now=now,simulation=simulation);out={str(n)+'m':calculate(resample(bars,n)) for n in (1,5,15,30,60)}
-    out['1h']=out.pop('60m');out['daily']=calculate(normalize(daily_rows or [],1440,now,simulation=simulation))
+    bars=normalize(minute_rows,now=now,simulation=simulation)
+    daily=normalize(daily_rows or [],1440,now,simulation=simulation)
+    return from_normalized(bars,daily,now)
+
+def from_normalized(bars,daily,now=None):
+    # Internal reuse after normalize validated provenance, ordering and completion.
+    # This arithmetic helper never establishes source freshness or entry eligibility.
+    out={str(n)+'m':calculate(resample(bars,n)) for n in (1,5,15,30,60)}
+    out['1h']=out.pop('60m');out['daily']=calculate(daily)
     today=[b for b in bars if datetime.fromtimestamp(b['timestamp'],timezone.utc).astimezone(ET).date()==(now or datetime.now(timezone.utc)).astimezone(ET).date()]
     opening=[b for b in today if datetime.fromtimestamp(b['timestamp'],timezone.utc).astimezone(ET).hour*60+datetime.fromtimestamp(b['timestamp'],timezone.utc).astimezone(ET).minute<585]
     out['opening_range']={'high':max(b['high'] for b in opening),'low':min(b['low'] for b in opening)} if len(opening)==15 and opening[-1]['timestamp']-opening[0]['timestamp']==840 else None

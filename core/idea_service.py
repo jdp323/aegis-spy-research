@@ -68,7 +68,7 @@ def trend_line(ctx,now,config,active=None,decision=None):
     from monitoring.message_format import status_text
     from news.engine import NewsProvider
     news=ctx.get('calendar_status') or NewsProvider(ROOT/'config/news_calendar.json').snapshot(now)
-    return status_text(ctx,now,news,ctx.get('horizons'),decision)
+    return status_text(ctx,now,news,ctx.get('horizons'),decision,plan=active)
 def idea_text(i,tag,config):
     from monitoring.message_format import idea_text as render
     return render(i,tag,config)
@@ -205,28 +205,37 @@ def tick(store,news,config,now,publish,root=ROOT,tracker=None,simulation=False):
         ideas,reason=candidates(ctx,news,config,now,simulation)
         from options.trade_plan import mismatch
         if not simulation and mismatch([store.get('quote:SPY') or {},store.get('research_quote:SPY:iex') or {}],config,now):ideas=[];reason='feed mismatch'
+        from core.primary_plan import current as primary_current,reserve as reserve_primary,VERSION as plan_version
+        latest_rows=tracker.positions();primary=primary_current(store,latest_rows,now)
         for i in ideas:
-            if any(x['signal_id']==i['signal_id'] for x in tracker.positions()):continue
+            if any(x['signal_id']==i['signal_id'] for x in latest_rows):continue
             category_on=config.get('notifications',{}).get('categories',{}).get('ideas',True)
-            blocked,tag,warnings=permit(store,tracker,i,config,now,preview=not category_on)
+            if primary:
+                secondary,tag,_=permit(store,tracker,i,config,now,preview=True)
+                i['additional_alert_blockers']=[secondary] if secondary else []
+                blocked='PRIMARY_PLAN_ACTIVE';warnings=[]
+            else:blocked,tag,warnings=permit(store,tracker,i,config,now,preview=not category_on)
             for w in warnings:send('v5-warning-'+now.astimezone(ET).date().isoformat()+'-'+('negative-'+i['setup_type'] if 'NEGATIVE' in w else 'cooloff-'+str((store.get('idea-control:'+now.astimezone(ET).date().isoformat()) or {}).get('loss_checkpoint','preview')) if 'Research entries paused' in w else 'runaway'),w,'IDEA_WARNING')
             alerted=not blocked and config.get('notifications',{}).get('categories',{}).get('ideas',True)
             i['alert_blocker']=blocked or (None if category_on else 'ALERTS_DISABLED')
+            i['plan_policy_version']=plan_version;i['research_role']='PRIMARY_PLAN' if alerted else 'SEPARATE_OBSERVATION'
             i.update(trigger_level=i['trigger'],reference_midpoint=ctx['quote']['payload']['mid'],modeled_entry_fill=ctx['quote']['payload']['ask' if i['direction']=='CALL' else 'bid']+(1 if i['direction']=='CALL' else -1)*.01,actual_reported_fill=None,idea_event_id='v5-idea-'+i['signal_id']+'-'+i['strategy_version'])
             if alerted:
                 try:
                     from options.contract_selector import select
-                    from options.trade_plan import build as plan_build
+                    from options.research_contract import verified_plan
                     contracts=(store.get('chain') or {}).get('payload',{}).get('contracts',{})
                     selection=store.get('selection') or {}
                     if not selection.get('best_contract') or selection['best_contract'].get('type')!=('C' if i['direction']=='CALL' else 'P') or not option_quote_valid(selection['best_contract'].get('quote',{}),now):selection=select(contracts,i['spy_price'],i['direction'],now,min_dte=config.get('min_dte',1),max_premium=None if config.get('premium_cap_mode')=='warn' else config['options_risk']['max_trade_premium_usd'])
                     best=selection.get('best_contract')
                     greek_age=(now-stamp(best['greeks_timestamp'])).total_seconds() if best and best.get('greeks_timestamp') else None
                     if best and best.get('type')==('C' if i['direction']=='CALL' else 'P') and option_quote_valid(best.get('quote',{}),now) and greek_age is not None and 0<=greek_age<=60 and selection.get('chain_sanity_reasons')==[]:
-                        i['option_contract']=best;i['option_plan']=plan_build(i,now,config,news);i['option_verification']='FRESH_QUOTE_GREEKS_CHAIN_SANITY_PASSED'
+                        i['option_plan']=verified_plan(i,selection,now,config);i['option_contract']=best;i['option_verification']='FRESH_QUOTE_GREEKS_CHAIN_SANITY_PASSED'
                 except (ValueError,KeyError,TypeError):pass
             tracker.register(i,ctx['quote'],now,alerted)
+            latest_rows=tracker.positions()
             if alerted:
+                reserve_primary(store,i,now);primary=next(r for r in latest_rows if r['signal_id']==i['signal_id'])
                 store.put('v5-latest-idea',i)
                 store.event('paper-candidate-'+i['signal_id']+'-'+i['strategy_version'],'paper_candidate',{**i,'paper_eligible':True,'underlying_entry_range':[i['entry'],i['do_not_chase']],'max_holding_minutes':60})
                 buttons={'inline_keyboard':[[{'text':'📊 Chart','callback_data':'aegis:chart:'+i['signal_id']},{'text':'🚫 Skip','callback_data':'aegis:skip:'+i['signal_id']},{'text':'More ▸','callback_data':'aegis:more:'+i['signal_id']}]]}
@@ -245,7 +254,7 @@ def tick(store,news,config,now,publish,root=ROOT,tracker=None,simulation=False):
             if ctx['reason']:
                 store.put(key,True)
             elif store.get(key):store.put(key,False)
-            active=store.get('v5-latest-idea');active=active if active and stamp(active['signal_expiry'])>now and not store.get('paper_terminal:'+active['signal_id']) else None
+            active=primary_current(store,tracker.positions(),now)
             if not simulation:
                 from monitoring.trend_evidence import record
                 slot=now.astimezone(ET).date().isoformat()+'-'+str((now.astimezone(ET).hour*60+now.astimezone(ET).minute)//15*15)

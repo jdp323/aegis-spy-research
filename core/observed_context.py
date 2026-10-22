@@ -64,7 +64,8 @@ def evaluate(store,now,simulation=False):
         # Ephemeral confirmed-empty slots do not reach features, signals or stores.
         result['synthetic_continuity_minutes']=n
         daily=snapshot.get('history_daily:'+feed.lower()) or ((snapshot.get('daily') or {}).get('payload',{}).get('bars',[]) if feed!='IEX' else [])
-        fs=multi_timeframe(rows,daily,now,simulation=simulation)
+        from features.indicators import from_normalized
+        fs=from_normalized(bars,normalize(daily,1440,now,simulation),now)
         from features.indicators import calculate
         for frame,minutes in (('5m',5),('15m',15),('30m',30),('1h',60)):
             if fs[frame].get('trend') in (None,'UNAVAILABLE'):
