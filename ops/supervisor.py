@@ -14,6 +14,11 @@ PY=child_python()
 from core.runtime_paths import node_executable
 NODE=node_executable()
 COMMANDS={'dashboard':[PY,'app.py','serve','--port','8767'],'research':[PY,'-m','core.spy_research','--loop'],'worker':[PY,'-m','core.upgrade_service'],'stream':[PY,'-m','data.stream'],'telegram':[NODE,'monitoring/commands.cjs'],'dispatcher':[NODE,'monitoring/dispatch.cjs']}
+COMMANDS['shadow']=[PY,'-m','ops.shadow_worker']
+
+def runtime_environment():
+    env=dict(os.environ);env.setdefault('AEGIS_PYTHON',PY);env.setdefault('AEGIS_NODE',NODE)
+    return env
 def publish_status(states,root=ROOT,sleep=time.sleep):
     """A briefly locked telemetry file must not stop the supervised services."""
     tmp=root/'runtime/services.tmp';target=root/'runtime/services.json'
@@ -78,10 +83,13 @@ def run():
                         f=ROOT/('monitoring/inbox/listener.lock' if name=='telegram' else 'monitoring/research_worker.lock')
                         if f.exists() and not alive(json.loads(f.read_text())['pid']):f.unlink()
                 if not child and time.monotonic()>=due.get(name,0):
-                    env=None
+                    env=runtime_environment()
+                    if name=='shadow':
+                        from ops.shadow_worker import environment
+                        env=environment()
                     if name in ('worker','stream'):
                         from data.credentials import child_environment
-                        try:env=child_environment()
+                        try:env=child_environment(env)
                         except RuntimeError:
                             due[name]=time.monotonic()+60
                             states[name]={'pid':None,'state':'MARKET_DATA_CONFIG_UNREADABLE','restarts':attempts.get(name,0)}
@@ -157,6 +165,11 @@ def status(root=ROOT,clock=None,probe=True):
     for name in ('supervisor','listener','dispatcher'):
         try:hearts[name]['age_seconds']=round((now-stamp(hearts[name]['at'])).total_seconds(),3)
         except (KeyError,ValueError,TypeError):pass
+    age=hearts['supervisor']['age_seconds']
+    if age is None or not 0<=age<=30:
+        for component in components.values():
+            component['reported_state']=component['state'];component['state']='STALE_STATUS_RECORD'
+    for component in components.values():component['pid_check_scope']='PID existence only; current heartbeat/progress and HTTP required. PID reuse is possible.'
     for field,label in (('last_completed_at','completed_work_age_seconds'),('phase_started_at','active_phase_age_seconds')):
         try:worker[label]=round((now-stamp(progress[field])).total_seconds(),3)
         except (KeyError,ValueError,TypeError):worker[label]=None

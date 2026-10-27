@@ -84,6 +84,15 @@ def recheck(data,now):
     data['live_trend']=live
     data['saved_today_verdict']=data.get('today_verdict')
     data['today_verdict']='NO TRADE — dashboard snapshot is diagnostic only; /trend performs a current gated evaluation.'
+    view=data.get('market_view')
+    if view:
+        view['entry'].update(state='WAIT',underlying_eligible=False,option_eligible=False,reason='cached diagnostic snapshot; request /trend for current gates')
+        view['trend']['descriptive_only']=True
+        view['price']['quote_eligible']=False
+        view['price']['kind']='CACHED_REFERENCE'
+        for outlook in view.get('outlooks',{}).values():
+            outlook.update(bias='ABSTAIN',reason='cached diagnostic snapshot; original forecast retained separately')
+        if view.get('primary_plan'):view['primary_plan']['monitoring_available']=False
     data.update(action='NO TRADE',live_signal_enabled=False,order_execution_enabled=False,live_execution_enabled=False,LIVE_SIGNAL_READY=False)
     return data
 

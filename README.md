@@ -1,5 +1,7 @@
 # AEGIS SPY research assistant
 
+> Current release: [October27 implementation and verification](reports/updates/2026-10-27_master-implementation.md). Start with [SETUP.md](SETUP.md); feature status, live-data limits and external actions are separate.
+
 A local, research-only SPY assistant with Telegram commands, a dashboard, data-quality gates, separately tracked research horizons and private user-reported fills. All trades are manual.
 
 **Start with [SETUP.md](SETUP.md).** Use your own Telegram bot and authorized market-data access. The current engine is rule based: an AI API key is neither required nor consumed. Supported operational setup is Windows 10/11 with Python 3.12 and Node.js 24.

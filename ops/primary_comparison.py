@@ -6,7 +6,7 @@ from collections import defaultdict,Counter
 from core.sessions import ET,market_session
 from features.indicators import normalize,resample,calculate,from_normalized
 from strategies.concretum import complete,session_replay
-from strategies.idea_setups import detect
+from strategies.idea_setups_v3 import detect
 from core.research_horizons import deadline
 from ops.alert_audit import path_outcome
 VERSION='primary-comparison-frozen-v3-source-pairing'

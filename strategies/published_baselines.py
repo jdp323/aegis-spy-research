@@ -71,5 +71,5 @@ def compare_context(bar_context,now,corporate=None):
         if day>=today:continue
         session=market_session(datetime.combine(day,datetime.min.time(),ET).replace(hour=10))
         if len(rows)==session['close_minute']-570 and all(b['timestamp']-a['timestamp']==60 for a,b in zip(rows,rows[1:])):prior.append(rows)
-    dividends=(corporate or {}).get('dividends',{}) if (corporate or {}).get('status')=='COMPLETE_PROVIDER_RESPONSE' else {}
+    dividends=(corporate or {}).get('dividends',{}) if (corporate or {}).get('status')=='EX_DATE_COVERAGE_VERIFIED' and (corporate or {}).get('ex_date_coverage_verified') is True else {}
     return compare(groups.get(today,[]),prior,prior[-1][-1]['close'] if prior else None,dividends.get(today.isoformat()))

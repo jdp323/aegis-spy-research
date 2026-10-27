@@ -38,6 +38,7 @@ data/account_snapshot*
 *.zip
 *.bak
 TEST_RESULTS.local.json
+.shadow-model/
 
 config/calendar_import/
 research/calendar_attempts/

@@ -1,0 +1,9 @@
+# Separate environment ONLY. Do not install over AEGIS requirements.
+numpy==1.26.4
+pandas==2.2.2
+einops==0.8.1
+huggingface_hub==0.33.1
+safetensors==0.6.2
+tqdm==4.67.1
+# Installed separately from the official CPU wheel index by ops.setup_shadow.
+# torch==2.8.0+cpu

@@ -46,8 +46,8 @@ function validateEvent(event, now=Date.now()) {
   if(event.parent_event_id!==undefined&&(!/^[A-Za-z0-9_-]{1,100}$/.test(event.parent_event_id)||event.parent_event_id===event.id))throw new Error('INVALID_PARENT_EVENT_ID');
   if(['IDEA_UPDATE','PAPER_UPDATE'].includes(event.alert_type)&&!event.parent_event_id)throw new Error('PARENT_EVENT_REQUIRED');
   if(event.presentation_version!==undefined){
-    const caps={PREOPEN:7,TREND_LINE:5,SPY_IDEA:9,IDEA_UPDATE:3,RECAP:6};
-    if(event.presentation_version!=='owner-compact-v1'||event.kind!=='RESEARCH'||!caps[event.alert_type])throw Error('INVALID_COMPACT_PRESENTATION');
+    const caps=event.presentation_version==='owner-compact-v2'?{PREOPEN:8,TREND_LINE:7,SPY_IDEA:12,IDEA_UPDATE:5,RECAP:8}:{PREOPEN:7,TREND_LINE:5,SPY_IDEA:9,IDEA_UPDATE:3,RECAP:6};
+    if(!['owner-compact-v1','owner-compact-v2'].includes(event.presentation_version)||event.kind!=='RESEARCH'||!caps[event.alert_type])throw Error('INVALID_COMPACT_PRESENTATION');
     if(typeof event.text!=='string'||event.text.split('\n').length>caps[event.alert_type])throw Error('COMPACT_LINE_LIMIT');
   }
   // Actionable trade alerts remain unavailable until the proposal/risk migration is validated.
@@ -55,11 +55,12 @@ function validateEvent(event, now=Date.now()) {
   if(['SPY_IDEA','IDEA_UPDATE','IDEA_WARNING','TREND_LINE','PREOPEN','RECAP'].includes(event.alert_type)){
     if(event.kind!=='RESEARCH'||event.tenant!=='owner')throw new Error('V5_RESEARCH_OWNER_REQUIRED');
     if(event.alert_type==='SPY_IDEA'){
-      const compact=event.presentation_version==='owner-compact-v1';
-      const labeled=compact?/^(CALL|PUT) RESEARCH · ID [a-f0-9]{24}\n/.test(event.text||'')&&event.text.includes('Experimental · manual review'):event.text?.includes('(PAPER / UNVALIDATED)')&&event.text?.includes('Unvalidated research. You place orders yourself.');
+      const compact=['owner-compact-v1','owner-compact-v2'].includes(event.presentation_version);
+      const heading=event.presentation_version==='owner-compact-v2'?/^(?:(?:CALL|PUT) RESEARCH · ID [a-f0-9]{24}|SPY WATCH · ID [a-f0-9]{24} · (?:CALL|PUT) direction)\n/:/^(CALL|PUT) RESEARCH · ID [a-f0-9]{24}\n/;
+      const labeled=compact?heading.test(event.text||'')&&event.text.includes('Experimental · manual review'):event.text?.includes('(PAPER / UNVALIDATED)')&&event.text?.includes('Unvalidated research. You place orders yourself.');
       if(!labeled)throw new Error('V5_IDEA_LABEL_REQUIRED');
     }
-    if(event.alert_type==='IDEA_UPDATE'&&!(event.presentation_version==='owner-compact-v1'?event.text?.startsWith('ID ')&&event.text?.includes('Research update; your fills remain separate.'):event.text?.includes('Unvalidated research.')))throw new Error('V5_UPDATE_LABEL_REQUIRED');
+    if(event.alert_type==='IDEA_UPDATE'&&!(['owner-compact-v1','owner-compact-v2'].includes(event.presentation_version)?event.text?.startsWith('ID ')&&event.text?.includes('Research update; your fills remain separate.'):event.text?.includes('Unvalidated research.')))throw new Error('V5_UPDATE_LABEL_REQUIRED');
     if(event.audience==='SHARED'){
       let c;try{c=JSON.parse(fs.readFileSync(path.join(ROOT,'config/upgrade.json'),'utf8'));}catch{throw new Error('V5_SHARING_NOT_AUTHORIZED');}
       if(c.signals?.shared!==true)throw new Error('V5_SHARING_NOT_AUTHORIZED');
@@ -117,7 +118,14 @@ async function sendSingle(event, credentials, directory=path.join(ROOT,'logs','n
    if(clock()>=Date.parse(event.expires_at)){status={...status,status:'FAILED_NOT_ACCEPTED',failure_class:'EXPIRED_BEFORE_SEND'};fs.writeFileSync(record,JSON.stringify(status,null,2));return {status:status.status,id:event.id};}
    status.attempts=attempt;fs.writeFileSync(record,JSON.stringify(status,null,2));
    try{
-    const payload={chat_id:credentials.chat_id,text:(event.presentation_version==='owner-compact-v1'||event.text.startsWith('🧪 DEMO — SIMULATED DATA'))?event.text:'AEGIS '+event.kind+'\n'+event.text,disable_notification:event.disable_notification===true,...(event.reply_markup?{reply_markup:event.reply_markup}:{})};
+    if(event.alert_type==='SPY_IDEA'){
+      const checked=await (options.entryCheck||entryCheck)(event.entry_guard);
+      if(checked?.eligible!==true){status={...status,status:'FAILED_NOT_ACCEPTED',failure_class:'ENTRY_REVALIDATION_REFUSED',reason:checked?.reason||'REVALIDATION_UNAVAILABLE'};fs.writeFileSync(record,JSON.stringify(status,null,2));return {status:status.status,id:event.id,reason:status.reason};}
+      status.entry_revalidation=Object.fromEntries(['checked_at','source_at','received_at','reference_midpoint','proposal_sha256'].filter(k=>checked[k]!==undefined).map(k=>[k,checked[k]]));
+      status.decision_at=event.entry_guard?.proposal?.decision_at||event.entry_guard?.proposal?.timestamp||null;
+      fs.writeFileSync(record,JSON.stringify(status,null,2));
+    }
+    const payload={chat_id:credentials.chat_id,text:(['owner-compact-v1','owner-compact-v2'].includes(event.presentation_version)||event.text.startsWith('🧪 DEMO — SIMULATED DATA'))?event.text:'AEGIS '+event.kind+'\n'+event.text,disable_notification:event.disable_notification===true,...(event.reply_markup?{reply_markup:event.reply_markup}:{})};
     let message;
     if(event.photo){const photo={chat_id:credentials.chat_id,caption:event.text.slice(0,1024)};message=client===api?await apiPhoto(credentials.token,photo,fs.readFileSync(event.photo)):await client(credentials.token,'sendPhoto',photo);}
     else message=await client(credentials.token,'sendMessage',payload);
@@ -134,21 +142,28 @@ async function sendSingle(event, credentials, directory=path.join(ROOT,'logs','n
    }
   }
 }
+function entryCheck(guard){
+ if(!guard)return {eligible:false,reason:'PUBLICATION_GUARD_REQUIRED'};
+ // Dedicated short read-only process, no inherited provider/AI/bot secrets.
+ const env={};for(const key of ['PATH','SystemRoot','SYSTEMROOT','WINDIR','TEMP','TMP','USERPROFILE','LOCALAPPDATA'])if(process.env[key])env[key]=process.env[key];
+ const r=spawnSync(PYTHON,['-X','utf8','-m','ops.entry_check'],{cwd:ROOT,input:JSON.stringify(guard),encoding:'utf8',timeout:4000,maxBuffer:16384,windowsHide:true,env});
+ try{return r.status===0?JSON.parse(r.stdout):{eligible:false,reason:'REVALIDATION_PROCESS_UNAVAILABLE'};}catch{return {eligible:false,reason:'REVALIDATION_PROTOCOL_INVALID'};}
+}
 // Broadcast only explicitly classified public content. Private command replies default private.
-async function send(event,credentials,directory=path.join(ROOT,'logs','notifications'),client=api,accessFile) {
+async function send(event,credentials,directory=path.join(ROOT,'logs','notifications'),client=api,accessFile,options={}) {
   validateEvent(event);
-  if(event.audience===undefined||event.audience==='PRIVATE')return sendSingle(event,credentials,directory,client);
+  if(event.audience===undefined||event.audience==='PRIVATE')return sendSingle(event,credentials,directory,client,options);
   if(event.audience!=='SHARED')throw new Error('INVALID_AUDIENCE');
   if(!['INFO','RESEARCH','TEST'].includes(event.kind))throw new Error('SHARED_KIND_NOT_ALLOWED');
   const access=require('./access.cjs');
-  const results=[await sendSingle(event,credentials,directory,client)];
+  const results=[await sendSingle(event,credentials,directory,client,options)];
   for(const member of access.users(accessFile)) {
     if(!member.chat_id||String(member.chat_id)===String(credentials.chat_id))continue;
     // Revocation is checked again before each destination; IDs are durable per recipient.
     if(!access.member(member.chat_id,accessFile))continue;
     const guestEvent={...event};
     if(guestEvent.reply_markup?.inline_keyboard?.some(row=>row.some(button=>String(button.callback_data||'').startsWith('aegis:'))))delete guestEvent.reply_markup;
-    results.push(await sendSingle(guestEvent,{...credentials,chat_id:member.chat_id},path.join(directory,'guests',member.id),client));
+    results.push(await sendSingle(guestEvent,{...credentials,chat_id:member.chat_id},path.join(directory,'guests',member.id),client,options));
   }
   return {status:results.some(result=>result.status==='DEFERRED_PARENT_NOT_ACCEPTED')?'SHARED_SEND_DEFERRED':'SHARED_SEND_COMPLETED',recipients:results.length,results};
 }
@@ -157,11 +172,11 @@ async function main() {
   if(command==='configure-stdin') {
     let raw='';for await (const chunk of process.stdin){raw+=chunk;if(raw.length>16384)throw new Error('INPUT_TOO_LARGE');}
     const credentials=JSON.parse(raw);await verified(credentials);vault('save',JSON.stringify(credentials));
-    console.log(JSON.stringify({status:'ENCRYPTED_CREDENTIAL_CONFIGURED',bot:EXPECTED_BOT}));return;
+    console.log(JSON.stringify({status:'ENCRYPTED_CREDENTIAL_CONFIGURED',bot:identity.username()}));return;
   }
   const credentials=JSON.parse(vault('load'));
   await verified(credentials);
-  if(command==='check'){console.log(JSON.stringify({status:'READY',bot:EXPECTED_BOT}));return;}
+  if(command==='check'){console.log(JSON.stringify({status:'READY',bot:identity.username()}));return;}
   if(command==='send-file'){
     const file=path.resolve(process.argv[3] || '');
     const events=path.join(ROOT,'monitoring','outbox')+path.sep;
@@ -170,5 +185,5 @@ async function main() {
   }
   throw new Error('UNKNOWN_COMMAND');
 }
-module.exports={validateEvent,send,sendSingle,vault,verified,api,deliveryError,classify};
+module.exports={validateEvent,send,sendSingle,vault,verified,api,deliveryError,classify,entryCheck};
 if(require.main===module)main().catch(()=>{console.error('NOTIFIER_FAILED: verify local configuration, event format and connectivity. No secrets logged.');process.exitCode=1;});

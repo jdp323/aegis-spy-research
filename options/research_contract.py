@@ -5,6 +5,23 @@ from core.sessions import ET
 from data.models import stamp,finite
 from options.trade_plan import sanity
 
+def current_reference(idea,now,config=None):
+    """Same strict quote-reference check for view, renderer and publication."""
+    from options.ledger import contract as parse
+    c=idea.get('option_contract') or {};p=idea.get('option_plan') or {}
+    try:
+        term=parse(c['symbol']);end=stamp(idea['max_hold_until'])
+        if idea.get('option_verification')!='FRESH_QUOTE_GREEKS_CHAIN_SANITY_PASSED' or not option_quote_valid(c['quote'],now) or not quote_valid(c['quote'],now,5):return None
+        if sanity(c,now,config or {}):return None
+        if not finite(c.get('oi')) or c['oi']<100 or not finite(c.get('volume')) or c['volume']<100:return None
+        if c.get('bid')!=c['quote']['payload']['bid'] or c.get('ask')!=c['quote']['payload']['ask']:return None
+        if datetime.fromisoformat(term['expiry']).date()<=end.astimezone(ET).date():return None
+        if c.get('type')!=('C' if idea['direction']=='CALL' else 'P'):return None
+        if not c.get('greeks_timestamp') or not 0<=(now-stamp(c['greeks_timestamp'])).total_seconds()<=60:return None
+        if not finite(p.get('limit')) or p['limit']!=c['ask'] or p.get('eligible') is False:return None
+        return c,p
+    except (ValueError,KeyError,TypeError):return None
+
 def verified_plan(idea,selection,now,config):
     c=selection.get('best_contract')
     if not c or selection.get('chain_sanity_reasons')!=[]:raise ValueError('VERIFIED_CHAIN_REQUIRED')

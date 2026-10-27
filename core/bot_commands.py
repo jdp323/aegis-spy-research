@@ -20,7 +20,16 @@ def execute(data):
             from news.engine import NewsProvider
             from monitoring.message_format import diagnostics_text
             now=datetime.now(timezone.utc);ctx=context(s,now)
-            text=diagnostics_text(ctx,now,NewsProvider(ROOT/'config/news_calendar.json').snapshot(now))
+            from core.market_view import build,details
+            from core.primary_plan import current
+            from core.readonly_state import idea_rows
+            try:rows=idea_rows(ROOT/'runtime/ideas.sqlite')
+            except (OSError,__import__('sqlite3').Error):rows=[]
+            news=NewsProvider(ROOT/'config/news_calendar.json').snapshot(now)
+            text=details(build(ctx,news,now,plan=current(s,rows,now)))+'\n\n'+diagnostics_text(ctx,now,news)
+            try:
+                shadow=json.loads((ROOT/'runtime/shadow_health.json').read_text());text+='\nExperimental Kronos shadow: '+shadow.get('state','UNAVAILABLE')+'; no entry control'
+            except (OSError,ValueError):text+='\nExperimental Kronos shadow: unavailable; no entry control'
             pause=s.get('research-pause:v2') or {};episode=pause.get('episode') or {}
             return text[:3100]+'\nResearch pause policy '+str(pause.get('version','not yet evaluated'))+'; start '+et_text(episode.get('start'))+'; end '+et_text(episode.get('end'))+'; reason '+str(episode.get('reason','no recorded pause'))
         if command=='score':

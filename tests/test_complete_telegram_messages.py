@@ -49,7 +49,7 @@ class SemanticMessageTests(unittest.TestCase):
     def test_completed_bar_view_does_not_promote_stale_quote_or_calendar(self):
         ctx=context();ctx.update(quote=underlying(NOW-timedelta(seconds=40)),reason='data not fresh',failed_predicate='SOURCE_TOO_OLD')
         text=status_text(ctx,NOW,{'quality':'DATA_INCOMPLETE','risk':'UNAVAILABLE'})
-        self.assertIn('SPY $500.00',text);self.assertIn('Current trend: UP',text)
+        self.assertIn('SPY $500.00',text);self.assertIn('Last completed-bar trend: UP',text);self.assertIn('Next hour: unavailable',text)
         self.assertIn('WAIT — fresh price unavailable',text);self.assertNotIn('SOURCE_TOO_OLD',text)
         details=diagnostics_text(ctx,NOW,{'quality':'DATA_INCOMPLETE','risk':'UNAVAILABLE'})
         self.assertIn('SOURCE_TOO_OLD',details);self.assertIn('DATA_INCOMPLETE',details)
@@ -57,7 +57,7 @@ class SemanticMessageTests(unittest.TestCase):
     def test_missing_horizon_remains_unavailable_and_closed_session_blocks_entries(self):
         ctx = context();ctx['horizons'] = {'H60': {'bias': 'UP'}}
         text = status_text(ctx, NOW.replace(day=17), {'quality': 'DATA_OK', 'risk': 'NORMAL'})
-        self.assertIn('Current trend: DATA UNAVAILABLE', text)
+        self.assertIn('Current trend: UNAVAILABLE', text)
         self.assertIn('Next hour: unavailable', text)
         self.assertIn('WAIT — market closed', text)
 
@@ -73,8 +73,8 @@ class SemanticMessageTests(unittest.TestCase):
 
     def test_verified_option_plan_distinguishes_premium_at_risk_from_modeled_stop(self):
         row = idea();symbol = 'SPY261016C00500000'
-        oq = quote('alpaca-opra', symbol, {'bp': 1.9, 'ap': 2.1, 't': NOW.isoformat()}, received=NOW.isoformat()).view(NOW)
-        row.update(option_contract={'symbol':symbol,'quote':oq,'type':'C','expiry':'2026-10-16','strike':500,'bid':1.95,'ask':2.05,'mid':2.,'delta':.5,'gamma':.01,'theta':-.1,'vega':.1,'iv':.2,'greeks_timestamp':NOW.isoformat()},option_plan={'limit':2.,'stop_bid':1.5},option_verification='FRESH_QUOTE_GREEKS_CHAIN_SANITY_PASSED')
+        oq = quote('alpaca-opra', symbol, {'bp': 1.9, 'ap': 2., 't': NOW.isoformat()}, received=NOW.isoformat()).view(NOW)
+        row.update(option_contract={'symbol':symbol,'quote':oq,'type':'C','expiry':'2026-10-16','strike':500,'bid':1.9,'ask':2.,'mid':1.95,'volume':100,'oi':100,'delta':.5,'gamma':.01,'theta':-.1,'vega':.1,'iv':.2,'greeks_timestamp':NOW.isoformat()},option_plan={'limit':2.,'stop_bid':1.5},option_verification='FRESH_QUOTE_GREEKS_CHAIN_SANITY_PASSED')
         text = idea_text(row, {'closed': 0}, {})
         self.assertIn(symbol, text)
         self.assertIn('premium at risk $200.00 + fees', text)

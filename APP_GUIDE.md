@@ -1,3 +1,5 @@
+> October27 current handoff: [master implementation report](reports/updates/2026-10-27_master-implementation.md), [current status](reports/CURRENT_STATUS.md), [setup](SETUP.md). Current files supersede conflicting older presentation/scope notes; dated evidence below retains its as-of meaning.
+
 > Current release: [October 22 deployed primary-plan handoff](reports/updates/2026-10-22_primary-plan-reliability.md). One primary research plan; secondary detections stay separate. Exact current tests and external limits are in that report. Older reports and packets retain their as-of meaning.
 
 # App guide

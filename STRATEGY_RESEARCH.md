@@ -1,3 +1,5 @@
+> October27 current handoff: [master implementation report](reports/updates/2026-10-27_master-implementation.md), [current status](reports/CURRENT_STATUS.md), [setup](SETUP.md). Current files supersede conflicting older presentation/scope notes; dated evidence below retains its as-of meaning.
+
 # Research status and interpretation
 
 All setup families are retained. Trend pullback continuation and opening-range breakout/retest are comparative research candidates across predeclared H60, H120 and session horizons. Other setup labels remain unvalidated research. The code supports reproducible manifests, chronological splits, outcome overlap exclusions, matched-clock random-direction baselines and uncertainty checks; infrastructure is not proof of an edge.

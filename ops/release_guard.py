@@ -3,7 +3,7 @@ import argparse,json,re,subprocess,sys
 from pathlib import Path
 from core.storage import ROOT
 
-BLOCK_PARTS={'.private','.venv','.vendor','runtime','logs','daily_reports','users','inbox','outbox','demo_sessions','premarket_cache','premarket_authorized_cache','public_cache','closing_cache','__pycache__'}
+BLOCK_PARTS={'.private','.venv','.vendor','.shadow-model','runtime','logs','daily_reports','users','inbox','outbox','demo_sessions','premarket_cache','premarket_authorized_cache','public_cache','closing_cache','__pycache__'}
 BLOCK_NAMES={'access.json','telegram.json','news_calendar.json','risk_state.json','system_state.json','demo_state.json'}
 ALLOWED_JSON={'config/upgrade.json','config/news_calendar.example.json','config/telegram.example.json','data/tsx_calendar.json','research/v5_requirements.json','research/combined_requirements.json'}
 SECRET_PATTERNS=[('telegram token',re.compile(rb'(?<![A-Za-z0-9])[0-9]{7,12}:[A-Za-z0-9_-]{30,}')),

@@ -89,7 +89,7 @@ Name: pending profile update
 Username: not available
 Telegram ID: [EXAMPLE ID]
 Access ID: [EXAMPLE ID]
-Joined (UTC): 2026-10-22T05:30:26.586Z
+Joined (UTC): 2026-10-27T07:25:13.558Z
 Last bot message (UTC): not recorded
 Names are self-reported Telegram profiles, not verified identities.
 /users PAGE_NUMBER for more; /revoke ACCESS_ID removes access.
@@ -133,13 +133,13 @@ Automatic morning br
 ```text
 EXAMPLE — fixture response
 AEGIS STATUS — signals.shared: OFF
-01:30 ET · SPY unavailable
-Current trend: DATA UNAVAILABLE
-Next hour: unavailable — insufficient time or data
+03:25 ET · SPY unavailable
+Current trend: UNAVAILABLE
+Next hour: unavailable · session: unclear
 New entry: WAIT — market closed
-Research · UNAVAILABLE · as of unavailable
+Research · UNAVAILABLE · as of unavailable · /details
 Worker: UNVERIFIED_HEARTBEAT
-Automatic public research: silent every 15 minutes 09:45 to close−15; qualifying research alerts when el
+Automatic public research: silent every 15 minutes 09:45 to close−15; qualifying research alerts when eligi
 ```
 
 ### /feed
@@ -157,7 +157,7 @@ SIP stream: UNAVAILABLE (heartbeat unverifie
 ### /health
 ```text
 EXAMPLE — fixture response
-AEGIS HEALTH · 01:30 ET
+AEGIS HEALTH · 03:25 ET
 Clock: UNAVAILABLE; NTP offset UNAVAILABLE s; skew limit 2.000 s.
 services: UNAVAILABLE; heartbeat UNAVAILABLE; fresh not verified
 telegram: UNAVAILABLE; heartbeat UNAVAILABLE; fresh not verified
@@ -175,31 +175,35 @@ REVERSAL_APPENDED. Original event preserved. No order placed.
 ### /trend
 ```text
 EXAMPLE — fixture response
-SPY · 01:31 ET
+SPY · 03:25 ET
 Trend: MIXED — timeframe agreement UNAVAILABLE
 DECISION: NO TRADE
 Market closed — saved context only; no live verdict.
-Next open: Thu 09:30 ET
-Next morning message: Thu 09:15 ET
+Next open: Tue 09:30 ET
+Next morning message: Tue 09:15 ET
 Data: UNAVAILABLE
 ```
 
 ### /details
 ```text
 EXAMPLE — fixture response
-SPY RESEARCH DETAILS · 2026-10-22 01:31:26 ET
-Current trend rule completed-vwap-change15-v1: completed close and 15m change must agree with session VWAP; disagreement = SIDEWAYS; missing inputs = DATA UNAVAILABLE.
-Forward outlook: conditional hypothesis with VWAP invalidation, exact H60/H120/session deadlines; not calibrated odds. Current trend DATA UNAVAI
+AEGIS VIEW market-view-v1 · [EXAMPLE ID]
+Generated: 2026-10-27T07:25:28.799904+00:00
+Current trend: UNAVAILABLE · completed-vwap-change15-v2-explicit-range
+completed current-session prices unavailable
+H60: ABSTAIN · target unavailable · fresh underlying unavailable
+H120: ABSTAIN · target unavailable · fresh underlying unavailable
+SESSION: ABSTAIN · tar
 ```
 
 ### /why
 ```text
 EXAMPLE — fixture response
-SPY IDEA CHECKS · 2026-10-22 01:31:31 ET
+SPY IDEA CHECKS · 2026-10-27 03:25:30 ET
 Fresh price/bar inputs: data not fresh — Quote rejected: quote timestamp unavailable; source age UNAVAILABLE, receipt age UNAVAILABLE, skew UNAVAILABLE; UNAVAILABLE
 Official calendar: DATA_INCOMPLETE / UNAVAILABLE
 Confirmed setups: 0
-Frames: 1m unavailable · 5m unavailable · 15m unavailable · 30m unavailable · 1h 
+Frames: 1m unavailable · 5m unavailable · 15m unavailable · 30m unavailable · 1h
 ```
 
 ### /score
@@ -214,7 +218,7 @@ today: 0 closed; 0 expired without entry; mean R UNAVAILABLE; 95% interval UNAV
 ### /fill
 ```text
 EXAMPLE — fixture response
-Local research status unavailable; no order placed.
+Fill flow expired. Use /option_bought for a past actual fill; never infer a suggested fill.
 ```
 
 ### /more
@@ -250,18 +254,18 @@ signals.shared: OFF
 ### /outlook
 ```text
 EXAMPLE — fixture response
-SPY OUTLOOK | 2026-10-22 01:32 ET
+SPY OUTLOOK | 2026-10-27 03:25 ET
 BIAS: UNAVAILABLE — News language only; current price trend missing.
 PRICE TREND: UNAVAILABLE | NO USABLE CURRENT PRICE TREND.
 SESSION: CLOSED — regular-session trend is not running now.
-Next regular open: Thu 2026-10-22 09:30 ET; morning outlook: 09:15 ET.
+Next regular open: Tue 2026-10-27 09:30 ET; morning outlook: 09:15 ET.
 Overnight news is context; it cannot confirm the direction of t
 ```
 
 ### /sentiment
 ```text
 EXAMPLE — fixture response
-WALLSTREETBETS | 2026-10-22 01:32 ET
+WALLSTREETBETS | 2026-10-27 03:25 ET
 SENTIMENT: UNAVAILABLE | FEED_NOT_CONFIGURED
 Authorized Reddit API access is not configured.
 SETUP: owner needs Reddit-approved Data API access and read-only OAuth credentials in the encrypted local setup form. A Reddit website login alone does not enable the API.
@@ -328,8 +332,8 @@ No closing price was invented. ACTION: NO TRADE.
 EXAMPLE — fixture response
 SPY PREMARKET REPORT
 NOT DUE YET — the scheduled report is at 09:15 ET today.
-No report saved for 2026-10-22.
-Next scheduled report: Thu 2026-10-22 09:15 ET.
+No report saved for 2026-10-27.
+Next scheduled report: Tue 2026-10-27 09:15 ET.
 Computer must remain awake/online. /outlook and /news show current available news context.
 Current-session public premarket bars start at 04:00 ET; sufficient completed bars are required. Public da
 ```
@@ -341,7 +345,7 @@ PAPER / UNVALIDATED — separate populations
 Underlying ideas = setup observations, not option trades: 0 tracked; 0 closed.
 Underlying proxy = separate modeled SPY shares: 0 closed / 0 open; mean UNAVAILABLE USD/share.
 Proxy matched-clock random-direction baseline: 0 closed; mean UNAVAILABLE USD/share.
-Real-quote option paper = genuine bid/ask simulation: 
+Real-quote option paper = genuine bid/ask simulation:
 ```
 
 ### /plan
@@ -353,12 +357,12 @@ Command not applied. Check /help and the required fields; no order placed.
 ### /news
 ```text
 EXAMPLE — fixture response
-SPY NEWS | 2026-10-22 01:33 ET
+SPY NEWS | 2026-10-27 03:26 ET
 BIAS: UNAVAILABLE — News language only; current price trend missing.
 PRICE TREND: UNAVAILABLE | NO USABLE CURRENT PRICE TREND.
 SESSION: CLOSED — regular-session trend is not running now.
-Next regular open: Thu 2026-10-22 09:30 ET; morning outlook: 09:15 ET.
-Overnight news is context; it cannot confirm the direction of the 
+Next regular open: Tue 2026-10-27 09:30 ET; morning outlook: 09:15 ET.
+Overnight news is context; it cannot confirm the direction of the
 ```
 
 ### /request

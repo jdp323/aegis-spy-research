@@ -3,8 +3,8 @@ from datetime import datetime, timezone, timedelta
 from core.sessions import ET, market_session
 from data.models import finite, stamp
 
-VERSION = 'completed-vwap-change15-v1'
-FORECAST_VERSION = 'conditional-direction-v1'
+VERSION = 'completed-vwap-change15-v2-explicit-range'
+FORECAST_VERSION = 'conditional-direction-v2'
 
 def view(ctx, now):
     bar = ctx.get('bar_research') or {}
@@ -24,10 +24,16 @@ def view(ctx, now):
     price = last['close']; vwap = fs.get('1m', {}).get('vwap_approx')
     if not finite(vwap) or vwap <= 0:return out
     change = price - tail[0]['close']
-    trend = 'UP' if price > vwap and change > 0 else 'DOWN' if price < vwap and change < 0 else 'SIDEWAYS'
+    if any(not all(finite(r.get(k)) for k in ('high','low','close')) for r in tail):return out
+    atr=fs.get('1m',{}).get('atr14');atr=atr if finite(atr) else None
+    span=max(r['high'] for r in tail)-min(r['low'] for r in tail)
+    # Fixed before new outcomes are inspected. This describes a narrow range,
+    # not a profitable stop setting or a calibrated future event.
+    sideways=finite(atr) and atr>0 and span<=2*atr and abs(change)<=.25*atr and abs(price-vwap)<=.5*atr
+    trend = 'SIDEWAYS' if sideways else 'UP' if price > vwap and change > 0 else 'DOWN' if price < vwap and change < 0 else 'MIXED'
     source = datetime.fromtimestamp(last['timestamp']+60, timezone.utc).isoformat()
     out.update(trend=trend, price=price, as_of=source, invalidation=vwap,
-               reason='completed close versus session VWAP and 15-minute change', limited=bool(early))
+               reason='completed close versus session VWAP and '+str(len(tail)-1)+'-minute change; SIDEWAYS requires the declared ATR range rule', window_minutes=len(tail)-1,limited=bool(early),components={'close_vs_vwap':price-vwap,'change_15m':change,'range_15m':span,'atr14':atr,'sideways_rule':{'max_range_atr':2,'max_change_atr':.25,'max_vwap_distance_atr':.5},'sideways_pass':bool(sideways)})
     session = market_session(now)
     close = now.astimezone(ET).replace(hour=session['close_minute']//60, minute=session['close_minute']%60, second=0,microsecond=0)
     for key, end in [('H60', now+timedelta(minutes=60)), ('H120', now+timedelta(minutes=120)), ('SESSION', close)]:
@@ -46,6 +52,9 @@ def record(store, ident, issued, research, horizon, premarket=False):
         reference_at=research.get('as_of'), reference_rule='REGULAR_OPEN' if premarket else 'ISSUE_TIME_COMPLETED_PRICE',
         outcome_rule='REGULAR_SESSION_LAST_MINUTE_CLOSE' if horizon in ('SESSION','PREMARKET') else 'EXACT_COMPLETED_MINUTE_CLOSE',
         provider=research.get('provider','UNAVAILABLE'), calibrated=False)
+    payload['snapshot_id']=research.get('snapshot_id')
+    payload['available_at']=issued.isoformat()
+    payload['publication_state']='QUEUED_AT_ISSUE_TIME; per-recipient Telegram acceptance is separate'
     created=store.event('forecast:'+ident, 'directional_forecast', payload)
     if created and horizon in ('H60','H120') and payload['target_at'] and payload['bias'] in ('UP','DOWN'):
         pending=[p for p in store.get('directional_future_targets',[]) if stamp(p['target_at'])+timedelta(seconds=5)>=issued]
@@ -101,9 +110,18 @@ def resolve(store, bars, now, quote=None):
             opening=end.astimezone(ET).replace(hour=9,minute=30,second=0,microsecond=0).timestamp()
             first=next((b for b in bars if b['timestamp']==opening),None)
             reference=first['open'] if first else None
-        status='ABSTAIN' if row['bias'] in ('ABSTAIN','SIDEWAYS','DATA UNAVAILABLE') else 'RESOLVED' if outcome_price is not None and finite(reference) else 'MISSING_OUTCOME'
+        status='ABSTAIN' if row['bias'] not in ('UP','DOWN') else 'RESOLVED' if outcome_price is not None and finite(reference) else 'MISSING_OUTCOME'
         actual='UP' if outcome_price is not None and finite(reference) and outcome_price>reference else 'DOWN' if outcome_price is not None and finite(reference) and outcome_price<reference else 'SIDEWAYS' if outcome_price is not None and finite(reference) else None
         outcome=dict(forecast_id=row['id'],resolved_at=now.isoformat(),target_at=target,status=status,
             reference=reference,outcome_close=outcome_price,outcome_source=outcome_source,actual=actual,
             correct=(actual==row['bias']) if status=='RESOLVED' else None,option_performance='UNAVAILABLE')
         store.event(key,'directional_forecast_outcome',outcome);store.put(key,{'at':now.isoformat()})
+
+def daily_score(store,now):
+    forecasts=[r for r in store.events('directional_forecast',1000) if stamp(r['issued_at']).astimezone(ET).date()==now.astimezone(ET).date()]
+    outcomes={r['forecast_id']:r for r in store.events('directional_forecast_outcome',1000)}
+    parts=[]
+    for h in ('H60','H120','SESSION','PREMARKET_OPENING_HOUR','PREMARKET'):
+        cohort=[r for r in forecasts if r['horizon']==h];resolved=[outcomes[r['id']] for r in cohort if outcomes.get(r['id'],{}).get('status')=='RESOLVED']
+        parts.append(h+' '+str(sum(bool(r['correct']) for r in resolved))+'/'+str(len(resolved))+' resolved of '+str(len(cohort))+' issued')
+    return 'Forward direction: '+'; '.join(parts)+' · unvalidated'

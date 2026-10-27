@@ -12,7 +12,7 @@ def run(root=ROOT,output=None):
     short_base.mkdir(parents=True,exist_ok=True)
     workspace=Path(tempfile.mkdtemp(prefix='s-',dir=short_base))
     test_temp=Path(tempfile.mkdtemp(prefix='t-',dir=short_base))
-    ignore={'.venv','.private','runtime','logs','daily_reports','.vendor','__pycache__','.git','demo_sessions','outbox','inbox','users','verification','completion_verification','reports','documentation_archive','schedule_transports','premarket_cache','premarket_authorized_cache','public_cache','closing_cache'}
+    ignore={'.venv','.private','.shadow-model','runtime','logs','daily_reports','.vendor','__pycache__','.git','demo_sessions','outbox','inbox','users','verification','completion_verification','reports','documentation_archive','schedule_transports','premarket_cache','premarket_authorized_cache','public_cache','closing_cache'}
     for folder,dirs,files in os.walk(root):
         dirs[:]=[d for d in dirs if d not in ignore];relative=Path(folder).relative_to(root);target=workspace/relative;target.mkdir(exist_ok=True,parents=True)
         for name in files:

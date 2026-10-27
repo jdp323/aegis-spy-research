@@ -1,5 +1,7 @@
 # Setup with your own services
 
+Current release: [October 27 implementation](reports/updates/2026-10-27_master-implementation.md). The current product uses compact v2 messages and one shared market view. Follow the optional shadow setup at the end only on adequate hardware; the deterministic service needs no AI key.
+
 ## Requirements
 
 Windows 10/11, Python 3.12 (including pip and venv), Node.js 24 on PATH, and Git. These are standard runtimes; no Codex application or bundled runtime is required. Windows current-user DPAPI protects saved credentials. Other operating systems may run isolated tests, but encrypted operational credential setup is not supported there.
@@ -76,7 +78,7 @@ Status interpretation: python -m ops.supervisor status takes its evaluation cloc
 
 ## Owner experience update — October21
 
-Default scheduled Telegram messages use compact presentation v1: premarket7 lines, silent status5, research watch9 and recap6. Existing commands/sharing defaults remain unchanged. Restart dashboard, worker, stream and dispatcher together using the supervisor after upgrading; compact metadata must reach the updated notifier. Existing queued/uncertain messages retain their IDs and old presentation and must not be replayed.
+The historical October 21 release used compact presentation v1. The current v2 release permits premarket8 lines, status5–7, watch/plan up to12, follow-up up to5 and recap8. Existing commands/sharing defaults remain unchanged. Restart the coordinated services using one supervisor after upgrading; compact metadata and the publication guard must travel together. Existing queued/uncertain messages retain their IDs and old presentation and must not be replayed.
 
 The worker prepares premarket data asynchronously09:00–09:20 ET; missing preparation yields an honest unavailable outlook rather than blocking the09:15 slot. Independent latest-minute IEX repair runs alongside longer history warmup. Research pause v2 persists under its own control key, consumes each closed observation once and does not roll from silent losses during the same episode. /details describes the rule/episode. No private actual-position risk limits are reset.
 
@@ -91,3 +93,23 @@ The current release uses one active underlying research plan. Secondary detectio
 New read-only research tools: python -m ops.alert_audit --help and python -m ops.primary_comparison --help. They consume your own private local records and write private outputs. Missing dividends, executable quote history or option data refuse numerical claims; do not substitute zero dividends, estimated premiums or delayed feeds. See reports/STRATEGY_COMPARISON_2026-10-22.md.
 
 Use the Python environment where requirements-upgrade.txt is installed. The bare bundled base interpreter does not include all chart/stream dependencies; the public venv and installed .vendor workflow are verified separately. Tests and full-day simulations use fake recipients; no Telegram development broadcast is part of setup.
+
+
+## October27 shared-view and optional shadow update
+
+Upgrade the coordinated source group and restart one supervisor. Keep your existing private configuration/credential locations, sharing and ledgers. Compact-v2 entries require the new read-only transmission guard; expired/legacy entries without a guard fail closed. Do not replay uncertain sends. `python -m ops.supervisor status` is read-only and distinguishes stale status records from current work. The current-user autostart installer now uses three bounded one-minute failure retries, limited privileges and one instance.
+
+The default deterministic product does not require an AI API key. Optional Kronos stays shadow-only and never controls entry permission. Its separate process requires1536MiB free memory, a768MiB child memory cap, a45s deadline and one CPU thread. Do not install its pins into the main venv. On adequate hardware, run:
+
+```powershell
+.\.venv\Scripts\python.exe -m ops.setup_shadow --assets-only
+.\.venv\Scripts\python.exe -m ops.setup_shadow
+.\.venv\Scripts\python.exe -m ops.shadow_benchmark --request YOUR_GENUINE_COMPLETED_REQUEST.json --output YOUR_BENCHMARK.json
+```
+
+The first command downloads only pinned public source/model/tokenizer assets and retains the MIT notice/content hashes in excluded .shadow-model. The second creates its own .shadow-model/venv and installs official CPU torch plus requirements-shadow pins only after resource preflight. No Hugging Face token is required for these public checkpoints. Inference is offline; no API keys enter that child. TLS verification stays enabled. Missing environment, weights, memory or valid current bars leave the deterministic service running and the model honestly unavailable. Actual pinned mini regression remains a separate required benchmark, not a mocked PASS.
+
+Run `python -m ops.master_demo --output A_NEW_DEMO_REPORT.md` for fictional production-renderer/fake-notifier examples; it sends no Telegram message. `python -m ops.master_session --date YYYY-MM-DD --output A_NEW_SESSION_REPORT.json` reads genuine local evidence. The independent shadow process also writes a separate close+20 local engineering report. These do not establish option profitability or full-session reliability in advance. See reports/OWNER_ACTIONS_MASTER.md for the single external dependency list.
+
+
+Receipt observation is now a single-flight read-only background scan (15s scan budget,60s refresh); unavailable scans never mean zero failed deliveries. No dependency or privilege change is required. The dashboard serves a bounded diagnostic cache and may return unavailable briefly while refreshing an expired snapshot; /trend performs current gates. Keep the coordinated worker/notifier/dashboard source versions together. On an existing current-user Task Scheduler installation, start its registered AEGIS task once after a controlled stop; do not create another service group.

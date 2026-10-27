@@ -11,7 +11,11 @@ test('every public market alert fans out identically only when sharing is enable
  const calls=[],fake=async(_,method,payload)=>{calls.push(payload);return {message_id:calls.length};};
  const kinds=['PREOPEN','TREND_LINE','SPY_IDEA','IDEA_UPDATE','IDEA_WARNING','RECAP','PAPER_SIGNAL','PAPER_UPDATE'];
  await withSharing(true,async()=>{
-  for(const type of kinds){const e=event(type);await send(e,{token:'fixture',chat_id:100},log,fake,file);const last=calls.slice(-3);assert.deepEqual(last.map(p=>String(p.chat_id)),['100','200','300']);assert.equal(new Set(last.map(p=>p.text)).size,1);await send(e,{token:'fixture',chat_id:100},log,fake,file);}
+  // Routing is tested independently of the separately tested price/calendar
+  // checker. Inject it explicitly; never read a production database here.
+  let rechecks=0;const options={entryCheck:()=>{rechecks++;return {eligible:true};}};
+  for(const type of kinds){const e=event(type);await send(e,{token:'fixture',chat_id:100},log,fake,file,options);const last=calls.slice(-3);assert.deepEqual(last.map(p=>String(p.chat_id)),['100','200','300']);assert.equal(new Set(last.map(p=>p.text)).size,1);await send(e,{token:'fixture',chat_id:100},log,fake,file,options);}
+  assert.equal(rechecks,3);
  });
  assert.equal(calls.length,kinds.length*3);
  await withSharing(false,async()=>{for(const type of kinds)await assert.rejects(send({...event(type),id:'blocked-'+type},{token:'fixture',chat_id:100},log,fake,file));});

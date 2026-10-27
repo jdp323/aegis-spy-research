@@ -1,5 +1,5 @@
 """Read-only, allowlisted daily capture evidence; never invent closed-session data."""
-import argparse,json,sqlite3,collections,hashlib
+import argparse,json,sqlite3,collections,hashlib,time
 from datetime import datetime,timezone,timedelta,date
 from core.storage import ROOT
 from core.sessions import ET,market_session
@@ -13,8 +13,9 @@ def query(db,sql,args=()):
     try:return db.execute(sql,args).fetchall()
     except sqlite3.OperationalError:return []
 def count(rows):return dict(collections.Counter(rows))
-def receipts(root,day):
+def receipts(root,day,budget_seconds=None):
     result=[]
+    deadline=time.monotonic()+budget_seconds if budget_seconds is not None else None
     folder=root/'logs/notifications'
     confirmations=set();journal=folder/'owner_confirmations.jsonl'
     if journal.exists():
@@ -24,6 +25,8 @@ def receipts(root,day):
                 if entry.get('status')=='CONFIRMED_BY_OWNER':confirmations.add(entry['receipt_hash'])
             except (ValueError,KeyError,TypeError):continue
     for p in folder.rglob('*.json') if folder.exists() else []:
+        if deadline is not None and time.monotonic()>deadline:raise TimeoutError('RECEIPT_SCAN_DEADLINE')
+        if deadline is not None and p.stat().st_size>65536:raise ValueError('RECEIPT_METADATA_TOO_LARGE')
         try:
             d=json.loads(p.read_text(encoding='utf-8'));at=stamp(d['created_at'])
             if at.astimezone(ET).date().isoformat()!=day:continue
@@ -65,7 +68,8 @@ def collect(day,root=ROOT,now=None):
             bucket={t for t in expected if datetime.fromtimestamp(t,timezone.utc).astimezone(ET).hour==hour}
             hours.append({'hour_et':f'{hour:02d}:00','expected':len(bucket),'recorded':len(bucket&recorded),'backfilled':len(bucket&backfilled),'NO_PRINT_CONFIRMED':len(bucket&confirmed),'missing':len(bucket-recorded-confirmed)})
         events=[]
-        for at,feed_,kind,payload in query(o,'SELECT at,feed,event,payload FROM stream_events ORDER BY at'):
+        bounds=(noon.replace(hour=0,minute=0,second=0,microsecond=0).astimezone(timezone.utc).isoformat(),(noon.replace(hour=0,minute=0,second=0,microsecond=0)+timedelta(days=1)).astimezone(timezone.utc).isoformat())
+        for at,feed_,kind,payload in query(o,'SELECT at,feed,event,payload FROM stream_events WHERE at>=? AND at<? ORDER BY at',bounds):
             if stamp(at).astimezone(ET).date().isoformat()==day:events.append((at,feed_,kind,json.loads(payload)))
         outages=[];missing=sorted(expected-recorded-confirmed)
         for t in missing:

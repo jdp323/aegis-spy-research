@@ -1,6 +1,7 @@
 """Bounded market-data-only SPY dividend history; no broker/account endpoints."""
 from datetime import date,datetime,timezone,timedelta
 from data.models import finite
+from decimal import Decimal,InvalidOperation
 
 def collect(provider,start,end):
     a=date.fromisoformat(start);b=date.fromisoformat(end)
@@ -13,17 +14,20 @@ def collect(provider,start,end):
         events=(raw.get('corporate_actions') or {}).get('cash_dividends')
         if not isinstance(events,list):raise ValueError('CORPORATE_SCHEMA_UNAVAILABLE')
         for e in events:
-            if e.get('symbol')!='SPY' or not finite(e.get('rate')) or e['rate']<0:raise ValueError('CORPORATE_DIVIDEND_INVALID')
-            ex=date.fromisoformat(e['ex_date']);rows.append({'ex_date':ex.isoformat(),'rate':e['rate']})
+            try:rate=Decimal(str(e.get('rate')))
+            except InvalidOperation:raise ValueError('CORPORATE_DIVIDEND_INVALID')
+            if e.get('symbol')!='SPY' or not rate.is_finite() or rate<0 or isinstance(e.get('rate'),bool):raise ValueError('CORPORATE_DIVIDEND_INVALID')
+            ex=date.fromisoformat(e['ex_date']);rows.append({'ex_date':ex.isoformat(),'rate':float(rate)})
         page=raw.get('next_page_token')
         if not page:break
         if page in seen:raise ValueError('CORPORATE_PAGINATION_INVALID')
         seen.add(page)
     else:raise ValueError('CORPORATE_PAGINATION_INCOMPLETE')
-    by={};cursor=a
-    while cursor<=b:by[cursor.isoformat()]=0.;cursor+=timedelta(days=1)
+    # Official endpoint start/end filter PROCESS_DATE, not EX_DATE. Absence in
+    # this response cannot verify zero dividend on every requested ex-date.
+    by={}
     for r in rows:
-        if r['ex_date'] in by:by[r['ex_date']]+=r['rate']
-    return {'status':'COMPLETE_PROVIDER_RESPONSE','fetched_at':datetime.now(timezone.utc).isoformat(),
+        if start<=r['ex_date']<=end:by[r['ex_date']]=by.get(r['ex_date'],0.)+r['rate']
+    return {'status':'OBSERVED_PROCESS_DATE_ACTIONS_ONLY','ex_date_coverage_verified':False,'fetched_at':datetime.now(timezone.utc).isoformat(),
         'source':'https://data.alpaca.markets/v1/corporate-actions','start':start,'end':end,'dividends':by,
-        'limitation':'Provider may revise delayed corporate actions; downloaded history is not contemporaneous evidence.'}
+        'limitation':'Query filters process_date; unreturned ex-dates remain unknown, never zero. Provider may revise delayed actions; not contemporaneous evidence.'}

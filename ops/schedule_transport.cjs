@@ -10,7 +10,7 @@ async function main(){
    const result=await send(event,{token:'fixture',chat_id:1},directory,async(_,method,payload)=>{
     if(method!=='sendMessage'||payload.chat_id!==1||payload.disable_notification!==event.disable_notification)throw Error('FAKE_TRANSPORT_MISMATCH');
     calls++;return {message_id:calls};
-   });
+   },undefined,{entryCheck:guard=>({eligible:!!guard&&guard.version==='entry-publication-v1',reason:'ISOLATED_SIMULATION_GUARD_ONLY'})});
    if(result.status!=='TELEGRAM_ACCEPTED')throw Error('FAKE_TRANSPORT_REJECTED');events++;
   }
  }}finally{Date.now=original;}

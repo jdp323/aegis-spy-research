@@ -1,3 +1,5 @@
+> October27 current handoff: [master implementation report](reports/updates/2026-10-27_master-implementation.md), [current status](reports/CURRENT_STATUS.md), [setup](SETUP.md). Current files supersede conflicting older presentation/scope notes; dated evidence below retains its as-of meaning.
+
 # Verification
 
 Use the venv created in SETUP.md. Run python -m ops.ci_tests for isolated Python discovery plus the explicit monitoring/test_*.cjs list. Run python -m ops.verify_commands for actual command handlers across owner, guest, stranger, revoked and expired-invitation roles and valid/invalid/empty arguments. Run python -m ops.day_simulation for fake-clock schedules and transports. No real guest messages are sent.

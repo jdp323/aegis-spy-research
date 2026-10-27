@@ -1,3 +1,5 @@
+> October27 current handoff: [master implementation report](reports/updates/2026-10-27_master-implementation.md), [current status](reports/CURRENT_STATUS.md), [setup](SETUP.md). Current files supersede conflicting older presentation/scope notes; dated evidence below retains its as-of meaning.
+
 # Operations
 
 Use SETUP.md first. Start/status/stop: python -m ops.supervisor start|status|stop. Unknown arguments exit with usage. Status probes localhost HTTP and stored service progress; process existence alone is not data readiness. Ports 8767 (dashboard) and 8768 (singleton) are local.

@@ -8,7 +8,7 @@ def verify(root=ROOT):
     root=Path(root);now=datetime.now(timezone.utc);stamp=now.strftime('%Y%m%dT%H%M%S%fZ')
     short=Path(os.environ.get('LOCALAPPDATA',tempfile.gettempdir()))/'Temp'/'ag';short.mkdir(parents=True,exist_ok=True)
     workspace=Path(tempfile.mkdtemp(prefix='c-',dir=short));isolated_temp=Path(tempfile.mkdtemp(prefix='t-',dir=short))
-    ignore={'.venv','.private','runtime','logs','daily_reports','.vendor','__pycache__','.git','demo_sessions','outbox','inbox','users','verification','completion_verification','reports','documentation_archive','command_workspaces','schedule_transports','premarket_cache','premarket_authorized_cache','public_cache','closing_cache'}
+    ignore={'.venv','.private','.shadow-model','runtime','logs','daily_reports','.vendor','__pycache__','.git','demo_sessions','outbox','inbox','users','verification','completion_verification','reports','documentation_archive','command_workspaces','schedule_transports','premarket_cache','premarket_authorized_cache','public_cache','closing_cache'}
     for folder,dirs,files in os.walk(root):
         dirs[:]=[x for x in dirs if x not in ignore];target=workspace/Path(folder).relative_to(root);target.mkdir(parents=True,exist_ok=True)
         for name in files:

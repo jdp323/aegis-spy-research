@@ -24,6 +24,8 @@ class V5Ideas(unittest.TestCase):
    q={'payload':{'mid':500+sign*.11},'feed_quality':'SIMULATED'}
    candidates_=detect(fs,bars,q,NOW,config())
    self.assertIn(name,[x['setup_type'] for x in candidates_],name)
+   for i in candidates_:
+    confirmation=datetime.fromisoformat(i['confirmation_at']);self.assertEqual(datetime.fromisoformat(i['max_hold_until'])-confirmation,timedelta(minutes=60));self.assertLessEqual(datetime.fromisoformat(i['signal_expiry'])-confirmation,timedelta(seconds=60))
    bars[-1]['volume']=1;self.assertFalse(detect(fs,bars,q,NOW,config()))
    bars[-1]['volume']=2500;fs['15m']['trend']=fs['1h']['trend']='BEAR' if sign==1 else 'BULL';self.assertFalse(detect(fs,bars,q,NOW,config()))
  def test_pending_levels_min_rr_and_atr_floor(self):

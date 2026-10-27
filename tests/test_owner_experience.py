@@ -15,8 +15,8 @@ from strategies.published_baselines import concretum_signal,opening_range,first_
 NOW=datetime(2026,10,21,11,0,tzinfo=ET).astimezone(timezone.utc)
 def ctx(flat=False):
     start=NOW.timestamp()-31*60
-    bars=[dict(timestamp=start+n*60,open=500,high=503,low=499,close=500 if flat else 500+n*.01,volume=100) for n in range(31)]
-    return dict(reason='data not fresh',feed_quality='IEX',bar_research=dict(reason=None,quality='COMPLETED_BAR_RESEARCH_ONLY',bars=bars,features={'1m':{'vwap_approx':500}},feed_quality='IEX',last_completed_close=bars[-1]['close'],source_timestamp=NOW.isoformat()))
+    bars=[dict(timestamp=start+n*60,open=500,high=500.05 if flat else 503,low=499.95 if flat else 499,close=500 if flat else 500+n*.01,volume=100) for n in range(31)]
+    return dict(reason='data not fresh',feed_quality='IEX',bar_research=dict(reason=None,quality='COMPLETED_BAR_RESEARCH_ONLY',bars=bars,features={'1m':{'vwap_approx':500,'atr14':.1}},feed_quality='IEX',last_completed_close=bars[-1]['close'],source_timestamp=NOW.isoformat()))
 def idea():return dict(signal_id='EXAMPLE',timestamp=NOW.isoformat(),direction='CALL',trigger=500.1,do_not_chase=500.8,invalidation=499.8,t2=501.2,signal_expiry=(NOW+timedelta(minutes=10)).isoformat(),max_hold_until=(NOW+timedelta(minutes=60)).isoformat(),entry_condition='a completed 1-minute close above SPY $500.10')
 def closed(i,minute,loss=True):return dict(signal_id=str(i),status='CLOSED',closed_at=(NOW+timedelta(minutes=minute)).isoformat(),r_multiple=-1 if loss else 1,alerted=False)
 
@@ -24,7 +24,7 @@ class Experience(unittest.TestCase):
     def test_available_trend_is_independent_of_option_and_quote(self):
         c=ctx();r=view(c,NOW);self.assertEqual(r['trend'],'UP')
         text=status_text(c,NOW,{'quality':'DATA_OK','risk':'NORMAL'})
-        self.assertEqual(len(text.splitlines()),5);self.assertIn('Current trend: UP',text);self.assertIn('WAIT',text);self.assertNotIn('SOURCE_',text)
+        self.assertEqual(len(text.splitlines()),5);self.assertIn('Last completed-bar trend: UP',text);self.assertIn('Next hour: unavailable',text);self.assertIn('WAIT',text);self.assertNotIn('SOURCE_',text)
     def test_retained_oct20_delay_cannot_be_refreshed_by_heartbeat(self):
         # Original retained source/receipt times; positive prices below are
         # synthetic schema placeholders, not reconstructed market prices.
@@ -56,7 +56,7 @@ class Experience(unittest.TestCase):
         opening=end.astimezone(ET).replace(hour=9,minute=30).timestamp();rows=[dict(timestamp=opening,open=500,close=500),dict(timestamp=end.timestamp()-60,close=501)]
         resolve(s,rows,end);o=s.events('directional_forecast_outcome')[0];self.assertEqual(o['reference'],500);self.assertTrue(o['correct'])
     def test_premarket_seven_lines_no_fabricated_levels(self):
-        text=premarket_text({}, {}, NOW);self.assertEqual(len(text.splitlines()),7);self.assertIn('DATA UNAVAILABLE',text);self.assertNotIn('$',text)
+        text=premarket_text({}, {}, NOW);self.assertEqual(len(text.splitlines()),8);self.assertIn('Opening-hour lean: UNCLEAR',text);self.assertIn('DATA UNAVAILABLE',text);self.assertNotIn('$',text)
     def test_watch_idea_nine_lines_actual_confirmation_and_expiry(self):
         i=idea();text=idea_text(i,{},{});self.assertEqual(len(text.splitlines()),9);self.assertIn('1-minute',text);self.assertIn('Underlying watch only',text);self.assertIn('SPY target: $501.20',text)
         self.assertNotIn('BUY',text);i['signal_expiry']=i['max_hold_until'];self.assertIn('cancelled',idea_text(i,{},{}))
@@ -64,7 +64,7 @@ class Experience(unittest.TestCase):
         for c in ('TARGET_2_HIT','STOP_HIT','TIME_EXIT','MONITORING_UNAVAILABLE','IDEA_CANCELLED'):
             t=update_text(idea(),c);self.assertIn('EXAMPLE',t);self.assertLessEqual(len(t.splitlines()),2);self.assertNotIn('you sold',t.lower())
     def test_recap_six_lines_no_rejection_dump(self):
-        r=dict(idea(),alerted=False,status='CLOSED');t=recap_text([r],NOW,'UNAVAILABLE');self.assertEqual(len(t.splitlines()),6);self.assertIn('Ideas alerted: 0',t);self.assertNotIn('structure',t)
+        r=dict(idea(),alerted=False,status='CLOSED');t=recap_text([r],NOW,'UNAVAILABLE');self.assertEqual(len(t.splitlines()),8);self.assertIn('Ideas alerted: 0',t);self.assertIn('Forward outlook: outcomes unavailable',t);self.assertNotIn('structure',t)
     def test_pause_consumes_silent_losses_once_and_restart(self):
         rows=[closed(n,n) for n in range(3)];s,active,w=advance(None,rows,NOW+timedelta(minutes=3));self.assertTrue(active);self.assertEqual(len(w),1)
         first=copy.deepcopy(s);s,active,w=advance(json.loads(json.dumps(s)),rows+[closed(3,10)],NOW+timedelta(minutes=11));self.assertEqual(s['episode']['end'],first['episode']['end']);self.assertFalse(w)
@@ -106,7 +106,7 @@ class Experience(unittest.TestCase):
             def __init__(self):self.calls=[]
             def get(self,path,params):
                 self.calls.append((path,params));return {'corporate_actions':{'cash_dividends':[{'symbol':'SPY','ex_date':'2026-10-20','rate':1.2}]}}
-        p=Provider();r=collect(p,'2026-10-19','2026-10-20');self.assertEqual(r['dividends']['2026-10-20'],1.2);self.assertEqual(r['dividends']['2026-10-19'],0);self.assertEqual(p.calls[0][0],'/v1/corporate-actions')
+        p=Provider();r=collect(p,'2026-10-19','2026-10-20');self.assertEqual(r['dividends']['2026-10-20'],1.2);self.assertNotIn('2026-10-19',r['dividends']);self.assertFalse(r['ex_date_coverage_verified']);self.assertEqual(p.calls[0][0],'/v1/corporate-actions')
         p.get=lambda *args:{}
         with self.assertRaisesRegex(ValueError,'SCHEMA'):collect(p,'2026-10-19','2026-10-20')
         with self.assertRaisesRegex(ValueError,'RANGE'):collect(p,'2025-01-01','2026-10-20')
@@ -159,8 +159,8 @@ class Experience(unittest.TestCase):
         from ops.day_simulation import run_scenario
         r=run_scenario('normal',NOW.astimezone(ET).date());self.assertTrue(r['PASS'])
         for e in r['timeline']:
-            cap={'PREOPEN':7,'TREND_LINE':5,'SPY_IDEA':9,'RECAP':6}.get(e['alert_type'])
+            cap={'PREOPEN':8,'TREND_LINE':6,'SPY_IDEA':9,'RECAP':8}.get(e['alert_type'])
             if cap:self.assertLessEqual(len(e['text'].splitlines()),cap,e['alert_type'])
-            if e['alert_type']=='TREND_LINE':self.assertIn('Current trend:',e['text'])
+            if e['alert_type']=='TREND_LINE':self.assertTrue('Current trend:' in e['text'] or 'Last completed-bar trend:' in e['text'])
 
 if __name__=='__main__':unittest.main()

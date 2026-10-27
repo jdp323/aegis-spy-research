@@ -20,6 +20,10 @@ def context(store,now,simulation=False):
         # indicator pass. Confirmed-empty slots never satisfy this shortcut.
         result['bar_research']={'quality':'COMPLETED_BAR_RESEARCH_ONLY','reason':None,'features':result['features'],'bars':result['bars'],'rows':result['rows'],'provider':result['quote'].get('provider','UNAVAILABLE'),'feed_quality':result['feed_quality'],'entry_eligible':False,'source_timestamp':datetime.fromtimestamp(tail[-1]['timestamp']+60,timezone.utc).isoformat(),'last_completed_close':tail[-1]['close'],'bar_end_age_seconds':result.get('bar_end_age_seconds')}
     else:result['bar_research']=bar_context(store,now,simulation)
+    if simulation:result['bar_research']['feed_quality']='SIMULATED'
+    result['premarket_report']=store.get('premarket_report:'+now.astimezone(ET).date().isoformat()) or {}
+    saved=store.get('market_view') or {};recap=saved.get('recap')
+    result['recap']=recap if recap and recap.get('day')==now.astimezone(ET).date().isoformat() else None
     result['horizons']=describe(result['bar_research'],now)
     return result
 def candidates(ctx,news,config,now,simulation=False):
@@ -113,7 +117,7 @@ def scheduled_preopen(store,news,now,config,simulation=False):
     elif not simulation:effective=datetime.now(timezone.utc)
     if ('PREOPEN',day) not in due(effective,config):return None
     report=dict({'quality':'UNAVAILABLE','reason':'prepared premarket evidence unavailable'},**(report or {}))
-    report['message_version']='spy-preopen-compact-v1'
+    report['message_version']='spy-preopen-compact-v2'
     if not simulation:
         from news.market_outlook import build as outlook_build
         report['market_outlook']=outlook_build(store,effective,premarket=report)
@@ -147,20 +151,33 @@ def tick(store,news,config,now,publish,root=ROOT,tracker=None,simulation=False):
     def emit(event):
         from core.directional_research import view,record
         if event.get('alert_type')=='TREND_LINE':
-            r=view(ctx,now)
+            from core.market_view import build
+            s=build(ctx,news,now,config,primary_current(store,tracker.positions(),now))
+            store.put('market_view',s)
+            r={'outlooks':s['outlooks'],'as_of':s['price']['source_at'],'provider':ctx['feed_quality'],'snapshot_id':s['snapshot_id']}
             for h in ('H60','H120','SESSION'):record(store,event['id']+':'+h,now,r,h)
         elif event.get('alert_type')=='PREOPEN':
             report=store.get('premarket_report:'+now.astimezone(ET).date().isoformat()) or {}
             session=market_session(now.astimezone(ET).replace(hour=10,minute=0))
             end=now.astimezone(ET).replace(hour=session['close_minute']//60,minute=session['close_minute']%60,second=0,microsecond=0)
-            bias={'BULLISH':'UP','BEARISH':'DOWN'}.get(report.get('bias'),'ABSTAIN')
+            from core.market_view import premarket_view
+            morning=premarket_view(report,now);bias=morning['session_lean'] if morning['session_lean'] in ('UP','DOWN') else 'ABSTAIN'
             r={'provider':'IEX' if report.get('quality')=='IEX_RESEARCH_ONLY' else 'PUBLIC_DELAY_UNVERIFIED','as_of':report.get('as_of_bar'),'outlooks':{'PREMARKET':{'bias':bias,'target_at':end.isoformat(),'invalidation':(report.get('levels') or {}).get('low' if bias=='UP' else 'high')}}}
             record(store,event['id'],now,r,'PREMARKET',premarket=True)
+            opening=now.astimezone(ET).replace(hour=10,minute=30,second=0,microsecond=0)
+            lean=morning['opening_hour_lean'] if morning['opening_hour_lean'] in ('UP','DOWN') else 'ABSTAIN'
+            r['outlooks']['PREMARKET_OPENING_HOUR']={'bias':lean,'target_at':opening.isoformat(),'invalidation':(report.get('levels') or {}).get('low' if lean=='UP' else 'high')}
+            record(store,event['id']+':OPENING_HOUR',now,r,'PREMARKET_OPENING_HOUR',premarket=True)
+            from core.market_view import build
+            ctx['premarket_report']=report;store.put('market_view',build(ctx,news,now,config))
         publish(event);events.append(event)
-    def send(key,text,type_,silent=False,buttons=None,parent=None):
+    def send(key,text,type_,silent=False,buttons=None,parent=None,idea=None):
         if store.get(key):return
         store.put(key,{'reserved_at':now.isoformat()});e={'id':key,'kind':'RESEARCH','audience':'SHARED' if config.get('signals',{}).get('shared',False) else 'PRIVATE','tenant':'owner','text':text,'alert_type':type_,'expires_at':(now+timedelta(minutes=10)).isoformat(),'disable_notification':silent}
-        if type_ in ('SPY_IDEA','IDEA_UPDATE'):e['presentation_version']='owner-compact-v1'
+        if type_ in ('SPY_IDEA','IDEA_UPDATE'):e['presentation_version']='owner-compact-v2'
+        if idea:
+            from core.entry_publication import envelope
+            e['entry_guard']=envelope(idea);e['expires_at']=idea['signal_expiry']
         if buttons:e['reply_markup']=buttons
         if parent:e['parent_event_id']=parent
         emit(e)
@@ -240,7 +257,7 @@ def tick(store,news,config,now,publish,root=ROOT,tracker=None,simulation=False):
                 store.event('paper-candidate-'+i['signal_id']+'-'+i['strategy_version'],'paper_candidate',{**i,'paper_eligible':True,'underlying_entry_range':[i['entry'],i['do_not_chase']],'max_holding_minutes':60})
                 buttons={'inline_keyboard':[[{'text':'📊 Chart','callback_data':'aegis:chart:'+i['signal_id']},{'text':'🚫 Skip','callback_data':'aegis:skip:'+i['signal_id']},{'text':'More ▸','callback_data':'aegis:more:'+i['signal_id']}]]}
                 if i.get('option_contract'):buttons['inline_keyboard'].append([{'text':'✅ I bought','callback_data':'aegis:log:'+i['signal_id']}])
-                send('v5-idea-'+i['signal_id']+'-'+i['strategy_version'],idea_text(i,tag,config),'SPY_IDEA',buttons=buttons)
+                send('v5-idea-'+i['signal_id']+'-'+i['strategy_version'],idea_text(i,tag,config),'SPY_IDEA',buttons=buttons,idea=i)
                 # Confirmation is already in the initial watch; no redundant entry update.
         from monitoring.day_schedule import dispatch
         def compose(kind):
@@ -248,7 +265,10 @@ def tick(store,news,config,now,publish,root=ROOT,tracker=None,simulation=False):
                 return scheduled_preopen(store,news,now,config,simulation)
             if kind=='RECAP':
                 from monitoring.owner_messages import recap_text
-                return recap_text(tracker.positions(),now,recap_levels(store,now,simulation))
+                from core.directional_research import daily_score
+                from core.market_view import build,recap_view
+                rows=tracker.positions();ctx['recap']=recap_view(rows,now);snapshot=build(ctx,news,now,config,primary_current(store,rows,now));store.put('market_view',snapshot)
+                return recap_text(rows,now,recap_levels(store,now,simulation),daily_score(store,now),snapshot)
             if not config.get('notifications',{}).get('categories',{}).get('trend_lines',True):return None
             key='v5-stale:'+now.astimezone(ET).date().isoformat()
             if ctx['reason']:

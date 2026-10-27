@@ -28,16 +28,16 @@ class PrimaryPlanTests(unittest.TestCase):
   s=MemoryStore();a=dict(self.plan(),status='OPEN',alerted=True)
   self.assertEqual(current(s,[a],NOW),a);reserve(s,a,NOW)
   self.assertEqual(current(s,[a],NOW+timedelta(hours=2)),a)
-  self.assertEqual(state(a,NOW+timedelta(hours=2)),'EXIT CONDITION REACHED')
+  self.assertEqual(state(a,NOW+timedelta(hours=2)),'UNRESOLVED')
   self.assertIsNone(current(s,[dict(a,status='CLOSED')],NOW))
  def test_status_retains_hold_after_entry_expiry_without_inferred_personal_fill(self):
   a=dict(self.plan(),status='OPEN');text=status_text(context(),NOW+timedelta(minutes=15),{'quality':'DATA_OK','risk':'NORMAL'},plan=a)
-  self.assertIn('HOLD',text);self.assertIn('no new entry',text);self.assertLessEqual(len(text.splitlines()),5);self.assertNotIn('you bought',text.lower())
+  self.assertIn('HOLD',text);self.assertIn('no new entry',text);self.assertIn('monitoring unavailable',text);self.assertLessEqual(len(text.splitlines()),6);self.assertNotIn('you bought',text.lower())
  def test_compact_messages_and_cohort_recap(self):
   a=self.plan();self.assertIn('ENTRY CONFIRMED',idea_text(a,{},{}));self.assertLessEqual(len(idea_text(a,{},{}).splitlines()),9)
   self.assertIn('EXIT CONDITION REACHED',update_text(a,'STOP_HIT'))
   a.update(alerted=True,status='CLOSED');b=dict(a,signal_id='b'*24,alerted=False)
-  r=recap_text([a,b],NOW,'UNAVAILABLE');self.assertIn('Ideas alerted: 1',r);self.assertIn('Alerted research: 1 closed',r);self.assertIn('1 silent observations separate',r);self.assertEqual(len(r.splitlines()),6)
+  r=recap_text([a,b],NOW,'UNAVAILABLE');self.assertIn('Ideas alerted: 1',r);self.assertIn('Alerted research: 1 closed',r);self.assertIn('1 silent observations separate',r);self.assertEqual(len(r.splitlines()),8)
   expired=dict(a,status='EXPIRED_NO_ENTRY');gap=dict(a,status='OPEN',coverage_status='UNRESOLVED_GAP')
   r=recap_text([expired,gap],NOW,'UNAVAILABLE');self.assertIn('expired/cancelled: 1',r);self.assertIn('0 closed · 0 open · 1 unresolved',r)
  def test_atomic_schedule_reservation_two_connections(self):

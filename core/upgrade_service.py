@@ -1,6 +1,6 @@
 """Read-only market research, isolated position reviews and durable alert outbox."""
 
-import json,time,hashlib,signal,os,tempfile
+import json,time,hashlib,signal,os,tempfile,sqlite3
 
 from datetime import datetime,timezone,timedelta
 
@@ -148,7 +148,7 @@ def enqueue(store,id,text,audience='SHARED',tenant=None,kind='INFO',**metadata):
 
     if tenant:event['tenant']=tenant
 
-    for key in ('alert_type','signal_id','strategy_version','presentation_version','reply_markup','disable_notification','expires_at','parent_event_id'):
+    for key in ('alert_type','signal_id','strategy_version','presentation_version','reply_markup','disable_notification','expires_at','parent_event_id','entry_guard'):
 
         if key in metadata:event[key]=metadata[key]
 
@@ -327,7 +327,7 @@ class Engine:
         if c.get('idea_engine_enabled',False):
             from core.idea_service import tick as idea_tick
             def idea_publish(event):
-                enqueue(self.store,event['id'],event['text'],event['audience'],event['tenant'],kind='RESEARCH',alert_type=event['alert_type'],disable_notification=event['disable_notification'],expires_at=event['expires_at'],**({key:event[key] for key in ('reply_markup','parent_event_id','presentation_version') if event.get(key)}))
+                enqueue(self.store,event['id'],event['text'],event['audience'],event['tenant'],kind='RESEARCH',alert_type=event['alert_type'],disable_notification=event['disable_notification'],expires_at=event['expires_at'],**({key:event[key] for key in ('reply_markup','parent_event_id','presentation_version','entry_guard') if event.get(key)}))
             self.store.put('v5_skew_budget',c.get('max_future_skew_seconds',2))
             idea_tick(self.store,NewsProvider(ROOT/'config/news_calendar.json').snapshot(now),c,now,idea_publish,root=ROOT)
 
@@ -778,6 +778,14 @@ def snapshot():
         now=datetime.now(timezone.utc);q=s.get('research_quote:SPY:iex') if evaluation.get('feed_quality')=='IEX' else s.get('quote:SPY')
 
         current_news=NewsProvider(ROOT/'config/news_calendar.json').snapshot(now)
+        from core.market_view import observe
+        from core.readonly_state import ReadOnlyState,idea_rows
+        read_only=ReadOnlyState(ROOT/'runtime/aegis.sqlite')
+        try:
+            try:rows=idea_rows(ROOT/'runtime/ideas.sqlite')
+            except (OSError,sqlite3.Error):rows=[]
+            result['market_view']=observe(read_only,current_news,now,read_config(),rows)
+        finally:read_only.close()
 
         if not evaluation.get('timestamp') or (now-stamp(evaluation['timestamp'])).total_seconds()>read_config()['analysis_seconds'] or not quote_valid(q or {},now):evaluation.update(paper_eligible=False,paper_blockers=['PROXY_FRESH_FEED_AND_31_BAR_TAIL_REQUIRED'])
 
@@ -814,6 +822,7 @@ def snapshot():
             if result[k] and (datetime.now(timezone.utc)-stamp(result[k]['at'])).total_seconds()>120:result[k]['state']='STALE_HEARTBEAT'
 
         result['system']={'worker':result['worker_health'],'database':'OPENED_OK'}
+        result['system']['delivery_observation']=s.get('receipt_observer_health') or {'state':'UNAVAILABLE'}
 
         for key,file in [('services','services.json'),('telegram','telegram_health.json'),('dispatcher','dispatcher_health.json')]:
 
@@ -868,6 +877,8 @@ def snapshot():
         result['paper_collection']={'enabled':read_config().get('allow_unvalidated_paper_trading',False),'validated':False,'live_signal_ready':False,'recorder':s.get('recorder_health'),'calendar_updater':s.get('calendar_updater'),'external_heartbeat':s.get('external_heartbeat'),'live_verification':s.get('live_verify_deployment')}
 
         result['premarket_health']=s.get('premarket_health')
+        try:result['shadow_health']=json.loads((ROOT/'runtime/shadow_health.json').read_text())
+        except (OSError,ValueError):result['shadow_health']={'state':'UNAVAILABLE','entry_control':False}
 
         result['premarket_report']=s.get('premarket_report:'+result['session']['date'])
 

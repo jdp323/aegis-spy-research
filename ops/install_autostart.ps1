@@ -16,7 +16,7 @@ if (-not (Test-Path -LiteralPath $pythonwPath)) { throw 'Virtual-environment Pyt
 $action = New-ScheduledTaskAction -Execute $pythonwPath -Argument '-m ops.supervisor run' -WorkingDirectory $aegisRoot
 $trigger = New-ScheduledTaskTrigger -AtLogOn -User $currentIdentity.Name
 $principal = New-ScheduledTaskPrincipal -UserId $currentIdentity.Name -LogonType Interactive -RunLevel Limited
-$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -MultipleInstances IgnoreNew -ExecutionTimeLimit ([TimeSpan]::Zero)
+$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -MultipleInstances IgnoreNew -ExecutionTimeLimit ([TimeSpan]::Zero) -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1)
 Register-ScheduledTask -TaskName $aegisTaskName -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Description 'AEGIS paper research; current-user logon only; no orders' -Force | Out-Null
 Write-Output ('AUTOSTART_INSTALLED: ' + $aegisTaskName + ' (current user, limited privileges)')
 Write-Output 'Keep Windows awake on AC through Settings > System > Power & battery > Screen and sleep. No power settings were changed.'

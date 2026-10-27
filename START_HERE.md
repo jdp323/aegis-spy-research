@@ -1,3 +1,5 @@
+> October27 current handoff: [master implementation report](reports/updates/2026-10-27_master-implementation.md), [current status](reports/CURRENT_STATUS.md), [setup](SETUP.md). Current files supersede conflicting older presentation/scope notes; dated evidence below retains its as-of meaning.
+
 # Start here
 
 Current implementation and verification: [October 22 primary-plan handoff](reports/updates/2026-10-22_primary-plan-reliability.md). This supersedes earlier implementation status; dated reports and issued packets remain historical evidence.

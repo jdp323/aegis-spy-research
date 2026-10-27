@@ -3,6 +3,19 @@ from pathlib import Path
 from unittest.mock import patch
 from ops.supervisor import publish_status
 class StatusTests(unittest.TestCase):
+    def test_stale_service_record_does_not_report_running_from_reused_pid(self):
+        from datetime import datetime,timezone,timedelta
+        from ops.supervisor import status
+        now=datetime(2026,10,27,7,tzinfo=timezone.utc)
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);(root/'runtime').mkdir()
+            (root/'runtime/services.json').write_text(json.dumps({'at':(now-timedelta(hours=4)).isoformat(),'components':{'worker':{'state':'RUNNING','pid':123}}}))
+            with patch('ops.supervisor.alive',return_value=True):r=status(root,clock=lambda:now,probe=False)
+            self.assertEqual(r['components']['worker']['state'],'STALE_STATUS_RECORD');self.assertEqual(r['components']['worker']['reported_state'],'RUNNING')
+    def test_children_receive_explicit_installed_runtime_paths(self):
+        from ops.supervisor import runtime_environment,PY,NODE
+        with patch.dict('os.environ',{},clear=True):
+            r=runtime_environment();self.assertEqual(r['AEGIS_PYTHON'],PY);self.assertEqual(r['AEGIS_NODE'],NODE)
     def test_transient_windows_lock_recovers(self):
         with tempfile.TemporaryDirectory() as d:
             root=Path(d);(root/'runtime').mkdir();original=Path.replace;calls=[]

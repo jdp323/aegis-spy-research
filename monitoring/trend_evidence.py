@@ -10,7 +10,7 @@ def record(path,event_id,now,ctx,news):
     d={'event_id':event_id,'at':now.astimezone(timezone.utc).isoformat(),'status':'VALID_UNDERLYING' if not ctx.get('reason') else 'DESCRIPTIVE_ONLY' if not bar.get('reason') else 'UNAVAILABLE',
        'predicate':ctx.get('failed_predicate'),'feed_quality':ctx.get('feed_quality','UNAVAILABLE'),'frames':frames,
        'heartbeat_age_seconds':ctx.get('heartbeat_age_seconds'),'bar_end_age_seconds':ctx.get('bar_end_age_seconds'),
-       'quote_diagnostics':ctx.get('diagnostics',[]),'calendar_quality':news.get('quality','UNAVAILABLE'),
+       'quote_diagnostics':ctx.get('diagnostics',[]),'calendar_quality':news.get('quality','UNAVAILABLE'),'calendar_risk':news.get('risk','UNAVAILABLE'),
        'horizons':{k:v.get('bias','UNAVAILABLE') for k,v in ctx.get('horizons',{}).items()},
        'delivery_meaning':'Scheduled analysis composed; not Telegram acceptance or phone delivery.'}
     path.parent.mkdir(parents=True,exist_ok=True);db=sqlite3.connect(path,timeout=.5)
@@ -21,3 +21,20 @@ def record(path,event_id,now,ctx,news):
         with db:db.execute('INSERT OR IGNORE INTO trend_status_events VALUES(?,?,?)',(event_id,d['at'],json.dumps(d,allow_nan=False)))
     finally:db.close()
     return d
+
+def session_slots(path,day):
+    """Read only; missing legacy predicates fail rather than infer a pass."""
+    from datetime import datetime,timedelta
+    from core.sessions import ET
+    start=datetime.fromisoformat(day).replace(tzinfo=ET);bounds=(start.astimezone(timezone.utc).isoformat(),(start+timedelta(days=1)).astimezone(timezone.utc).isoformat())
+    db=sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True,timeout=.25)
+    try:
+        try:rows=db.execute('SELECT event_id,payload FROM trend_status_events WHERE at>=? AND at<?',bounds).fetchall()
+        except sqlite3.OperationalError:return {}
+    finally:db.close()
+    result={}
+    for ident,raw in rows:
+        r=json.loads(raw);diagnostics=r.get('quote_diagnostics') or []
+        valid_quote=any(d.get('predicate') is None and d.get('source_age_seconds') is not None and d.get('receipt_age_seconds') is not None for d in diagnostics)
+        result[ident]={'underlying_gates_pass':r.get('status')=='VALID_UNDERLYING' and valid_quote,'calendar_refusal':r.get('calendar_quality')!='DATA_OK' or r.get('calendar_risk') not in ('NORMAL','MODERATE')}
+    return result

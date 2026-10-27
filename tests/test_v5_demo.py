@@ -10,5 +10,6 @@ class V5Demo(unittest.TestCase):
    self.assertEqual(len(set(hashes)),4)
  def test_v5_flow_labelled_and_no_trade_progresses(self):
   text='\n'.join(v5_scene('call',n) for n in range(10))
-  for word in ('PREMARKET','Current trend:','RESEARCH','confirmation','TARGET_1_HIT','STOP HIT','IDEA EXPIRED','RECAP','SCORE'):self.assertIn(word,text)
+  for word in ('PREMARKET','Last completed-bar trend:','SPY WATCH','confirmation','TARGET_1_HIT','STOP HIT','IDEA EXPIRED','RECAP','SCORE'):self.assertIn(word,text)
+  self.assertIn('SIMULATED',text)
   s={'nonce':'fixture','scenario':'no-trade','stage':4};a=response(s);self.assertEqual(s['stage'],5);self.assertTrue(a.startswith(PREFIX));self.assertTrue(a.endswith(SUFFIX))

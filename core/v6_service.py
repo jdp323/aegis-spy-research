@@ -7,10 +7,13 @@ from data.reliability import Events,PauseProbe,active,watchdog_age
 class Reliability:
     def __init__(self,store,provider,root=ROOT,clock=None,background=False):
         from data.backfill import Backfill,BackgroundBackfill
+        from monitoring.receipt_observer import ReceiptObserver
+        self.receipt_observer=ReceiptObserver(root) if background else None
         self.clock=clock or (lambda:datetime.now(timezone.utc));self.root=root;self.store=store;self.events=Events(root/'runtime/observability.sqlite');self.probe=PauseProbe();self.started=self.clock()
         self.backfill=BackgroundBackfill(root/'runtime/observability.sqlite',store.path,provider) if background else Backfill(root/'runtime/observability.sqlite',provider)
         self.tail=BackgroundBackfill(root/'runtime/observability.sqlite',store.path,provider,tail_only=True) if background else None
     def close(self):
+        if self.receipt_observer:self.receipt_observer.close()
         self.backfill.close();self.events.close()
         if self.tail:self.tail.close()
     def tick(self,now,enqueue):
@@ -52,12 +55,14 @@ class Reliability:
                 self.store.put('v6-precheck:'+day,{'at':now.isoformat(),'reason':reason})
                 self.events.add('PREOPEN_CHECK','worker',now,state='WARN' if reason else 'PASS')
                 if reason:enqueue(self.store,'v6-precheck-'+day,'DATA WARNING — 09:20 ET stream self-check: '+reason+'. Next regular trend line: 09:45 ET.','PRIVATE','owner',kind='RESEARCH',alert_type='DATA_WARNING')
-        if getattr(self,'receipt_day',None)!=day or now.timestamp()>=getattr(self,'receipt_due',0):
+        if self.receipt_observer:
+            receipt_rows,health=self.receipt_observer.poll(day);self.store.put('receipt_observer_health',health)
+        elif getattr(self,'receipt_day',None)!=day or now.timestamp()>=getattr(self,'receipt_due',0):
             from ops.session_report import receipts
             self.receipt_rows=receipts(self.root,day);self.receipt_day=day;self.receipt_due=now.timestamp()+60
-        receipt_rows=self.receipt_rows
-        problems=sum(r['status'] in ('PENDING_OR_UNCERTAIN','UNCERTAIN_AFTER_SEND','FAILED_NOT_ACCEPTED') for r in receipt_rows)
-        if problems>2 and not self.store.get('v6-delivery-warning:'+day):
+        if not self.receipt_observer:receipt_rows=self.receipt_rows
+        problems=sum(r['status'] in ('PENDING_OR_UNCERTAIN','UNCERTAIN_AFTER_SEND','FAILED_NOT_ACCEPTED') for r in receipt_rows) if receipt_rows is not None else None
+        if problems is not None and problems>2 and not self.store.get('v6-delivery-warning:'+day):
             self.store.put('v6-delivery-warning:'+day,{'at':now.isoformat(),'count':problems})
             enqueue(self.store,'v6-delivery-warning-'+day,'SYSTEM WARNING — '+str(problems)+' session delivery receipts failed or are uncertain. Review python -m ops.receipts. Uncertain sends are not automatically retried.','PRIVATE','owner',kind='RESEARCH',alert_type='SYSTEM_WARNING')
         noon=local.replace(hour=12,minute=0,second=0,microsecond=0);session=market_session(noon)

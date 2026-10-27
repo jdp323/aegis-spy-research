@@ -9,6 +9,9 @@ def python_executable():
 
 def node_executable():
     value=os.environ.get('AEGIS_NODE') or shutil.which('node')
+    if not value and os.name=='nt':
+        bundled=Path.home()/'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe'
+        if bundled.is_file():value=str(bundled)
     if not value:raise RuntimeError('NODE_NOT_FOUND: install Node.js22 or set AEGIS_NODE')
     return value
 
