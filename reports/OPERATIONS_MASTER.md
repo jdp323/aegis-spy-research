@@ -1,3 +1,5 @@
+> Current postclose deployment and verification: [end-of-day report](updates/2026-10-27_eod-wait-reason-fix.md). New WAIT reason deployed with gates unchanged. Full-session acceptance failed; after-close recovery is bounded local evidence.
+
 > Latest observed opening session: [October27 first-hour service review](updates/2026-10-27_first-hour-service-review.md). All four morning statuses reached API acceptance, but two exceeded30s; database busy retries/failed cycles returned. Today cannot meet the24-of25 timing target. Strict gates remain unchanged.
 
 # Operations and reversible deployment

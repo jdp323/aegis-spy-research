@@ -38,6 +38,20 @@ class MasterBoundaries(unittest.TestCase):
         s=build(fresh_context(),NEWS,NOW);self.assertEqual(s['trend']['state'],'UP');self.assertEqual(s['outlooks']['H60']['bias'],'UP');self.assertEqual(s['entry']['state'],'WAIT');self.assertFalse(s['entry']['option_eligible']);self.assertFalse(s['live_signal_ready']);self.assertIn('market-view-v1',details(s));self.assertEqual(s,build(fresh_context(),NEWS,NOW));self.assertIn('premarket',s);self.assertIn('recap',s)
     def test_stale_quote_preserves_only_bar_trend_abstains_forecasts(self):
         s=build(ctx(),NEWS,NOW);self.assertEqual(s['trend']['state'],'UP');self.assertTrue(s['trend']['descriptive_only']);self.assertTrue(all(o['bias']=='ABSTAIN' for o in s['outlooks'].values()));self.assertFalse(s['entry']['underlying_eligible']);self.assertEqual(s['price']['kind'],'COMPLETED_BAR_CLOSE')
+    def test_quote_aging_after_context_has_a_data_reason_without_opening_gates(self):
+        c=fresh_context();before=copy.deepcopy(c);aged=NOW+timedelta(seconds=6)
+        s=build(c,NEWS,aged,entry_reason='setup confirmed')
+        self.assertIsNone(c['reason']);self.assertEqual(c,before)
+        self.assertEqual(s['entry']['reason'],'fresh price unavailable')
+        self.assertEqual(s['entry']['state'],'WAIT');self.assertFalse(s['entry']['underlying_eligible']);self.assertFalse(s['entry']['option_eligible'])
+        self.assertTrue(all(o['bias']=='ABSTAIN' and o['target_at'] is None for o in s['outlooks'].values()))
+        self.assertEqual(s['trend']['state'],'UP');self.assertTrue(s['trend']['descriptive_only'])
+    def test_aged_quote_reason_reaches_actual_status_with_active_plan(self):
+        from monitoring.owner_messages import status_text
+        c=fresh_context();p=plan();text=status_text(c,NOW+timedelta(seconds=6),NEWS,entry_reason='setup confirmed',plan=p)
+        self.assertIn('New entry: WAIT — fresh price unavailable',text)
+        self.assertIn(p['signal_id'],text);self.assertIn('monitoring unavailable',text)
+        self.assertNotIn('confirmation missing',text);self.assertNotIn('I bought',text);self.assertLessEqual(len(text.splitlines()),7)
     def test_mixed_sideways_and_unavailable_are_three_distinct_states(self):
         c=fresh_context();c['bar_research']['features']['1m']['vwap_approx']=501
         self.assertEqual(view(c,NOW)['trend'],'MIXED');self.assertEqual(view(ctx(True),NOW)['trend'],'SIDEWAYS');self.assertEqual(build({},NEWS,NOW)['trend']['state'],'UNAVAILABLE')

@@ -136,7 +136,7 @@ def build(ctx,news,now,config=None,plan=None,entry_reason=None):
     trend=TrendView(state,research.get('as_of'),research.get('window_minutes',0),TREND_VERSION,research.get('reason') or 'usable completed-price evidence',not fresh or bool(ctx.get('reason')))
     underlying=bool(session['active'] and not ctx.get('reason') and fresh)
     calendar=bool(news.get('quality')=='DATA_OK' and news.get('risk') in ('NORMAL','MODERATE'))
-    why='market closed' if not session['active'] else plain_reason(ctx.get('reason')) if not underlying else 'event calendar unavailable' if news.get('quality')!='DATA_OK' else 'major event blackout' if not calendar else plain_reason(entry_reason)
+    why='market closed' if not session['active'] else plain_reason(ctx.get('reason') or 'fresh price unavailable') if not underlying else 'event calendar unavailable' if news.get('quality')!='DATA_OK' else 'major event blackout' if not calendar else plain_reason(entry_reason)
     primary=None
     if plan:
         primary=plan_view(plan,now,underlying)

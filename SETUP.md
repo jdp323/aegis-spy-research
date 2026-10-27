@@ -113,3 +113,8 @@ Run `python -m ops.master_demo --output A_NEW_DEMO_REPORT.md` for fictional prod
 
 
 Receipt observation is now a single-flight read-only background scan (15s scan budget,60s refresh); unavailable scans never mean zero failed deliveries. No dependency or privilege change is required. The dashboard serves a bounded diagnostic cache and may return unavailable briefly while refreshing an expired snapshot; /trend performs current gates. Keep the coordinated worker/notifier/dashboard source versions together. On an existing current-user Task Scheduler installation, start its registered AEGIS task once after a controlled stop; do not create another service group.
+
+
+## Postclose WAIT-reason correction — October27
+
+The shared view now explains a quote that ages during analysis as fresh price unavailable; entry/data/option predicates are unchanged. Restart the existing coordinated service group after deploying the validated source. There are no new dependencies or credential/configuration changes. For verification, the public clone supports `python -m ops.ci_tests` with a failure-aware exit code. Historical installed packaging may instead require `python -m ops.test_runner`; inspect the complete JSON `successful` field, since that runner's exit status alone is not a test verdict. Keep private outputs outside GitHub and never replay uncertain sends.

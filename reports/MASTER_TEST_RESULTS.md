@@ -1,3 +1,5 @@
+> Latest postclose suites:portable767+7+4+61=839 and installed760+7+4+60=831, zero failures/errors/skips. Initial failures and all corrections remain in [the update report](updates/2026-10-27_eod-wait-reason-fix.md). Earlier master-run evidence below retains its as-of meaning.
+
 # Final verification results
 
 | Suite | General Python | Backtesting Python | Monitoring Python | Explicit Node | Failures/errors/skips |

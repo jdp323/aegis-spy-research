@@ -1,3 +1,5 @@
+> Latest delivered update: [October27 end-of-day review and WAIT-reason correction](updates/2026-10-27_eod-wait-reason-fix.md). All25 statuses and recap reached API acceptance; timing9/25 and data20/25 targets FAILED. Portable839/installed831 checks pass; those tests do not establish profitability or live readiness.
+
 > Latest observed opening session: [October27 first-hour service review](updates/2026-10-27_first-hour-service-review.md). All four morning statuses reached API acceptance, but two exceeded30s; database busy retries/failed cycles returned. Today cannot meet the24-of25 timing target. Strict gates remain unchanged.
 
 > Latest operational review: [owner-only Telegram demo and schedule check](updates/2026-10-27_owner-telegram-demo.md). Five requested fictional messages received API acceptance at09:01 ET; normal09:15 premarket was still future. Core readiness restrictions remain unchanged.
@@ -9,9 +11,9 @@ Current handoff: [October27 master release](updates/2026-10-27_master-implementa
 | Conclusion | Status |
 |---|---|
 | Software | Implemented research core; isolated verification below; external model/data limits separate |
-| Automated verification | Public tests 765/765; backtesting 7/7; monitoring 4/4; node 61/61; installed tests 758/758; backtesting 7/7; monitoring 4/4; node 60/60 |
+| Automated verification | Public tests 767/767; backtesting 7/7; monitoring 4/4; node 61/61; installed tests 760/760; backtesting 7/7; monitoring 4/4; node 60/60 |
 | Local operation | VERIFIED IN OPERATION for bounded work/HTTP; cycle deadlines not consistently met |
-| Live-session data | EXTERNAL VERIFICATION PENDING for this release; no closed-market promotion |
+| Live-session data | One real session observed; timing/data acceptance FAILED; sustained readiness remains unverified |
 | Genuine option data | BLOCKED: SIP/OPRA entitlement and genuine historical inputs incomplete |
 | Strategy evidence | Insufficient; no actual after-cost option profitability established |
 
