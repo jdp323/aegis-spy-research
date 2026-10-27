@@ -1,3 +1,5 @@
+> Latest operational review: [owner-only Telegram demo and schedule check](updates/2026-10-27_owner-telegram-demo.md). Five requested fictional messages received API acceptance at09:01 ET; normal09:15 premarket was still future. Core readiness restrictions remain unchanged.
+
 # Current project status
 
 Current handoff: [October27 master release](updates/2026-10-27_master-implementation.md). Earlier reports retain their as-of meaning.
