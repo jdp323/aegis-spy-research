@@ -1,3 +1,5 @@
+> Latest observed opening session: [October27 first-hour service review](updates/2026-10-27_first-hour-service-review.md). All four morning statuses reached API acceptance, but two exceeded30s; database busy retries/failed cycles returned. Today cannot meet the24-of25 timing target. Strict gates remain unchanged.
+
 > Latest operational review: [owner-only Telegram demo and schedule check](updates/2026-10-27_owner-telegram-demo.md). Five requested fictional messages received API acceptance at09:01 ET; normal09:15 premarket was still future. Core readiness restrictions remain unchanged.
 
 # Current project status

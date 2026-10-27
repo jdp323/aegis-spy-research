@@ -1,3 +1,5 @@
+> Latest observed opening session: [October27 first-hour service review](updates/2026-10-27_first-hour-service-review.md). All four morning statuses reached API acceptance, but two exceeded30s; database busy retries/failed cycles returned. Today cannot meet the24-of25 timing target. Strict gates remain unchanged.
+
 # Operations and reversible deployment
 
 One production installation remains authoritative. The sanitized Git clone, backups/restores, reference archives and isolated test trees are not launched as service groups. The supervisor manages dashboard, public research worker, market analysis worker, independent market stream process, Telegram listener, dispatcher and a separate shadow worker. Only core.idea_service/atomic day_schedule creates scheduled owner-facing preopen/status/recap envelopes. The shadow worker produces local evidence only. Existing optional news/research/sentiment pushes and all sharing preferences are preserved.
