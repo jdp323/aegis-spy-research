@@ -1,3 +1,5 @@
+> October28 update: [observed authentication recovery and verified calendar refresh](updates/2026-10-28_opening-source-calendar-review.md). IEX authentication and market messages resumed; no new credential/purchase action is requested solely on last night's406. Investigate a competing/retained stream if that response recurs. Calendar expiry is now November4 13:32:27UTC from actual fresh official inputs; SIP/OPRA and the other external requirements below remain separate.
+
 > Newly identified stream blocker: [October27 evening diagnostic](updates/2026-10-27_evening-stream-connection-limit.md). Review other clients using the same Alpaca IEX connection; close an unnecessary competing stream if identified, or ask Alpaca to identify/release a retained connection. One local AEGIS group was observed; no external holder is identified. Do not rotate keys or buy a plan merely because the socket returned406.
 
 # Remaining external actions

@@ -1,3 +1,5 @@
+> October28 opening review: [calendar refresh and partial stream recovery](updates/2026-10-28_opening-source-calendar-review.md). Premarket API-accepted09:15:22ET; IEX authentication/messages resumed, but measured delayed quotes still failed strict freshness. Official calendar genuinely refreshed, with today's all-day HIGH blackout preserved. This is not full-session or option readiness.
+
 > Evening operational finding: [IEX stream connection limit](updates/2026-10-27_evening-stream-connection-limit.md). A bounded socket authentication probe returned406 while IEX REST returned200; the production stream remains disconnected. External/retained connection holder is unconfirmed. Local HTTP and Telegram operation do not establish stream readiness.
 
 > Latest delivered update: [October27 end-of-day review and WAIT-reason correction](updates/2026-10-27_eod-wait-reason-fix.md). All25 statuses and recap reached API acceptance; timing9/25 and data20/25 targets FAILED. Portable839/installed831 checks pass; those tests do not establish profitability or live readiness.
