@@ -1,3 +1,5 @@
+> Evening operational finding: [IEX stream connection limit](updates/2026-10-27_evening-stream-connection-limit.md). A bounded socket authentication probe returned406 while IEX REST returned200; the production stream remains disconnected. External/retained connection holder is unconfirmed. Local HTTP and Telegram operation do not establish stream readiness.
+
 > Latest delivered update: [October27 end-of-day review and WAIT-reason correction](updates/2026-10-27_eod-wait-reason-fix.md). All25 statuses and recap reached API acceptance; timing9/25 and data20/25 targets FAILED. Portable839/installed831 checks pass; those tests do not establish profitability or live readiness.
 
 > Latest observed opening session: [October27 first-hour service review](updates/2026-10-27_first-hour-service-review.md). All four morning statuses reached API acceptance, but two exceeded30s; database busy retries/failed cycles returned. Today cannot meet the24-of25 timing target. Strict gates remain unchanged.

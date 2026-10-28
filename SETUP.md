@@ -118,3 +118,8 @@ Receipt observation is now a single-flight read-only background scan (15s scan b
 ## Postclose WAIT-reason correction — October27
 
 The shared view now explains a quote that ages during analysis as fresh price unavailable; entry/data/option predicates are unchanged. Restart the existing coordinated service group after deploying the validated source. There are no new dependencies or credential/configuration changes. For verification, the public clone supports `python -m ops.ci_tests` with a failure-aware exit code. Historical installed packaging may instead require `python -m ops.test_runner`; inspect the complete JSON `successful` field, since that runner's exit status alone is not a test verdict. Keep private outputs outside GitHub and never replay uncertain sends.
+
+
+## IEX connection-limit troubleshooting
+
+An authentication response406 means the provider's concurrent stream connection limit was reached; it is different from invalid credentials or missing SIP/OPRA entitlement. A REST200 does not prove the stream works. Keep one local supervisor and check whether another device/application is using the same market-data identity. Close an unnecessary competing stream only after identifying it; if none is found, ask Alpaca to identify or release a retained session. Do not paste credentials into chat, rotate keys, buy a plan or change account permissions solely because of406. Preserve bounded retries and strict freshness gates. A successful reconnect still needs genuine source/receipt/heartbeat/current-session-bar verification before entry eligibility. See the [observed diagnostic](reports/updates/2026-10-27_evening-stream-connection-limit.md) and [official socket error definitions](https://docs.alpaca.markets/us/docs/streaming-market-data).
