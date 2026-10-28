@@ -133,3 +133,8 @@ Keep the seven-day verification age separate from coverage-through dates. The Oc
 ## Dashboard recovery during an event blackout
 
 The October28 formatter fix handles a valid calendar blackout whose explanation is null. It keeps the NEWS gate closed. No new configuration or dependency is needed. Load the validated source by recycling the dashboard under the existing single supervisor; do not start another installation. Inspect HTTP response, snapshot refresh errors/age and whether the market view is populated. A successful HTTP response or diagnostic snapshot is never entry readiness. Preserve cold timeouts and refresh-budget failures. [Deployed fix and tests](reports/updates/2026-10-28_dashboard-blackout-recovery.md).
+
+
+## Provider refusal provenance
+
+The October28 stream update retains only numeric provider error codes and a fixed GREETING, AUTHENTICATION or STREAM stage. Raw provider/auth text is excluded. Stage AUTHENTICATION alone is not evidence of bad keys:406 is a connection limit;409 is insufficient subscription. An explicit greeting refusal closes before credentials and follows the existing permission cooldown. Feed selection and freshness/entry/option gates stay strict. Load validated source via the existing single supervisor/task; never launch the export/restore as a second service group. Preserve failed backup/test results. For large after-close SQLite backups, size the offline copy budget to the measured database size while keeping integrity and isolated restore checks; do not change quote or test tolerances. Code rollback restores the source preimage, not a live ledger rewind. [Deployment and exact tests](reports/updates/2026-10-28_full-session-and-refusal-provenance.md).

@@ -35,6 +35,17 @@ class Stream:
                 self._events.add(event,self.name,**fields)
             except sqlite3.OperationalError:
                 self.telemetry_failures=getattr(self,'telemetry_failures',0)+1
+    def record_provider_rejections(self,messages,stage):
+        """Retain numeric refusal codes and a fixed stage, never provider text."""
+        if stage not in {'GREETING','AUTHENTICATION','STREAM'}:raise ValueError('INVALID_CONTROL_STAGE')
+        if not isinstance(messages,list):return False
+        rejected=False
+        for message in messages:
+            if isinstance(message,dict) and message.get('T')=='error':
+                code=message.get('code')
+                self.log('PROVIDER_REJECTION',provider_code=code if type(code) is int else None,reason=stage)
+                rejected=True
+        return rejected
     def pulse(self,now=None):
         now=now or datetime.now(timezone.utc);pause=self.probe.check(now)
         if pause:self.log('PROCESS_PAUSED',**pause)
@@ -139,9 +150,11 @@ class Stream:
                 url='wss://stream.data.alpaca.markets/'+('v1beta1/opra' if self.options else 'v2/'+self.name)
                 async with connector(url,additional_headers={'Content-Type':'application/msgpack'} if self.options else {},ping_interval=20,ping_timeout=20,open_timeout=15,close_timeout=5,max_queue=256) as ws:
                     connection_latency=(time.monotonic()-start)*1000
-                    await asyncio.wait_for(ws.recv(),10)
+                    greeting=decode(await asyncio.wait_for(ws.recv(),10),self.options)
+                    if self.record_provider_rejections(greeting,'GREETING'):raise PermissionError('GREETING_REJECTED')
                     await ws.send(encode({'action':'auth','key':os.environ['APCA_API_KEY_ID'],'secret':os.environ['APCA_API_SECRET_KEY']},self.options))
                     auth=decode(await asyncio.wait_for(ws.recv(),10),self.options)
+                    if self.record_provider_rejections(auth,'AUTHENTICATION'):raise PermissionError('AUTH_REJECTED')
                     if not any(m.get('msg')=='authenticated' for m in auth):raise PermissionError('AUTH_REJECTED')
                     self.log('AUTHENTICATED',latency_ms=connection_latency)
                     subscription={'action':'subscribe','quotes':symbols,'trades':symbols}
@@ -167,7 +180,7 @@ class Stream:
                             if not isinstance(msg,dict):
                                 self.log('DATA_REJECTION',reason='MALFORMED_STREAM_ITEM');continue
                             if msg.get('T')=='error':
-                                code=msg.get('code');self.log('PROVIDER_REJECTION',provider_code=code if isinstance(code,int) else None)
+                                self.record_provider_rejections([msg],'STREAM')
                                 raise PermissionError('PROVIDER_STREAM_REJECTED')
                             try:self.ingest(msg,received=received)
                             except sqlite3.OperationalError:

@@ -1,3 +1,5 @@
+> October28 full-session and postclose deployment: [final results and refusal provenance](updates/2026-10-28_full-session-and-refusal-provenance.md).25statuses+recap API accepted;9/25on-time and0/25underlying gates: live acceptance FAILED.847portable/839installed full checks pass; actual post-restart IEX406 and SIP409 now retain their AUTHENTICATION stage. Services resumed; feed access and latency remain unresolved.
+
 > Latest verified policy context: [October28 Fed statement](updates/2026-10-28_fomc-policy-context.md). This source-only update does not establish a current SPY price reaction or change today's HIGH entry blackout, live restrictions or service readiness.
 
 > October28 deployed dashboard correction: [blackout crash fix](updates/2026-10-28_dashboard-blackout-recovery.md).842full portable checks and33installed targeted checks pass; actual dashboard again returns a populated HIGH-calendar view with entry gates false. Cold timeout, over-budget refreshes, late09:45status and worker/database failures remain recorded; overall readiness is not established.
