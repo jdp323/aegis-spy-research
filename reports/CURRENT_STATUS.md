@@ -1,3 +1,5 @@
+> Latest verified policy context: [October28 Fed statement](updates/2026-10-28_fomc-policy-context.md). This source-only update does not establish a current SPY price reaction or change today's HIGH entry blackout, live restrictions or service readiness.
+
 > October28 deployed dashboard correction: [blackout crash fix](updates/2026-10-28_dashboard-blackout-recovery.md).842full portable checks and33installed targeted checks pass; actual dashboard again returns a populated HIGH-calendar view with entry gates false. Cold timeout, over-budget refreshes, late09:45status and worker/database failures remain recorded; overall readiness is not established.
 
 > October28 opening review: [calendar refresh and partial stream recovery](updates/2026-10-28_opening-source-calendar-review.md). Premarket API-accepted09:15:22ET; IEX authentication/messages resumed, but measured delayed quotes still failed strict freshness. Official calendar genuinely refreshed, with today's all-day HIGH blackout preserved. This is not full-session or option readiness.
