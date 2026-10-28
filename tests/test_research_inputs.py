@@ -14,6 +14,21 @@ def bar():
     return {'t':'2026-10-06T14:00:00Z','o':1,'h':1.2,'l':.9,'c':1.1,'v':10}
 
 class ResearchInputTests(unittest.TestCase):
+    def test_high_calendar_null_reason_remains_blocked_and_formats(self):
+        result=evaluate({'news':{'quality':'DATA_OK','risk':'HIGH','reason':None},'news_headlines':{'quality':'DATA_OK'}})
+        block=next(b for b in result['blockers'] if b['code']=='NEWS')
+        self.assertEqual(block['detail'],'Headlines available; calendar unavailable or event blackout')
+        self.assertIn(block['detail'],text_for(result))
+        self.assertFalse(result['gates']['NEWS_READY']);self.assertFalse(result['gates']['LIVE_SIGNAL_READY'])
+        self.assertFalse(result['order_execution_enabled'])
+    def test_unavailable_calendar_null_reason_remains_unavailable(self):
+        result=evaluate({'news':{'quality':'DATA_INCOMPLETE','risk':'UNAVAILABLE','reason':None}})
+        block=next(b for b in result['blockers'] if b['code']=='NEWS')
+        self.assertEqual(block['detail'],'Headlines unavailable; calendar unavailable or event blackout')
+        self.assertFalse(result['gates']['NEWS_READY']);self.assertFalse(result['live_ready'])
+    def test_calendar_explicit_reason_is_preserved(self):
+        result=evaluate({'news':{'quality':'DATA_INCOMPLETE','risk':'UNAVAILABLE','reason':'verified source expired'}})
+        self.assertIn('verified source expired',next(b['detail'] for b in result['blockers'] if b['code']=='NEWS'))
     def test_headlines_success_does_not_establish_complete_calendar_or_signal(self):
         calls=[]
         def transport(path,params):calls.append((path,params));return {'news':[article()]}

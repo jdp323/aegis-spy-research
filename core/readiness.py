@@ -18,7 +18,7 @@ def evaluate(data,config=None,dataset=None):
     news=data.get('news') or {};headlines=data.get('news_headlines') or {}
     if news.get('quality')!='DATA_OK' or news.get('risk') not in ('NORMAL','MODERATE'):
         add('NEWS','LOCAL_AND_EXTERNAL',
-            ('Headlines available; ' if headlines.get('quality')=='DATA_OK' else 'Headlines unavailable; ')+news.get('reason','calendar unavailable or event blackout'),
+            ('Headlines available; ' if headlines.get('quality')=='DATA_OK' else 'Headlines unavailable; ')+(news.get('reason') or 'calendar unavailable or event blackout'),
             'Combine fresh provider headlines with independently verified scheduled-event coverage; do not assume a quiet news query means no event risk.')
     risk=data.get('risk') or {}
     if not risk.get('ready'):

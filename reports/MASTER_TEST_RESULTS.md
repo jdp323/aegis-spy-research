@@ -1,3 +1,5 @@
+> October28 shared formatter delta: [verified results](updates/2026-10-28_dashboard-blackout-recovery.md).770main+7backtesting+4monitoring+61Node=842full isolated passes;33targeted installed passes;0final failures/errors/skips. Two failing-before null-reason regressions retained. Installed full831 and older command-role/day packets below remain dated as-of evidence.
+
 > Latest postclose suites:portable767+7+4+61=839 and installed760+7+4+60=831, zero failures/errors/skips. Initial failures and all corrections remain in [the update report](updates/2026-10-27_eod-wait-reason-fix.md). Earlier master-run evidence below retains its as-of meaning.
 
 # Final verification results
