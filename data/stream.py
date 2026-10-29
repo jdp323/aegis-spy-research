@@ -56,7 +56,7 @@ class Stream:
     def key(self,kind,symbol):
         # Single-exchange research must never overwrite SIP/core risk inputs.
         return ('research_'+kind+':'+symbol+':iex') if self.name=='iex' else kind+':'+symbol
-    def status(self,state,**extra):self.store.put('stream:'+self.name,{'state':state,'at':iso(),'connection_id':self.connection_id,**extra})
+    def status(self,state,**extra):self.store.put('stream:'+self.name,{'state':state,'at':iso(),'connection_id':self.connection_id,'connection_started_at':self.started.isoformat(),**extra})
     def symbols(self):return (self.store.get('subscriptions',[])[:30] if self.options else ['SPY'])
     def clock_rejection(self,source,received,kind):
         """Diagnose future payloads without accepting, buffering or retiming them."""
@@ -124,7 +124,7 @@ class Stream:
                 writes['last_market:'+self.name]={'source_timestamp':msg['t'],'received_timestamp':received,'latency_ms':latency*1000}
                 self.pulse(stamp(received));self.message_count+=1
                 if not self.first:self.log('FIRST_MARKET_MESSAGE',latency_ms=latency*1000);self.first=True
-            writes['stream:'+self.name]={'state':'CONNECTED','at':received,'connection_id':self.connection_id,'market_latency_ms':latency*1000,'local_queue_delay_ms':queue_ms,'ingest_processing_ms':(time.perf_counter()-ingest_started)*1000,'payload_type':kind,'reconnect_attempt':self.attempt}
+            writes['stream:'+self.name]={'state':'CONNECTED','at':received,'connection_id':self.connection_id,'connection_started_at':self.started.isoformat(),'market_latency_ms':latency*1000,'local_queue_delay_ms':queue_ms,'ingest_processing_ms':(time.perf_counter()-ingest_started)*1000,'payload_type':kind,'reconnect_attempt':self.attempt}
             if hasattr(self.store,'put_many'):self.store.put_many(writes)
             else:
                 for k,v in writes.items():self.store.put(k,v)

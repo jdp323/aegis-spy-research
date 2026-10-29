@@ -1,3 +1,5 @@
+> October 29 current complete verification: [control-progress release](updates/2026-10-29_bounded-stream-control-recovery.md). 867 portable and 859 installed checks pass with no failures/errors/skips; 20 new and 34 related targeted checks pass. Eight failed-before regressions retained. Passing checks do not establish profitability or live-session acceptance.
+
 > Latest full verification: [October28 stream provenance](updates/2026-10-28_full-session-and-refusal-provenance.md). Portable775+7+4Python+61Node=847PASS; installed768+7+4Python+60Node=839PASS;0final failures/errors/skips.34targetedPASS,5failing-before cases and loader/backup failures retained. Six committed-WAL backups restored/integrity-checked. This does not pass current-day live acceptance or qualify a strategy.
 
 > October28 shared formatter delta: [verified results](updates/2026-10-28_dashboard-blackout-recovery.md).770main+7backtesting+4monitoring+61Node=842full isolated passes;33targeted installed passes;0final failures/errors/skips. Two failing-before null-reason regressions retained. Installed full831 and older command-role/day packets below remain dated as-of evidence.

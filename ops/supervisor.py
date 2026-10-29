@@ -4,6 +4,7 @@ from pathlib import Path
 from core.storage import ROOT,iso
 from datetime import datetime,timezone
 from data.reliability import Events,PauseProbe,active,watchdog_age
+from data.models import stamp,finite
 import sqlite3
 def child_python(executable=sys.executable,windows=os.name=='nt'):
     # pythonw hosts the invisible supervisor, but children need normal stdio
@@ -41,15 +42,36 @@ def clean_stale():
             pid=json.loads(f.read_text())['pid']
             if alive(pid):raise RuntimeError('Existing component running; stop its existing launcher before takeover')
             f.unlink()
+STREAM_CONTROL_POLICY='stream-control-progress-v1'
+
+def stream_control_progress(health,now,started):
+    """Bounded process-control progress; never market-data freshness."""
+    try:
+        began=stamp(health['connection_started_at']);reported=stamp(health['at'])
+        if not started<=began<=reported<=now:return False
+        age=(now-began).total_seconds();state=health.get('state')
+        # Existing socket bounds: open15 + greeting10 + auth10 + close5.
+        if state=='CONNECTING':return age<40
+        # A control heartbeat cannot extend the existing90s market wait.
+        if state in ('CONNECTED','CONNECTED_IDLE'):return age<90
+        if state=='FEED_DISCONNECTED' and health.get('error_type')=='PermissionError':
+            delay=health.get('next_retry_seconds')
+            # Existing bounded retry+jitter, plus5s for the retry handoff.
+            return finite(delay) and 0<=delay<=301 and (now-reported).total_seconds()<delay+5
+    except (KeyError,TypeError,ValueError):pass
+    return False
+
 def stream_restart_due(root,now,started):
     if not active(now) or started is None or (now-started).total_seconds()<300:return False
     try:
-        db=sqlite3.connect((root/'runtime/aegis.sqlite').as_uri()+'?mode=ro',uri=True)
+        db=sqlite3.connect((root/'runtime/aegis.sqlite').as_uri()+'?mode=ro',uri=True,timeout=.5)
         try:
+            db.execute('PRAGMA query_only=ON');db.execute('BEGIN')
             def get(key):
                 row=db.execute('SELECT payload FROM state WHERE key=?',(key,)).fetchone();return json.loads(row[0]) if row else {}
             health=get('stream:iex')
             if health.get('state') in ('FEED_NOT_CONFIGURED','IDLE_NO_CONTRACT_SUBSCRIPTIONS'):return False
+            if stream_control_progress(health,now,started):return False
             return watchdog_age(get('last_market:iex'),now,started)>=300
         finally:db.close()
     except (OSError,sqlite3.Error,ValueError):return False

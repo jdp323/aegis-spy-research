@@ -1,3 +1,5 @@
+> October 29 deployed stream-control fix: [bounded retry/connection supervision and final session](updates/2026-10-29_bounded-stream-control-recovery.md). 867 portable / 859 installed checks pass. After-close operation verified; active-session benefit remains pending. Today: 25 API-accepted updates, 14 timely, 0 underlying eligibility; live acceptance FAILED.
+
 > October 29 afternoon HTTP review: [dashboard health timeouts and recovery](updates/2026-10-29_transient-dashboard-health-recovery.md). The final pre-restart check recovered, so no restart occurred. This is a bounded HTTP observation; source, refresh and worker-budget failures remain unresolved.
 
 > October 29 verified macro context: [BEA GDP and September PCE](updates/2026-10-29_bea-growth-inflation-context.md). Official numeric releases were checked directly; growth and inflation context is separate from SPY forecasts and entry eligibility. Existing source-access and processing failures remain unresolved.
