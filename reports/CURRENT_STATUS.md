@@ -1,3 +1,5 @@
+> October 30 final status-slot correction deployed: [implementation and verified limits](updates/2026-10-30_final-status-slot-recovery.md). Original day:24/25 accepted,3 timely; live-session recovery still pending.
+
 > October 30 verified labor-cost context: [Employment Cost Index release](updates/2026-10-30_employment-cost-context.md). Official publication facts were checked with period/seasonality distinctions; the direct403 is preserved separately from reader verification. This does not establish a SPY forecast, entry readiness or active-session acceptance.
 
 > October 29 deployed stream-control fix: [bounded retry/connection supervision and final session](updates/2026-10-29_bounded-stream-control-recovery.md). 867 portable / 859 installed checks pass. After-close operation verified; active-session benefit remains pending. Today: 25 API-accepted updates, 14 timely, 0 underlying eligibility; live acceptance FAILED.

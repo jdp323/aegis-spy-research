@@ -1,3 +1,5 @@
+> October 30 scheduling correction: the final silent status uses its current fifteen-minute window until the verified exchange close, as earlier slots do. Existing durable reservations and uncertain-send refusal remain; no after-close backlog or manual replay. Restart the same supervisor/task to load reviewed source, then verify a genuine future final slot. No dependency, credential, schema or sharing change. [Verification and rollback](reports/updates/2026-10-30_final-status-slot-recovery.md).
+
 # Setup with your own services
 
 Current release: [October 27 implementation](reports/updates/2026-10-27_master-implementation.md). The current product uses compact v2 messages and one shared market view. Follow the optional shadow setup at the end only on adequate hardware; the deterministic service needs no AI key.
