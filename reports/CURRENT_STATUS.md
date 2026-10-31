@@ -1,3 +1,9 @@
+# Expert technical review - 31 October 2026
+
+[Read the complete expert report](updates/2026-10-31_expert-review.md): exact algorithms, parameter profiles, retrospective strategy comparisons, fourteen-alert audit, operational measurements, evidence inventory and unresolved findings. Code baseline b234f6672bc20d931b9862249bcf9cbdb3fcab38. This is an as-of technical review; live readiness and genuine option profitability remain unestablished. No production source, service, risk, sharing or execution configuration changed for this report.
+
+---
+
 > October 30 final status-slot correction deployed: [implementation and verified limits](updates/2026-10-30_final-status-slot-recovery.md). Original day:24/25 accepted,3 timely; live-session recovery still pending.
 
 > October 30 verified labor-cost context: [Employment Cost Index release](updates/2026-10-30_employment-cost-context.md). Official publication facts were checked with period/seasonality distinctions; the direct403 is preserved separately from reader verification. This does not establish a SPY forecast, entry readiness or active-session acceptance.
