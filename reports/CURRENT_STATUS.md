@@ -1,3 +1,7 @@
+## November 2 status timing, through 14:30 ET
+
+[Daily status timing target cannot now be met](updates/2026-11-02_status-timing-target-failure.md): 20/20 due slots API-accepted, 18 within 30 seconds; 11:45 and 14:30 were 54.892 and 115.299 seconds late. The maximum final timely count of 23/25 is below the 95% target. No resend or gate change. Stored phase clocks show most of the 14:30 delay preceded evaluation; the cause remains under investigation.
+
 ## November2 first-session review,11:38ET
 
 [Partial-session monitoring evidence and undeployed clock-race proposal](updates/2026-11-02_first-session-monitoring.md). [Raw-versus-normalized source checksum clarification](updates/2026-11-02_monitoring-source-hash-clarification.md). Eight due statuses API-accepted on time; bounded monitor tail contains four SQLite-busy failed cycles and its Store reports five failed transactions. Latency target is not met. ExistingIEX406/entry restrictions remain; no production source, service or gate change.
