@@ -1,3 +1,7 @@
+## November 2 completed engineering session
+
+[Final first-session evidence and independent reconciliation](updates/2026-11-02_first-full-free-mode-session.md): 25/25 owner status slots and recap API-accepted; 21/25 timely, 0/25 strict underlying eligibility. Monitor p95 9.344 seconds, 13 failed ticks; engineering FAIL. Historical backfill coverage PASS is separate. No strategy or option qualification, production change or replay.
+
 ## November 2 status timing, through 14:30 ET
 
 [Daily status timing target cannot now be met](updates/2026-11-02_status-timing-target-failure.md): 20/20 due slots API-accepted, 18 within 30 seconds; 11:45 and 14:30 were 54.892 and 115.299 seconds late. The maximum final timely count of 23/25 is below the 95% target. No resend or gate change. Stored phase clocks show most of the 14:30 delay preceded evaluation; the cause remains under investigation.
