@@ -1,6 +1,6 @@
 ## November2 first-session review,11:38ET
 
-[Partial-session monitoring evidence and undeployed clock-race proposal](updates/2026-11-02_first-session-monitoring.md). Eight due statuses API-accepted on time; bounded monitor tail contains four SQLite-busy failed cycles and its Store reports five failed transactions. Latency target is not met. ExistingIEX406/entry restrictions remain; no production source, service or gate change.
+[Partial-session monitoring evidence and undeployed clock-race proposal](updates/2026-11-02_first-session-monitoring.md). [Raw-versus-normalized source checksum clarification](updates/2026-11-02_monitoring-source-hash-clarification.md). Eight due statuses API-accepted on time; bounded monitor tail contains four SQLite-busy failed cycles and its Store reports five failed transactions. Latency target is not met. ExistingIEX406/entry restrictions remain; no production source, service or gate change.
 
 ## November 1 free-only implementation
 
