@@ -1,3 +1,5 @@
+> [Download the PDFs and sanitized expert-review bundles](reports/downloads/README.md), with SHA-256 verification.
+
 > November 1 current release: [free-only implementation and full verification](reports/updates/2026-11-01_free-only-six-project-implementation.md). Owner-free-v3 messages, independent monitoring timer, preserved incumbent and two shadow candidates. Genuine-session reliability pending; option performance NOT MEASURED; all orders manual.
 
 # AEGIS SPY research assistant

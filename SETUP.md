@@ -1,3 +1,5 @@
+> Report downloads are now available in [reports/downloads](reports/downloads/README.md). Downloading/reviewing them requires no credentials or service restart. Publication accepts only the four reviewed artifact names with pinned SHA-256 hashes; unknown or modified binary files remain blocked.
+
 > November 1 free-only operating release: [implementation and evidence](reports/updates/2026-11-01_free-only-six-project-implementation.md). This current procedure supersedes conflicting old provider/presentation recommendations below.
 
 ## Free-only operating change — November 1

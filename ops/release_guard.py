@@ -1,5 +1,5 @@
 """Publication guard. Inspect Git contents; never print matching secret text."""
-import argparse,json,re,subprocess,sys
+import argparse,hashlib,json,re,subprocess,sys
 from pathlib import Path
 from core.storage import ROOT
 
@@ -17,6 +17,13 @@ ALLOWED_JSON.update({'research/FREE_CANDIDATE_RULES_2026-11-01.json',
  'reports/FREE_CALENDAR_VERIFICATION_2026-11-01.json',
  'reports/FREE_VERIFICATION_2026-11-01.json',
  'reports/FREE_SOURCE_INVENTORY_2026-11-01.json'})
+# User-requested report downloads: exact recursively reviewed bytes only. This
+# grants no directory/extension exemption and never permits private archives.
+REVIEWED_DOWNLOADS={
+ 'reports/downloads/AEGIS_FREE_ONLY_IMPLEMENTATION_2026-11-01.pdf':'bc873e2543739e8bf33ea43bd71c282e6026c783a4fa54ba11e8637cd6c8052a',
+ 'reports/downloads/AEGIS_FREE_ONLY_REVIEW_2026-11-01.zip':'d077949e34ec81ff3e5ffe445010cca1ddb83e6ceb4871ad2b72888b9895654b',
+ 'reports/downloads/AEGIS_EXPERT_REVIEW_2026-10-31.pdf':'7a30f74426791bc07a8f680eedaa490443bd26f7841c458b25807eb1964f390e',
+ 'reports/downloads/AEGIS_EXPERT_REVIEW_PUBLIC_2026-10-31.zip':'7ae582616d76e5e9e3bec0b6b455dc291691a03eb67750a1ed379deadd3f302c'}
 SECRET_PATTERNS=[('telegram token',re.compile(rb'(?<![A-Za-z0-9])[0-9]{7,12}:[A-Za-z0-9_-]{30,}')),
  ('OpenAI-style key',re.compile(rb'(?<![A-Za-z0-9])sk-(?:proj-|svcacct-)?[A-Za-z0-9_-]{24,}')),
  ('GitHub token',re.compile(rb'(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,})')),
@@ -25,10 +32,11 @@ SECRET_PATTERNS=[('telegram token',re.compile(rb'(?<![A-Za-z0-9])[0-9]{7,12}:[A-
  ('credential assignment',re.compile(rb'''(?i)["']?(?:APCA_API_KEY_ID|APCA_API_SECRET_KEY)["']?\s*[:=]\s*["'][A-Za-z0-9_-]{8,}["']'''))]
 
 def path_problem(name):
+    if name in REVIEWED_DOWNLOADS:return None
     path=Path(name);parts=set(path.parts);leaf=path.name
     if parts&BLOCK_PARTS or leaf in BLOCK_NAMES:return 'private/runtime path'
     if leaf.startswith('.env') and leaf!='.env.example':return 'environment credential file'
-    if re.search(r'\.(?:dpapi|sqlite(?:3)?|db)(?:-|$|\.)',leaf,re.I) or leaf.endswith(('-wal','-shm','.pyc','.zip','.bak')):return 'private/binary record'
+    if re.search(r'\.(?:dpapi|sqlite(?:3)?|db)(?:-|$|\.)',leaf,re.I) or leaf.lower().endswith(('-wal','-shm','.pyc','.zip','.pdf','.bak')):return 'private/binary record'
     if leaf.startswith(('account_snapshot','VERIFICATION_PACKET','COMMAND_VERIFICATION_','SCHEDULE_VERIFICATION_')):return 'unsanitized generated evidence'
     if path.suffix=='.json' and name not in ALLOWED_JSON:return 'unapproved JSON payload'
     return None
@@ -36,6 +44,9 @@ def path_problem(name):
 def inspect(entries,changed=None,require_report=True):
     failures=[]
     for name,body in entries.items():
+        if name in REVIEWED_DOWNLOADS:
+            if hashlib.sha256(body).hexdigest()!=REVIEWED_DOWNLOADS[name]:failures.append({'path':name,'reason':'reviewed download digest mismatch'})
+            continue
         reason=path_problem(name)
         if reason:failures.append({'path':name,'reason':reason});continue
         for label,pattern in SECRET_PATTERNS:
