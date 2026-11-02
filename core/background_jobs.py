@@ -63,9 +63,12 @@ class Jobs:
         thread.start()
         return True
 
-    def drain(self):
+    def drain(self,maximum=None):
+        if maximum is not None and (type(maximum) is not int or maximum<1):
+            raise ValueError('INVALID_COMPLETION_DRAIN_LIMIT')
         with self.lock:
-            results, self.completed = self.completed, []
+            count=len(self.completed) if maximum is None else maximum
+            results, self.completed = self.completed[:count], self.completed[count:]
             for row in results:
                 self.running.pop(row['key'], None)
         summaries = []

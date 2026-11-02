@@ -5,12 +5,21 @@ from core.sessions import ET
 from data.models import stamp,finite
 from options.trade_plan import sanity
 
+def standard_terms(c,now):
+    """Require explicit source evidence; OCC spelling alone is not deliverables."""
+    import re
+    t=c.get('contract_terms') or {}
+    try:
+        return (t.get('symbol')==c['symbol'] and t.get('underlying')=='SPY' and type(t.get('multiplier')) is int and t['multiplier']==100 and t.get('deliverable')=='100_SPY_SHARES' and t.get('adjusted') is False and t.get('source') in ('AUTHORIZED_PROVIDER_CONTRACT_RECORD','AUTHORIZED_CONTRACT_MASTER') and bool(re.fullmatch('[a-f0-9]{64}',t.get('evidence_sha256',''))) and 0<=(now-stamp(t['verified_at'])).total_seconds()<=86400)
+    except (ValueError,KeyError,TypeError):return False
+
 def current_reference(idea,now,config=None):
     """Same strict quote-reference check for view, renderer and publication."""
     from options.ledger import contract as parse
     c=idea.get('option_contract') or {};p=idea.get('option_plan') or {}
     try:
         term=parse(c['symbol']);end=stamp(idea['max_hold_until'])
+        if not standard_terms(c,now):return None
         if idea.get('option_verification')!='FRESH_QUOTE_GREEKS_CHAIN_SANITY_PASSED' or not option_quote_valid(c['quote'],now) or not quote_valid(c['quote'],now,5):return None
         if sanity(c,now,config or {}):return None
         if not finite(c.get('oi')) or c['oi']<100 or not finite(c.get('volume')) or c['volume']<100:return None
@@ -25,6 +34,7 @@ def current_reference(idea,now,config=None):
 def verified_plan(idea,selection,now,config):
     c=selection.get('best_contract')
     if not c or selection.get('chain_sanity_reasons')!=[]:raise ValueError('VERIFIED_CHAIN_REQUIRED')
+    if not standard_terms(c,now):raise ValueError('VERIFIED_STANDARD_MULTIPLIER_DELIVERABLE_REQUIRED')
     if c.get('type')!=('C' if idea['direction']=='CALL' else 'P'):raise ValueError('CONTRACT_RIGHT_MISMATCH')
     if sanity(c,now,config) or not option_quote_valid(c.get('quote',{}),now) or not quote_valid(c.get('quote',{}),now,5):raise ValueError('FRESH_VERIFIED_BBO_REQUIRED')
     if not c.get('greeks_timestamp') or not 0<=(now-stamp(c['greeks_timestamp'])).total_seconds()<=60:raise ValueError('CURRENT_GREEKS_REQUIRED')

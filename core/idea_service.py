@@ -142,19 +142,69 @@ def permit(store,tracker,i,config,now,preview=False):
     if not blocked and not preview:state['alerts']+=1;state['last'][i['direction']]={'at':now.isoformat(),'setup':i['setup_type'],'trigger':i['trigger']}
     if not preview:store.put('idea-control:'+day,state)
     return blocked,tag,warnings
-def tick(store,news,config,now,publish,root=ROOT,tracker=None,simulation=False):
+def maintenance_research(store,news,config,now,root=ROOT,ctx=None,simulation=False):
+    """Non-public comparison/outcome work; never coordinates the public plan."""
+    ctx=ctx or context(store,now,simulation)
+    bar_context=ctx.get('bar_research') or {}
+    observation_rows=bar_context.get('rows',[]) if not bar_context.get('reason') else ctx['rows'] if not ctx['reason'] else []
+    observation_feed=bar_context.get('feed_quality') if not bar_context.get('reason') else ctx['feed_quality']
+    if not simulation:
+        # Each five-minute shadow observation is a separate frozen population.
+        # The actual evaluation clock is retained; old backfill is not live.
+        bars=bar_context.get('bars') or []
+        if bars:
+            end=int((bars[-1]['timestamp']+60)//300)*300
+            identity=str(observation_feed)+':'+str(end)
+            if store.get('free-shadow-last-completed-5m')!=identity:
+                from strategies.free_candidates import evaluate_shadow
+                result=evaluate_shadow(bars,now,feed=observation_feed or 'UNAVAILABLE',provider=bar_context.get('provider','UNAVAILABLE'),quote=ctx.get('quote'),entry_gate=ctx)
+                store.event('free-shadow:'+identity+':'+result['rule_hash'],'free_candidate_shadow',result)
+                store.put('free-shadow-latest',result)
+                store.put('free-shadow-last-completed-5m',identity)
+    if not simulation:
+        # Separate comparison population, no broadcasts or inferred option P&L.
+        from core.research_horizons import candidates as horizon_candidates
+        with_tracker=IdeaTracker(Path(root)/'runtime/horizon_ideas.sqlite')
+        try:
+            with_tracker.observe(observation_rows,now,news,observation_feed)
+            comparisons=[]
+            if not ctx['reason'] and market_session(now)['active'] and news.get('quality')=='DATA_OK' and news.get('risk') in ('NORMAL','MODERATE'):
+                comparisons=horizon_candidates(bar_context,ctx['quote'],now,config)
+                for comparison in comparisons:with_tracker.register(comparison,ctx['quote'],now,False)
+            store.put('horizon_research',{'at':now.isoformat(),'variants':ctx['horizons'],'candidate_count':len(comparisons),'population':'HORIZON_COMPARISON_UNDERLYING_ONLY','alerts_enabled':False,'option_performance':'UNAVAILABLE','validated':False})
+        finally:with_tracker.close()
+    if not simulation and store.get('published-comparison-minute')!=now.replace(second=0,microsecond=0).isoformat():
+        from strategies.published_baselines import compare_context
+        store.put('published_baselines',{'at':now.isoformat(),**compare_context(ctx.get('bar_research') or {},now,store.get('corporate_action_history'))})
+        store.put('published-comparison-minute',now.replace(second=0,microsecond=0).isoformat())
+    if not simulation:
+        from core.rejection_trace import measure,persist
+        traces=measure(ctx,news,config,now);persist(Path(root)/'runtime/observability.sqlite',traces,now)
+        store.put('v6-latest-setup-traces',traces)
+    from core.directional_research import resolve
+    minute_id=now.replace(second=0,microsecond=0).isoformat()
+    if store.get('directional-resolve-minute')!=minute_id:
+        resolve(store,(ctx.get('bar_research') or {}).get('bars',[]),now,quote=ctx.get('quote'))
+        store.put('directional-resolve-minute',minute_id)
+
+def tick(store,news,config,now,publish,root=ROOT,tracker=None,simulation=False,fast=False):
     if not config.get('idea_engine_enabled',False):return []
     if simulation and tracker is None:raise ValueError('SIMULATION_MEMORY_TRACKER_REQUIRED')
     owned=tracker is None;tracker=tracker or IdeaTracker(Path(root)/'runtime/ideas.sqlite');ctx=context(store,now,simulation)
     if not simulation and getattr(store,'path',None) is not None:now=datetime.now(timezone.utc)
     ctx['calendar_status']=news;events=[]
+    if fast:
+        from core.market_view import observed_research
+        observed=observed_research(ctx,now)
+        store.put('fast_input_health',{'at':now.isoformat(),'strict_underlying_eligible':not bool(ctx.get('reason')),'strict_reason':ctx.get('reason'),'observed_trend_available':observed.get('trend') not in ('DATA UNAVAILABLE','UNAVAILABLE',None),'observed_trend':observed.get('trend'),'bar_as_of':observed.get('as_of'),'feed_quality':ctx.get('feed_quality'),'option_eligibility_inferred':False})
+    from core.primary_plan import current as primary_current,reserve as reserve_primary,VERSION as plan_version,close_due_unresolved
     def emit(event):
         from core.directional_research import view,record
         if event.get('alert_type')=='TREND_LINE':
             from core.market_view import build
             s=build(ctx,news,now,config,primary_current(store,tracker.positions(),now))
             store.put('market_view',s)
-            r={'outlooks':s['outlooks'],'as_of':s['price']['source_at'],'provider':ctx['feed_quality'],'snapshot_id':s['snapshot_id']}
+            r={'outlooks':s['outlooks'],'as_of':s['price']['source_at'],'provider':ctx['feed_quality'],'snapshot_id':s['snapshot_id'],'reference_rule':'ISSUE_TIME_FRESH_QUOTE_MIDPOINT'}
             for h in ('H60','H120','SESSION'):record(store,event['id']+':'+h,now,r,h)
         elif event.get('alert_type')=='PREOPEN':
             report=store.get('premarket_report:'+now.astimezone(ET).date().isoformat()) or {}
@@ -170,11 +220,19 @@ def tick(store,news,config,now,publish,root=ROOT,tracker=None,simulation=False):
             record(store,event['id']+':OPENING_HOUR',now,r,'PREMARKET_OPENING_HOUR',premarket=True)
             from core.market_view import build
             ctx['premarket_report']=report;store.put('market_view',build(ctx,news,now,config))
+        from core.market_view import build as event_view
+        evidence_view=event_view(ctx,news,now,config,primary_current(store,tracker.positions(),now))
+        event.update(snapshot_id=evidence_view['snapshot_id'],evaluated_at=now.isoformat(),source_timestamps={'price_source':evidence_view['price']['source_at'],'received':evidence_view['price']['received_at'],'completed_bar_end':evidence_view['trend']['as_of']},rule_versions={'trend':evidence_view['trend']['rule_version'],'scenario':evidence_view['outlooks']['H60']['rule_version'],'plan':plan_version},reason_codes=[str(ctx['reason'])] if ctx.get('reason') else [])
         publish(event);events.append(event)
     def send(key,text,type_,silent=False,buttons=None,parent=None,idea=None):
-        if store.get(key):return
-        store.put(key,{'reserved_at':now.isoformat()});e={'id':key,'kind':'RESEARCH','audience':'SHARED' if config.get('signals',{}).get('shared',False) else 'PRIVATE','tenant':'owner','text':text,'alert_type':type_,'expires_at':(now+timedelta(minutes=10)).isoformat(),'disable_notification':silent}
-        if type_ in ('SPY_IDEA','IDEA_UPDATE'):e['presentation_version']='owner-compact-v2'
+        reservation={'reserved_at':now.isoformat(),'meaning':'RESERVED_NO_BLIND_RETRY'}
+        if hasattr(store,'reserve'):
+            if not store.reserve(key,reservation):return
+        else:
+            if store.get(key):return
+            store.put(key,reservation)
+        e={'id':key,'kind':'RESEARCH','audience':'SHARED' if config.get('signals',{}).get('shared',False) else 'PRIVATE','tenant':'owner','text':text,'alert_type':type_,'expires_at':(now+timedelta(minutes=10)).isoformat(),'disable_notification':silent}
+        if type_ in ('SPY_IDEA','IDEA_UPDATE'):e['presentation_version']='owner-free-v3'
         if idea:
             from core.entry_publication import envelope
             e['entry_guard']=envelope(idea);e['expires_at']=idea['signal_expiry']
@@ -194,35 +252,14 @@ def tick(store,news,config,now,publish,root=ROOT,tracker=None,simulation=False):
                 if p.get('alerted') and config.get('notifications',{}).get('categories',{}).get('idea_updates',True):
                     from monitoring.message_format import update_text
                     send('v5-update-'+p['signal_id']+'-'+condition,update_text(p,condition),'IDEA_UPDATE',parent=p.get('idea_event_id') or 'v5-idea-'+p['signal_id']+'-'+p['strategy_version'])
-        if not simulation:
-            # Separate comparison population, no broadcasts or inferred option P&L.
-            from core.research_horizons import candidates as horizon_candidates
-            with_tracker=IdeaTracker(Path(root)/'runtime/horizon_ideas.sqlite')
-            try:
-                with_tracker.observe(observation_rows,now,news,observation_feed)
-                comparisons=[]
-                if not ctx['reason'] and market_session(now)['active'] and news.get('quality')=='DATA_OK' and news.get('risk') in ('NORMAL','MODERATE'):
-                    comparisons=horizon_candidates(bar_context,ctx['quote'],now,config)
-                    for comparison in comparisons:with_tracker.register(comparison,ctx['quote'],now,False)
-                store.put('horizon_research',{'at':now.isoformat(),'variants':ctx['horizons'],'candidate_count':len(comparisons),'population':'HORIZON_COMPARISON_UNDERLYING_ONLY','alerts_enabled':False,'option_performance':'UNAVAILABLE','validated':False})
-            finally:with_tracker.close()
-        if not simulation and store.get('published-comparison-minute')!=now.replace(second=0,microsecond=0).isoformat():
-            from strategies.published_baselines import compare_context
-            store.put('published_baselines',{'at':now.isoformat(),**compare_context(ctx.get('bar_research') or {},now,store.get('corporate_action_history'))})
-            store.put('published-comparison-minute',now.replace(second=0,microsecond=0).isoformat())
-        if not simulation:
-            from core.rejection_trace import measure,persist
-            traces=measure(ctx,news,config,now);persist(Path(root)/'runtime/observability.sqlite',traces,now)
-            store.put('v6-latest-setup-traces',traces)
-        from core.directional_research import resolve
-        minute_id=now.replace(second=0,microsecond=0).isoformat()
-        if store.get('directional-resolve-minute')!=minute_id:
-            resolve(store,(ctx.get('bar_research') or {}).get('bars',[]),now,quote=ctx.get('quote'))
-            store.put('directional-resolve-minute',minute_id)
+        if not fast:maintenance_research(store,news,config,now,root,ctx,simulation)
         ideas,reason=candidates(ctx,news,config,now,simulation)
         from options.trade_plan import mismatch
         if not simulation and mismatch([store.get('quote:SPY') or {},store.get('research_quote:SPY:iex') or {}],config,now):ideas=[];reason='feed mismatch'
-        from core.primary_plan import current as primary_current,reserve as reserve_primary,VERSION as plan_version
+        for retired,closure in close_due_unresolved(store,tracker.positions(),now):
+            if config.get('notifications',{}).get('categories',{}).get('idea_updates',True):
+                from monitoring.message_format import update_text
+                send('v5-update-'+retired['signal_id']+'-ADMIN_CLOSED_UNRESOLVED',update_text(retired,'ADMIN_CLOSED_UNRESOLVED'),'IDEA_UPDATE',parent=retired.get('idea_event_id') or 'v5-idea-'+retired['signal_id']+'-'+retired['strategy_version'])
         latest_rows=tracker.positions();primary=primary_current(store,latest_rows,now)
         for i in ideas:
             if any(x['signal_id']==i['signal_id'] for x in latest_rows):continue
@@ -267,7 +304,10 @@ def tick(store,news,config,now,publish,root=ROOT,tracker=None,simulation=False):
                 from monitoring.owner_messages import recap_text
                 from core.directional_research import daily_score
                 from core.market_view import build,recap_view
-                rows=tracker.positions();ctx['recap']=recap_view(rows,now);snapshot=build(ctx,news,now,config,primary_current(store,rows,now));store.put('market_view',snapshot)
+                rows=tracker.positions();ctx['recap']=recap_view(rows,now,store.events('primary_admin_closure',1000));snapshot=build(ctx,news,now,config,primary_current(store,rows,now));store.put('market_view',snapshot)
+                if not simulation:
+                    from monitoring.recap_operations import summary
+                    snapshot['recap']['operations']=summary(Path(root),now)
                 return recap_text(rows,now,recap_levels(store,now,simulation),daily_score(store,now),snapshot)
             if not config.get('notifications',{}).get('categories',{}).get('trend_lines',True):return None
             key='v5-stale:'+now.astimezone(ET).date().isoformat()

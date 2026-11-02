@@ -37,7 +37,7 @@ class SemanticMessageTests(unittest.TestCase):
         for expected in ('Current trend: UP', 'Next hour: upward bias', 'Research · IEX', 'New entry: WAIT'):
             self.assertIn(expected, text)
         self.assertNotIn('win chance', text)
-        self.assertLessEqual(len(text.splitlines()), 5)
+        self.assertLessEqual(len(text.splitlines()), 8)
         self.assertNotIn('None', text)
 
     def test_confirmed_underlying_candidate_is_watch_only_not_contradictory_wait_buy(self):
@@ -75,6 +75,7 @@ class SemanticMessageTests(unittest.TestCase):
         row = idea();symbol = 'SPY261016C00500000'
         oq = quote('alpaca-opra', symbol, {'bp': 1.9, 'ap': 2., 't': NOW.isoformat()}, received=NOW.isoformat()).view(NOW)
         row.update(option_contract={'symbol':symbol,'quote':oq,'type':'C','expiry':'2026-10-16','strike':500,'bid':1.9,'ask':2.,'mid':1.95,'volume':100,'oi':100,'delta':.5,'gamma':.01,'theta':-.1,'vega':.1,'iv':.2,'greeks_timestamp':NOW.isoformat()},option_plan={'limit':2.,'stop_bid':1.5},option_verification='FRESH_QUOTE_GREEKS_CHAIN_SANITY_PASSED')
+        row['option_contract']['contract_terms']={'symbol':symbol,'underlying':'SPY','multiplier':100,'deliverable':'100_SPY_SHARES','adjusted':False,'source':'AUTHORIZED_PROVIDER_CONTRACT_RECORD','evidence_sha256':'a'*64,'verified_at':NOW.isoformat()}
         text = idea_text(row, {'closed': 0}, {})
         self.assertIn(symbol, text)
         self.assertIn('premium at risk $200.00 + fees', text)

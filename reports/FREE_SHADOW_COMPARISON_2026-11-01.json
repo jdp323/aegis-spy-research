@@ -1,0 +1,1361 @@
+{
+  "manifest": {
+    "study_version": "free-spy-shadow-study-v1.1-no-sample",
+    "frozen_at": "2026-11-01T22:38:51.604371+00:00",
+    "rule_version": "free-spy-shadow-h60-v1",
+    "rule_hash": "8ee815c8e7e0cbea5ceb55c68b750b8bbd850afd90b1101c867e35a549181d40",
+    "incumbent_version": "spy-ideas-v4-full-h60",
+    "incumbent_sha256": "f1ae904cd95539ec87f09297abca96cb56750c7cb71f8df5c2e344aea764fa2d",
+    "dataset_content_sha256": "2348c4f2e9322289a933a6e48e78ab3e0717856c6f354bd500a0931fbe72b156",
+    "requested_start": "2026-09-02",
+    "requested_end": "2026-10-30",
+    "requested_sessions": [
+      "2026-09-02",
+      "2026-09-03",
+      "2026-09-04",
+      "2026-09-08",
+      "2026-09-09",
+      "2026-09-10",
+      "2026-09-11",
+      "2026-09-14",
+      "2026-09-15",
+      "2026-09-16",
+      "2026-09-17",
+      "2026-09-18",
+      "2026-09-21",
+      "2026-09-22",
+      "2026-09-23",
+      "2026-09-24",
+      "2026-09-25",
+      "2026-09-28",
+      "2026-09-29",
+      "2026-09-30",
+      "2026-10-01",
+      "2026-10-02",
+      "2026-10-05",
+      "2026-10-06",
+      "2026-10-07",
+      "2026-10-08",
+      "2026-10-09",
+      "2026-10-12",
+      "2026-10-13",
+      "2026-10-14",
+      "2026-10-15",
+      "2026-10-16",
+      "2026-10-19",
+      "2026-10-20",
+      "2026-10-21",
+      "2026-10-22",
+      "2026-10-23",
+      "2026-10-26",
+      "2026-10-27",
+      "2026-10-28",
+      "2026-10-29",
+      "2026-10-30"
+    ],
+    "feed": "IEX",
+    "provider": "alpaca-iex",
+    "availability_mode": "RETROSPECTIVE_CLOSE_ONLY",
+    "incumbent_config_sha256": "b298ad825fba7944a8c6493a8e41fa6307f97f801f9d0771b4c129c1d917d262",
+    "reviewed_through": "2026-11-01",
+    "partition_rule": "All dates through2026-11-01 DEVELOPMENT_ONLY_ALREADY_REVIEWED; later sessions PROSPECTIVE_PENDING_REVIEW. No historical holdout is claimed untouched.",
+    "decision_clock": "Completed5m ends,09:50 onward; same genuine minute prefix for all3strategy policies.",
+    "one_primary_policy": "Each registered cell has at most1open plan and10minute same-direction cooldown; fixed arbitration and no overlapping exposure within cell.",
+    "delays_seconds": [
+      15,
+      30,
+      60
+    ],
+    "roundtrip_costs_per_share": [
+      0.03,
+      0.06
+    ],
+    "trial_count": 31,
+    "prior_project_trials": "Additional prior trials retained; not a fresh isolated selection exercise.",
+    "execution_proxy": "First available minute OPEN at or after issue+delay;15/30s both round up to same minute. No intraminute price or executable BBO evidence. Stop-first ambiguity and adverse gap fill.",
+    "outcome_rules": "Stop orTarget2 ends plan; Target1 observation only. Deadline uses exact completed minute close. Missing any required post-entry minute makes outcome unresolved; no win/loss imputation.",
+    "option_performance": "NOT_MEASURED",
+    "promote_winner": false,
+    "broadcast": false,
+    "live_ready": false,
+    "export_file_sha256": "c4ced70ad13d51936ccbd3b9f2ed86d137817accc1f810b2d01689d60dc30d07"
+  },
+  "coverage": [
+    {
+      "day": "2026-09-02",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-09-03",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-09-04",
+      "expected_minutes": 390,
+      "recorded_minutes": 389,
+      "missing_minutes": 1,
+      "receipt_missing_minutes": 389,
+      "complete": false,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-09-08",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-09-09",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-09-10",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-09-11",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-09-14",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-09-15",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-09-16",
+      "expected_minutes": 390,
+      "recorded_minutes": 389,
+      "missing_minutes": 1,
+      "receipt_missing_minutes": 389,
+      "complete": false,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-09-17",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-09-18",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-09-21",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-09-22",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-09-23",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-09-24",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-09-25",
+      "expected_minutes": 390,
+      "recorded_minutes": 389,
+      "missing_minutes": 1,
+      "receipt_missing_minutes": 389,
+      "complete": false,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-09-28",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-09-29",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-09-30",
+      "expected_minutes": 390,
+      "recorded_minutes": 389,
+      "missing_minutes": 1,
+      "receipt_missing_minutes": 389,
+      "complete": false,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-10-01",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-10-02",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-10-05",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-10-06",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-10-07",
+      "expected_minutes": 390,
+      "recorded_minutes": 388,
+      "missing_minutes": 2,
+      "receipt_missing_minutes": 388,
+      "complete": false,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-10-08",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-10-09",
+      "expected_minutes": 390,
+      "recorded_minutes": 389,
+      "missing_minutes": 1,
+      "receipt_missing_minutes": 389,
+      "complete": false,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-10-12",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-10-13",
+      "expected_minutes": 390,
+      "recorded_minutes": 388,
+      "missing_minutes": 2,
+      "receipt_missing_minutes": 388,
+      "complete": false,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-10-14",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-10-15",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-10-16",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-10-19",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-10-20",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-10-21",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-10-22",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-10-23",
+      "expected_minutes": 390,
+      "recorded_minutes": 389,
+      "missing_minutes": 1,
+      "receipt_missing_minutes": 389,
+      "complete": false,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-10-26",
+      "expected_minutes": 390,
+      "recorded_minutes": 388,
+      "missing_minutes": 2,
+      "receipt_missing_minutes": 388,
+      "complete": false,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-10-27",
+      "expected_minutes": 390,
+      "recorded_minutes": 389,
+      "missing_minutes": 1,
+      "receipt_missing_minutes": 389,
+      "complete": false,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-10-28",
+      "expected_minutes": 390,
+      "recorded_minutes": 388,
+      "missing_minutes": 2,
+      "receipt_missing_minutes": 388,
+      "complete": false,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-10-29",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    },
+    {
+      "day": "2026-10-30",
+      "expected_minutes": 390,
+      "recorded_minutes": 390,
+      "missing_minutes": 0,
+      "receipt_missing_minutes": 390,
+      "complete": true,
+      "partition": "DEVELOPMENT_ONLY_ALREADY_REVIEWED"
+    }
+  ],
+  "detection_counts": {
+    "TREND_ATR_VWAP_OR_EXACT_ENDPOINT_UNAVAILABLE": 42,
+    "COMPLETED_5M_VOLUME_CONFIRMATION_MISSING": 1837,
+    "NO_NEW_CANDIDATE_CONFIRMATION": 290,
+    "DIRECTIONAL_TREND_CONFLICT": 411,
+    "CANDIDATE_CONFIRMATION": 46,
+    "FULL_H60_DOES_NOT_FIT_SESSION": 97,
+    "OUTSIDE_REGULAR_SESSION": 42,
+    "GENUINE_SESSION_PREFIX_GAP": 381
+  },
+  "results": {
+    "INCUMBENT:delay15:cost0.03": {
+      "plans": 124,
+      "closed": 0,
+      "unresolved_or_refused": 124,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 38,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 124
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "INCUMBENT:delay15:cost0.06": {
+      "plans": 124,
+      "closed": 0,
+      "unresolved_or_refused": 124,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 38,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 124
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "INCUMBENT:delay30:cost0.03": {
+      "plans": 124,
+      "closed": 0,
+      "unresolved_or_refused": 124,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 38,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 124
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "INCUMBENT:delay30:cost0.06": {
+      "plans": 124,
+      "closed": 0,
+      "unresolved_or_refused": 124,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 38,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 124
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "INCUMBENT:delay60:cost0.03": {
+      "plans": 124,
+      "closed": 0,
+      "unresolved_or_refused": 124,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 38,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 124
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "INCUMBENT:delay60:cost0.06": {
+      "plans": 124,
+      "closed": 0,
+      "unresolved_or_refused": 124,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 38,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 124
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "ORB_5M:delay15:cost0.03": {
+      "plans": 33,
+      "closed": 0,
+      "unresolved_or_refused": 33,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 22,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 33
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "ORB_5M:delay15:cost0.06": {
+      "plans": 33,
+      "closed": 0,
+      "unresolved_or_refused": 33,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 22,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 33
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "ORB_5M:delay30:cost0.03": {
+      "plans": 33,
+      "closed": 0,
+      "unresolved_or_refused": 33,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 22,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 33
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "ORB_5M:delay30:cost0.06": {
+      "plans": 33,
+      "closed": 0,
+      "unresolved_or_refused": 33,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 22,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 33
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "ORB_5M:delay60:cost0.03": {
+      "plans": 33,
+      "closed": 0,
+      "unresolved_or_refused": 33,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 22,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 33
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "ORB_5M:delay60:cost0.06": {
+      "plans": 33,
+      "closed": 0,
+      "unresolved_or_refused": 33,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 22,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 33
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "PULLBACK_5M_15M:delay15:cost0.03": {
+      "plans": 16,
+      "closed": 0,
+      "unresolved_or_refused": 16,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 14,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 16
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "PULLBACK_5M_15M:delay15:cost0.06": {
+      "plans": 16,
+      "closed": 0,
+      "unresolved_or_refused": 16,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 14,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 16
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "PULLBACK_5M_15M:delay30:cost0.03": {
+      "plans": 16,
+      "closed": 0,
+      "unresolved_or_refused": 16,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 14,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 16
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "PULLBACK_5M_15M:delay30:cost0.06": {
+      "plans": 16,
+      "closed": 0,
+      "unresolved_or_refused": 16,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 14,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 16
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "PULLBACK_5M_15M:delay60:cost0.03": {
+      "plans": 16,
+      "closed": 0,
+      "unresolved_or_refused": 16,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 14,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 16
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "PULLBACK_5M_15M:delay60:cost0.06": {
+      "plans": 16,
+      "closed": 0,
+      "unresolved_or_refused": 16,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 14,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 16
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "FIXED_10_30_H60_LONG:delay15:cost0.03": {
+      "plans": 42,
+      "closed": 0,
+      "unresolved_or_refused": 42,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 42,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 42
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "FIXED_10_30_H60_LONG:delay15:cost0.06": {
+      "plans": 42,
+      "closed": 0,
+      "unresolved_or_refused": 42,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 42,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 42
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "FIXED_10_30_H60_LONG:delay30:cost0.03": {
+      "plans": 42,
+      "closed": 0,
+      "unresolved_or_refused": 42,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 42,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 42
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "FIXED_10_30_H60_LONG:delay30:cost0.06": {
+      "plans": 42,
+      "closed": 0,
+      "unresolved_or_refused": 42,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 42,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 42
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "FIXED_10_30_H60_LONG:delay60:cost0.03": {
+      "plans": 42,
+      "closed": 0,
+      "unresolved_or_refused": 42,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 42,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 42
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "FIXED_10_30_H60_LONG:delay60:cost0.06": {
+      "plans": 42,
+      "closed": 0,
+      "unresolved_or_refused": 42,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 42,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 42
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "FIXED_10_30_H60_SHORT:delay15:cost0.03": {
+      "plans": 42,
+      "closed": 0,
+      "unresolved_or_refused": 42,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 42,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 42
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "FIXED_10_30_H60_SHORT:delay15:cost0.06": {
+      "plans": 42,
+      "closed": 0,
+      "unresolved_or_refused": 42,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 42,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 42
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "FIXED_10_30_H60_SHORT:delay30:cost0.03": {
+      "plans": 42,
+      "closed": 0,
+      "unresolved_or_refused": 42,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 42,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 42
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "FIXED_10_30_H60_SHORT:delay30:cost0.06": {
+      "plans": 42,
+      "closed": 0,
+      "unresolved_or_refused": 42,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 42,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 42
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "FIXED_10_30_H60_SHORT:delay60:cost0.03": {
+      "plans": 42,
+      "closed": 0,
+      "unresolved_or_refused": 42,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 42,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 42
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    },
+    "FIXED_10_30_H60_SHORT:delay60:cost0.06": {
+      "plans": 42,
+      "closed": 0,
+      "unresolved_or_refused": 42,
+      "net_per_share_sum": null,
+      "net_expectancy_per_closed": null,
+      "max_drawdown_per_share": null,
+      "requested_independent_sessions": 42,
+      "active_sessions": 42,
+      "closed_active_sessions": 0,
+      "day_block_mean_ci95": null,
+      "direction_strata": {
+        "CALL": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        },
+        "PUT": {
+          "closed": 0,
+          "net_per_share_sum": 0,
+          "mean_per_share": null
+        }
+      },
+      "status_counts": {
+        "ENTRY_EXPIRED_AFTER_DELAY": 42
+      },
+      "turnover_entries": 0,
+      "uncertainty_limit": "Descriptive retrospective day-block interval; not multiple-trial corrected, calibrated, option-level or independent holdout qualification."
+    }
+  },
+  "no_trade_baseline": {
+    "net_per_share": 0,
+    "turnover": 0,
+    "trial_count": 1
+  },
+  "option_performance": "NOT_MEASURED",
+  "winner": "NOT_SELECTED",
+  "strategy_validated": false,
+  "live_ready": false,
+  "limits": [
+    "Historical receipt times absent from supplied current-state bars; CLOSE_ONLY is an explicit retrospective idealized availability diagnostic, not live evidence.",
+    "Incumbent arithmetic is unchanged but only same-session minute-derived features supplied; historical native/daily context and actual production eligibility are not reconstructed.",
+    "Missing requested dates/minutes are retained in coverage; conditional proxy results suffer data selection bias.",
+    "Entry expiry is strict: minute-open rounding can make all15/30/60second paths expire for a60second window. No favorable fill is invented.",
+    "No calibrated forecast, executable underlying BBO, option contract return or profitability/readiness selection follows from this diagnostic."
+  ]
+}

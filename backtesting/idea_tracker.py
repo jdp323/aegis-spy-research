@@ -21,12 +21,45 @@ class IdeaTracker:
         if not simulation:
             from pathlib import Path
             path=Path(path);path.parent.mkdir(parents=True,exist_ok=True)
-            self.db=sqlite3.connect(path,timeout=15)
+            self.db=sqlite3.connect(path,timeout=.5)
             self.db.executescript(f'''PRAGMA journal_mode=WAL;
             CREATE TABLE IF NOT EXISTS {self.table}(id TEXT PRIMARY KEY,signal_id TEXT NOT NULL,event_type TEXT NOT NULL,payload TEXT NOT NULL,created TEXT NOT NULL);
             CREATE INDEX IF NOT EXISTS {self.table}_signal ON {self.table}(signal_id);
             CREATE TRIGGER IF NOT EXISTS {self.table}_no_update BEFORE UPDATE ON {self.table} BEGIN SELECT RAISE(ABORT,'append only'); END;
             CREATE TRIGGER IF NOT EXISTS {self.table}_no_delete BEFORE DELETE ON {self.table} BEGIN SELECT RAISE(ABORT,'append only'); END;''')
+            self._latest_index()
+    def _latest_index(self):
+        """Additive rebuild-once projection; immutable events remain the authority.
+
+        The insert trigger also sees another process/legacy writer's append.
+        Creation/backfill is deployment work, not a repeated monitoring scan.
+        No historical outcome, event ID or created timestamp is rewritten.
+        """
+        table=self.table;cache=table+'_latest';meta='idea_projection_metadata'
+        self.db.executescript(f'''
+        CREATE TABLE IF NOT EXISTS {cache}(signal_id TEXT PRIMARY KEY,source_rowid INTEGER NOT NULL,status TEXT,payload TEXT NOT NULL);
+        CREATE INDEX IF NOT EXISTS {cache}_status ON {cache}(status,source_rowid);
+        CREATE TABLE IF NOT EXISTS {meta}(name TEXT PRIMARY KEY,version INTEGER NOT NULL);
+        CREATE TRIGGER IF NOT EXISTS {table}_latest_append AFTER INSERT ON {table} BEGIN
+          INSERT INTO {cache}(signal_id,source_rowid,status,payload)
+          VALUES(NEW.signal_id,NEW.rowid,json_extract(NEW.payload,'$.status'),NEW.payload)
+          ON CONFLICT(signal_id) DO UPDATE SET source_rowid=excluded.source_rowid,status=excluded.status,payload=excluded.payload
+          WHERE excluded.source_rowid>{cache}.source_rowid;
+        END;
+        ''')
+        if not self.db.execute('SELECT 1 FROM '+meta+' WHERE name=? AND version=1',(table,)).fetchone():
+            self.db.execute('BEGIN IMMEDIATE')
+            try:
+                # A second initializer may have completed while waiting.
+                if not self.db.execute('SELECT 1 FROM '+meta+' WHERE name=? AND version=1',(table,)).fetchone():
+                    self.db.execute(f'''INSERT INTO {cache}(signal_id,source_rowid,status,payload)
+                      SELECT signal_id,rowid,json_extract(payload,'$.status'),payload FROM {table}
+                      WHERE rowid IN(SELECT MAX(rowid) FROM {table} GROUP BY signal_id)
+                      ON CONFLICT(signal_id) DO UPDATE SET source_rowid=excluded.source_rowid,status=excluded.status,payload=excluded.payload
+                      WHERE excluded.source_rowid>{cache}.source_rowid''')
+                    self.db.execute('INSERT OR REPLACE INTO '+meta+' VALUES(?,1)',(table,))
+                self.db.commit()
+            except Exception:self.db.rollback();raise
     def close(self):
         if getattr(self,'shadow',None):self.shadow.close()
         if self.db:self.db.close()
@@ -42,17 +75,24 @@ class IdeaTracker:
             with self.db:self.db.execute('INSERT OR IGNORE INTO '+self.table+' VALUES(?,?,?,?,?)',(key,p['signal_id'],kind,json.dumps(p,allow_nan=False),now.isoformat()))
         else:
             if not any(x[0]==key for x in self.memory):self.memory.append((key,dict(p)))
-    def positions(self):
+    def positions(self,active_only=False):
         result={}
         # Select the latest immutable snapshot in SQL. Re-decoding every historical
         # OBSERVE event starved the worker as ledgers grew. External appends remain
         # visible; there is no process-local cache that can hide a closure.
         table=getattr(self,'table','idea_events')
-        rows=(json.loads(r[0]) for r in self.db.execute('SELECT payload FROM '+table+' WHERE rowid IN (SELECT MAX(rowid) FROM '+table+' GROUP BY signal_id) ORDER BY rowid')) if self.db else (x[1] for x in self.memory)
+        cache=table+'_latest'
+        cached=self.db and self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",(cache,)).fetchone()
+        if cached:
+            sql='SELECT payload FROM '+cache+(" WHERE status IN ('OPEN','PENDING')" if active_only else '')+' ORDER BY source_rowid'
+            rows=(json.loads(r[0]) for r in self.db.execute(sql))
+        else:
+            # Read-only legacy inspection does not create a projection.
+            rows=(json.loads(r[0]) for r in self.db.execute('SELECT payload FROM '+table+' WHERE rowid IN (SELECT MAX(rowid) FROM '+table+' GROUP BY signal_id) ORDER BY rowid')) if self.db else (x[1] for x in self.memory)
         for row in rows:
             if not self.simulation:assert_real(row)
             result[row['signal_id']]=row
-        return list(result.values())
+        return [p for p in result.values() if not active_only or p.get('status') in ('OPEN','PENDING')]
     def register(self,idea,quote,now,alerted=False):
         from core.signals import quote_valid
         if now.tzinfo is None:raise ValueError('AWARE_UTC_TIME_REQUIRED')
@@ -79,7 +119,7 @@ class IdeaTracker:
     def observe(self,bars,now,news=None,feed_quality=None):
         if not self.simulation:assert_real(bars)
         changes=[]
-        for p in self.positions():
+        for p in self.positions(active_only=True):
             if p['status'] not in ('OPEN','PENDING'):continue
             before=json.dumps(p,sort_keys=True)
             sign=1 if p['direction']=='CALL' else -1

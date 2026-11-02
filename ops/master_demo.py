@@ -23,11 +23,12 @@ def gallery():
     # verifier; it is never inserted into a market/option/fill store.
     c={'symbol':'SPY261023C00500000','type':'C','strike':500.,'expiry':'2026-10-23','bid':1.9,'ask':2.,'mid':1.95,'volume':1000,'oi':1000,'delta':.5,'gamma':.01,'theta':-.1,'vega':.1,'iv':.2,'greeks_timestamp':now.isoformat()}
     c['quote']=quote('alpaca-opra',c['symbol'],{'bp':1.9,'ap':2.,'t':now.isoformat()},received=now.isoformat()).view(now)
+    c['contract_terms']={'symbol':c['symbol'],'underlying':'SPY','multiplier':100,'deliverable':'100_SPY_SHARES','adjusted':False,'source':'AUTHORIZED_PROVIDER_CONTRACT_RECORD','evidence_sha256':'a'*64,'verified_at':now.isoformat()}
     from options.research_contract import verified_plan
     plan=verified_plan(i,{'best_contract':c,'chain_sanity_reasons':[]},now,{'options_risk':{'max_trade_premium_usd':500}})
     oi=dict(i,signal_id='b'*24,option_contract=c,option_plan=plan,option_verification='FRESH_QUOTE_GREEKS_CHAIN_SANITY_PASSED')
     messages.append(('SPY_IDEA',idea_text(oi,{},{})))
-    caps={'PREOPEN':8,'TREND_LINE':7,'SPY_IDEA':12,'IDEA_UPDATE':5,'RECAP':8}
+    caps={'PREOPEN':8,'TREND_LINE':8,'SPY_IDEA':9,'IDEA_UPDATE':5,'RECAP':8}
     for typ,text in messages:
         assert len(text.splitlines())<=caps[typ] and len(text)<=3500
         assert 'None' not in text and "{'" not in text
@@ -39,7 +40,9 @@ def main():
     with tempfile.TemporaryDirectory(prefix='ag-master-demo-') as directory:
         r=subprocess.run([node_executable(),'ops/schedule_transport.cjs'],cwd=ROOT,input=json.dumps({'scenarios':scenarios,'directory':directory}),capture_output=True,text=True,encoding='utf-8',timeout=60)
     transport=json.loads(r.stdout)
-    if r.returncode or transport.get('status')!='PASS':raise ValueError('FAKE_TRANSPORT_FAILED')
+    if r.returncode or transport.get('status')!='PASS':
+        destination.with_suffix('.failed.json').write_text(json.dumps({'transport':transport,'returncode':r.returncode,'stderr':r.stderr},indent=2),encoding='utf-8')
+        raise ValueError('FAKE_TRANSPORT_FAILED:'+json.dumps(transport))
     lines=['# AEGIS production-renderer demonstration','','Every price, quote, event, contract and outcome below is a FICTIONAL FIXTURE. This is software behavior, not actual market evidence, a live contract or a personal fill. No Telegram network, vault or guest was used.','','Actual notifier fake-transport result: '+json.dumps(transport),'','## Format fixtures','']
     for n,(typ,text) in enumerate(gallery(),1):lines+=['### Fixture '+str(n)+' · '+typ,'','```text',text,'```','']
     for scenario in scenarios:

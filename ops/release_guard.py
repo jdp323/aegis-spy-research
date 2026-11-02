@@ -6,6 +6,17 @@ from core.storage import ROOT
 BLOCK_PARTS={'.private','.venv','.vendor','.shadow-model','runtime','logs','daily_reports','users','inbox','outbox','demo_sessions','premarket_cache','premarket_authorized_cache','public_cache','closing_cache','__pycache__'}
 BLOCK_NAMES={'access.json','telegram.json','news_calendar.json','risk_state.json','system_state.json','demo_state.json'}
 ALLOWED_JSON={'config/upgrade.json','config/news_calendar.example.json','config/telegram.example.json','data/tsx_calendar.json','research/v5_requirements.json','research/combined_requirements.json'}
+# Explicit sanitized/frozen evidence schemas for the free-only release. This is
+# not a reports/ or research/ directory exemption; all content checks still run.
+ALLOWED_JSON.update({'research/FREE_CANDIDATE_RULES_2026-11-01.json',
+ 'research/FREE_ENGINEERING_WINDOW_2026-11-02.json',
+ 'research/FREE_FORWARD_PARTITIONS_2026-11-01.json',
+ 'reports/FREE_PROVIDER_CAPABILITIES_2026-11-01.json',
+ 'reports/FREE_SIX_ARCHIVE_INVENTORY_2026-11-01.json',
+ 'reports/FREE_SHADOW_COMPARISON_2026-11-01.json',
+ 'reports/FREE_CALENDAR_VERIFICATION_2026-11-01.json',
+ 'reports/FREE_VERIFICATION_2026-11-01.json',
+ 'reports/FREE_SOURCE_INVENTORY_2026-11-01.json'})
 SECRET_PATTERNS=[('telegram token',re.compile(rb'(?<![A-Za-z0-9])[0-9]{7,12}:[A-Za-z0-9_-]{30,}')),
  ('OpenAI-style key',re.compile(rb'(?<![A-Za-z0-9])sk-(?:proj-|svcacct-)?[A-Za-z0-9_-]{24,}')),
  ('GitHub token',re.compile(rb'(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,})')),

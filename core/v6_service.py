@@ -4,6 +4,58 @@ from core.storage import ROOT
 from core.sessions import ET,market_session
 from data.reliability import Events,PauseProbe,active,watchdog_age
 
+def monitor_checks(store,now,enqueue,root,started,event_writer=None):
+    """Owner-only self-check/outage checks on the independent monitoring clock.
+
+    Durable existing keys preserve restart deduplication. Both synchronous test
+    mode and background production call this same implementation; production
+    maintenance disables its copy so there is exactly one producer.
+    """
+    local=now.astimezone(ET);day=local.date().isoformat()
+    if active(now):
+        from data.models import stamp
+        last=store.get('last_market:iex') or {}
+        age=watchdog_age(last,now,started)
+        try:receipt_age=(now-stamp(last['received_timestamp'])).total_seconds()
+        except (KeyError,ValueError,TypeError):receipt_age=None
+        health=store.get('stream:iex') or {};key='v6-outage:'+day;outage=store.get(key)
+        if age>=90 and not outage:
+            # A separate bounded read-only connection; never borrow a
+            # maintenance-thread connection or hold a network transaction.
+            import sqlite3
+            recent=None
+            try:
+                db=sqlite3.connect((root/'runtime/observability.sqlite').resolve().as_uri()+'?mode=ro',uri=True,timeout=.1)
+                try:recent=db.execute("SELECT event,payload FROM stream_events WHERE feed IN ('iex','worker','supervisor') AND at>=? AND event IN ('DISCONNECT','PERMISSION_ERROR','PROCESS_PAUSED') ORDER BY at DESC LIMIT 1",((now-timedelta(minutes=5)).isoformat(),)).fetchone()
+                finally:db.close()
+            except sqlite3.Error:pass # UNKNOWN cause stays explicit; warning still issues.
+            import json
+            cause=(recent[0]+':'+json.loads(recent[1]).get('reason','SCHEDULING_GAP') if recent else None) or health.get('error_type') or ('NO_VALID_MARKET_MESSAGES' if health.get('state') in ('CONNECTED','CONNECTED_IDLE') else health.get('state','UNKNOWN'))
+            ident='v6-outage-'+day+'-'+str(int(now.timestamp()))
+            store.put(key,{'id':ident,'at':now.isoformat(),'reason':cause})
+            enqueue(store,ident,'DATA WARNING — IEX has no valid market messages for '+str(int(age))+' seconds. Cause: '+cause+'. Watchdog recovery is active. No fresh-data idea is issued.','PRIVATE','owner',kind='RESEARCH',alert_type='DATA_WARNING')
+        elif receipt_age is not None and 0<=receipt_age<15 and outage:
+            enqueue(store,outage['id']+'-recovered','DATA RECOVERY — fresh IEX market messages resumed. Bar continuity and history are checked separately.','PRIVATE','owner',kind='RESEARCH',alert_type='DATA_RECOVERY');store.put(key,None)
+        if local.hour*60+local.minute>=560 and local.hour*60+local.minute<565 and not store.get('v6-precheck:'+day):
+            from data.reliability import quote_diagnostics,describe
+            from data.models import stamp
+            q=store.get('research_quote:SPY:iex') or {};diagnostic=quote_diagnostics(q,now,'alpaca-iex');reason=describe(diagnostic) if diagnostic['predicate'] else None
+            if not reason and health.get('state') not in ('CONNECTED','CONNECTED_IDLE'):reason='Stream not connected: '+str(health.get('state','UNAVAILABLE'))
+            if not reason:
+                try:
+                    heartbeat_age=(now-stamp(health['at'])).total_seconds()
+                    if not 0<=heartbeat_age<=30:reason='Heartbeat age outside 0–30 seconds: '+str(round(heartbeat_age,3))+' s'
+                except (KeyError,ValueError):reason='Heartbeat timestamp unavailable'
+            bar=store.get('research_stream_bar:SPY:iex') or {}
+            try:
+                bar_age=(now-stamp(bar['source_timestamp'])).total_seconds()-60
+                if not reason and not 0<=bar_age<=120:reason='Premarket bar end age outside 0–120 seconds: '+str(round(bar_age,3))+' s'
+            except (KeyError,ValueError):
+                if not reason:reason='Premarket stream bar unavailable; quotes alone do not prove bar capture'
+            store.put('v6-precheck:'+day,{'at':now.isoformat(),'reason':reason})
+            if event_writer:event_writer('PREOPEN_CHECK','worker',now,state='WARN' if reason else 'PASS')
+            if reason:enqueue(store,'v6-precheck-'+day,'DATA WARNING — 09:20 ET stream self-check: '+reason+'. Next regular trend line: 09:45 ET.','PRIVATE','owner',kind='RESEARCH',alert_type='DATA_WARNING')
+
 class Reliability:
     def __init__(self,store,provider,root=ROOT,clock=None,background=False):
         from data.backfill import Backfill,BackgroundBackfill
@@ -16,7 +68,7 @@ class Reliability:
         if self.receipt_observer:self.receipt_observer.close()
         self.backfill.close();self.events.close()
         if self.tail:self.tail.close()
-    def tick(self,now,enqueue):
+    def tick(self,now,enqueue,monitoring=True):
         pause=self.probe.check(now)
         if pause:self.events.add('PROCESS_PAUSED','worker',now,**pause)
         self.backfill.tick(self.store,now)
@@ -24,37 +76,7 @@ class Reliability:
         if hasattr(self.backfill,'health'):self.store.put('history_worker_health',self.backfill.health())
         # Clock after all blocking reads/network work. Backfill is not a live message.
         now=self.clock();local=now.astimezone(ET);day=local.date().isoformat()
-        if active(now):
-            age=watchdog_age(self.store.get('last_market:iex') or {},now,self.started)
-            health=self.store.get('stream:iex') or {};key='v6-outage:'+day;outage=self.store.get(key)
-            if age>=90 and not outage:
-                recent=self.events.db.execute("SELECT event,payload FROM stream_events WHERE feed IN ('iex','worker','supervisor') AND at>=? AND event IN ('DISCONNECT','PERMISSION_ERROR','PROCESS_PAUSED') ORDER BY at DESC LIMIT 1",((now-timedelta(minutes=5)).isoformat(),)).fetchone()
-                import json
-                cause=(recent[0]+':'+json.loads(recent[1]).get('reason','SCHEDULING_GAP') if recent else None) or health.get('error_type') or ('NO_VALID_MARKET_MESSAGES' if health.get('state') in ('CONNECTED','CONNECTED_IDLE') else health.get('state','UNKNOWN'))
-                ident='v6-outage-'+day+'-'+str(int(now.timestamp()))
-                self.store.put(key,{'id':ident,'at':now.isoformat(),'reason':cause})
-                enqueue(self.store,ident,'DATA WARNING — IEX has no valid market messages for '+str(int(age))+' seconds. Cause: '+cause+'. Watchdog recovery is active. No fresh-data idea is issued.','PRIVATE','owner',kind='RESEARCH',alert_type='DATA_WARNING')
-            elif 0<=age<15 and outage:
-                enqueue(self.store,outage['id']+'-recovered','DATA RECOVERY — fresh IEX market messages resumed. Bar continuity and history are checked separately.','PRIVATE','owner',kind='RESEARCH',alert_type='DATA_RECOVERY');self.store.put(key,None)
-            if local.hour*60+local.minute>=560 and local.hour*60+local.minute<565 and not self.store.get('v6-precheck:'+day):
-                from data.reliability import quote_diagnostics,describe
-                from data.models import stamp
-                q=self.store.get('research_quote:SPY:iex') or {};diagnostic=quote_diagnostics(q,now,'alpaca-iex');reason=describe(diagnostic) if diagnostic['predicate'] else None
-                if not reason and health.get('state') not in ('CONNECTED','CONNECTED_IDLE'):reason='Stream not connected: '+str(health.get('state','UNAVAILABLE'))
-                if not reason:
-                    try:
-                        heartbeat_age=(now-stamp(health['at'])).total_seconds()
-                        if not 0<=heartbeat_age<=30:reason='Heartbeat age outside 0–30 seconds: '+str(round(heartbeat_age,3))+' s'
-                    except (KeyError,ValueError):reason='Heartbeat timestamp unavailable'
-                bar=self.store.get('research_stream_bar:SPY:iex') or {}
-                try:
-                    bar_age=(now-stamp(bar['source_timestamp'])).total_seconds()-60
-                    if not reason and not 0<=bar_age<=120:reason='Premarket bar end age outside 0–120 seconds: '+str(round(bar_age,3))+' s'
-                except (KeyError,ValueError):
-                    if not reason:reason='Premarket stream bar unavailable; quotes alone do not prove bar capture'
-                self.store.put('v6-precheck:'+day,{'at':now.isoformat(),'reason':reason})
-                self.events.add('PREOPEN_CHECK','worker',now,state='WARN' if reason else 'PASS')
-                if reason:enqueue(self.store,'v6-precheck-'+day,'DATA WARNING — 09:20 ET stream self-check: '+reason+'. Next regular trend line: 09:45 ET.','PRIVATE','owner',kind='RESEARCH',alert_type='DATA_WARNING')
+        if monitoring:monitor_checks(self.store,now,enqueue,self.root,self.started,self.events.add)
         if self.receipt_observer:
             receipt_rows,health=self.receipt_observer.poll(day);self.store.put('receipt_observer_health',health)
         elif getattr(self,'receipt_day',None)!=day or now.timestamp()>=getattr(self,'receipt_due',0):

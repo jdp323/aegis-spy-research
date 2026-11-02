@@ -48,7 +48,7 @@ class V5Ideas(unittest.TestCase):
   with tempfile.TemporaryDirectory() as d:
    p=Path(d)/'ideas.sqlite';t=IdeaTracker(p)
    with self.assertRaises(ValueError):t.register(seed(),oq(),NOW)
-   tables=[r[0] for r in t.db.execute("SELECT name FROM sqlite_master WHERE type='table'")];self.assertEqual(tables,['idea_events']);t.close()
+   tables=[r[0] for r in t.db.execute("SELECT name FROM sqlite_master WHERE type='table'")];self.assertEqual(set(tables),{'idea_events','idea_events_latest','idea_projection_metadata'});t.close()
  def test_expired_no_entry_forced_flat_and_same_feed(self):
   t=IdeaTracker(simulation=True);t.register(seed(mode='TRIGGER'),oq(),NOW)
   t.observe([],NOW+timedelta(minutes=11));self.assertEqual(t.positions()[0]['status'],'EXPIRED_NO_ENTRY');self.assertEqual(t.summary(NOW)['all']['closed'],0)

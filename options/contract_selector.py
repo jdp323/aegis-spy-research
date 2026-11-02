@@ -32,6 +32,7 @@ def select(chain,spot,direction,now=None,min_dte=1,target_distance=None,stop_dis
         if target_distance is not None and (move is None or target_distance>2*move):reasons.append('TARGET_EXCEEDS_EXPECTED_MOVE_LIMIT')
         record={**spec,'occ_symbol':symbol,'dte':dte,'bucket':'0DTE' if dte==0 else '1DTE' if dte==1 else '2–7 DTE' if dte<=7 else '8–30 DTE','bid':bid,'ask':ask,'mid':mid,'spread':ask-bid if finite(ask) and finite(bid) else None,'spread_pct':spread,'volume':volume,'oi':oi,'iv':iv,**{k:g.get(k) for k in ('delta','gamma','theta','vega')},'expected_move':move,'strike_distance':abs(float(spec['strike'])-spot),'target_distance':target_distance,'stop_distance':stop_distance,'atr':atr,'quote':q,'last':(raw.get('latestTrade') or {}).get('p'),'last_timestamp':(raw.get('latestTrade') or {}).get('t'),'greeks_timestamp':raw.get('greeksTimestamp'),'reasons':reasons}
         record['intraday_range']=intraday_range
+        record['contract_terms']=raw.get('contractTerms') # No guessed multiplier/deliverable.
         record['expected_move_comparisons']={k:(value/move if finite(value) and move else None) for k,value in {'range':intraday_range,'atr':atr,'target':target_distance,'stop':stop_distance,'strike_distance':record['strike_distance']}.items()}
         if reasons:rejected.append(record);continue
         # Preferences, not performance probabilities; penalties include carry and moneyness.

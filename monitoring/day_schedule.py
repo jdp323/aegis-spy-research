@@ -32,6 +32,6 @@ def dispatch(store,now,config,compose,publish):
             close=market_session(now)['close_minute']
             cutoff=now.astimezone(ET).replace(hour=close//60,minute=close%60,second=0,microsecond=0).astimezone(now.tzinfo)
             expires=min(expires,cutoff)
-        event={'id':'v5-'+kind.lower()+'-'+slot,'kind':'RESEARCH','presentation_version':'owner-compact-v2','tenant':'owner','audience':'SHARED' if config.get('signals',{}).get('shared',False) else 'PRIVATE','text':response,'expires_at':expires.isoformat(),'disable_notification':kind=='TREND' and config.get('trend_lines_silent',True),'alert_type':'TREND_LINE' if kind=='TREND' else kind}
+        event={'id':'v5-'+kind.lower()+'-'+slot,'kind':'RESEARCH','presentation_version':'owner-free-v3','tenant':'owner','audience':'SHARED' if config.get('signals',{}).get('shared',False) else 'PRIVATE','text':response,'expires_at':expires.isoformat(),'disable_notification':kind=='TREND' and config.get('trend_lines_silent',True),'alert_type':'TREND_LINE' if kind=='TREND' else kind}
         publish(event);result.append(event)
     return result

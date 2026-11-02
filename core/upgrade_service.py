@@ -37,6 +37,8 @@ def read_config():
     return validate_config(c)
 
 def validate_config(c):
+    from core.provider_policy import validate_free_policy
+    validate_free_policy(c)
 
     if c.get('symbols')!=['SPY'] or c.get('order_execution_enabled') or c.get('live_signal_enabled'):raise ValueError('UNSUPPORTED_UNVALIDATED_CONFIGURATION')
 
@@ -148,7 +150,7 @@ def enqueue(store,id,text,audience='SHARED',tenant=None,kind='INFO',**metadata):
 
     if tenant:event['tenant']=tenant
 
-    for key in ('alert_type','signal_id','strategy_version','presentation_version','reply_markup','disable_notification','expires_at','parent_event_id','entry_guard'):
+    for key in ('alert_type','signal_id','strategy_version','presentation_version','reply_markup','disable_notification','expires_at','parent_event_id','entry_guard','snapshot_id','evaluated_at','source_timestamps','rule_versions','reason_codes'):
 
         if key in metadata:event[key]=metadata[key]
 
@@ -255,6 +257,53 @@ class Watchdog:
 
         self.store.put(key,state);return warn
 
+def reported_position_reviews(store,allbooks,now,news,publish=enqueue):
+    """Private deterministic reviews; caller owns the connection and clock."""
+    session=market_session(now);underlying=fresh(store.get('quote:SPY'),now)
+    for tenant,positions in allbooks.items():
+
+        reviewed=[]
+
+        for p in positions:
+
+            plan=store.get('plan:'+tenant+':'+p['contract'],{})
+
+            from core.signals import quote_valid,option_quote_valid
+
+            from monitoring.paper_alerts import reserve
+
+            uq=underlying if quote_valid(underlying,now) else fresh(store.get('research_quote:SPY:iex'),now)
+
+            oq=fresh(store.get('quote:'+p['contract']),now)
+
+            position_monitoring_incident(store,p,uq,oq,now,tenant,enqueue)
+
+            if plan.get('stop_bar_minutes'):
+
+                bar=(store.get('features') or {}).get('5m',{});age=now.timestamp()-bar.get('timestamp',0)
+
+                plan['invalidation_bar_close']=bar.get('close') if 300<=age<=420 else None
+
+            r=review(p,oq if option_quote_valid(oq,now) else None,uq if quote_valid(uq,now) else None,plan,news,store.get('regime',{}).get('regime'),now);reviewed.append(r)
+
+            for alert in r['alerts']:
+
+                # Once per condition/day/contract; no guessed prices, private to record owner.
+
+                aid='position-'+hashlib.sha256((tenant+p['contract']+alert+session['date']).encode()).hexdigest()[:32]
+
+                if alert in ('ABNORMAL_DATA',) or str(alert).startswith('MONITORING_UNAVAILABLE'):continue
+                # Actual reported holdings are private to their own tenant.
+                # They are not research ideas and do not consume its cap.
+                if not store.get('private-review:'+aid):
+                    from monitoring.message_format import position_review_text
+                    store.put('private-review:'+aid,{'at':now.isoformat()})
+                    text=position_review_text(p,alert,plan,uq,oq,now)
+                    publish(store,aid,text,'PRIVATE',tenant,kind='RESEARCH',alert_type='EXIT_REVIEW')
+
+        store.put('positions:'+tenant,reviewed)
+
+
 class Engine:
 
     def __init__(self,store=None,provider=None,background=None):
@@ -262,7 +311,7 @@ class Engine:
         self.root=ROOT;self.background=(store is None and provider is None) if background is None else background
         self.store=store or Store();self.provider=provider or AlpacaProvider();self.option_provider=None;self.router=ProviderRouter(self.provider);self.due={};self.last_phase=None;self.stop=False;self.watchdog=Watchdog(self.store)
         from core.background_jobs import Jobs,Phases
-        self.jobs=Jobs();self.phases=Phases(self.root)
+        self.jobs=Jobs();self.phases=Phases(self.root);self.fast_path=None
 
         from data.research_inputs import ResearchInputs
 
@@ -300,16 +349,20 @@ class Engine:
         finally:separate.close()
 
     def close(self):
+
+        if self.fast_path:self.fast_path.close(timeout=2)
         self.jobs.close(timeout=1);self.reliability.close();self.phases._publish({'state':'STOPPED'});self.store.close()
 
     def tick(self):
+        if self.fast_path and not self.fast_path.health()['thread_alive'] and not self.fast_path.stopping.is_set():
+            self.fast_path.start() # Bounded maintenance cadence; previous START_FAILED remains logged.
 
         start=time.monotonic();self.phases.start('cycle_inputs');now=datetime.now(timezone.utc);session=market_session(now);c=read_config();digest=hashlib.sha256(json.dumps(c,sort_keys=True).encode()).hexdigest()
-        completed=self.jobs.drain()
+        completed=self.jobs.drain(maximum=4)
         self.store.put('worker_jobs',{'completed':completed,'current':self.jobs.health()})
 
         self.phases.start('reliability')
-        self.reliability.tick(now,enqueue);now=datetime.now(timezone.utc);session=market_session(now)
+        self.reliability.tick(now,enqueue,monitoring=self.fast_path is None);now=datetime.now(timezone.utc);session=market_session(now)
         local=now.astimezone(__import__('core.sessions',fromlist=['ET']).ET)
         if self.background and 540<=local.hour*60+local.minute<560:
             day=local.date().isoformat();prepared=self.store.get('premarket_prepared:'+day) or {}
@@ -324,7 +377,7 @@ class Engine:
                     return build(raw,NewsProvider(ROOT/'config/news_calendar.json').snapshot(),datetime.now(timezone.utc))
                 self.collect('premarket_prepare',prepare,lambda value:self.store.put('premarket_prepared:'+day,value),15)
         self.phases.start('idea_schedule')
-        if c.get('idea_engine_enabled',False):
+        if c.get('idea_engine_enabled',False) and self.fast_path is None:
             from core.idea_service import tick as idea_tick
             def idea_publish(event):
                 enqueue(self.store,event['id'],event['text'],event['audience'],event['tenant'],kind='RESEARCH',alert_type=event['alert_type'],disable_notification=event['disable_notification'],expires_at=event['expires_at'],**({key:event[key] for key in ('reply_markup','parent_event_id','presentation_version','entry_guard') if event.get(key)}))
@@ -348,7 +401,8 @@ class Engine:
 
         from monitoring.simple_notifications import enabled
 
-        if c.get('option_data_provider')=='questrade':
+        from core.provider_policy import free_only
+        if c.get('option_data_provider')=='questrade' and not free_only(c):
 
             from data.questrade import QuestradeProvider
 
@@ -366,7 +420,9 @@ class Engine:
 
         else:self.option_provider=self.provider
 
-        allbooks=books();reconcile_monitoring_holdings(self.store,allbooks,now);paper=PaperEngine(ROOT/'runtime/paper.sqlite')
+        allbooks=books()
+        if self.fast_path is None:reconcile_monitoring_holdings(self.store,allbooks,now)
+        paper=PaperEngine(ROOT/'runtime/paper.sqlite')
 
         try:paper_positions=[p for p in paper.positions() if p['status']=='OPEN']
 
@@ -389,13 +445,14 @@ class Engine:
 
             return False
 
-        if active and self.option_provider and self.option_provider.health()['status'] not in ('QUESTRADE_NOT_CONFIGURED','FEED_NOT_CONFIGURED') and due('option_keep_poll',c.get('questrade',{}).get('active_quote_seconds',10)):
+        runtime_paid_capability=False # FREE_ONLY: no repetitive SIP/OPRA permission probes.
+        if runtime_paid_capability and active and self.option_provider and self.option_provider.health()['status'] not in ('QUESTRADE_NOT_CONFIGURED','FEED_NOT_CONFIGURED') and due('option_keep_poll',c.get('questrade',{}).get('active_quote_seconds',10)):
 
             for symbol in symbols[:c['max_contract_subscriptions']]:self.collect('option_quote:'+symbol.lower(),lambda symbol=symbol:self.option_provider.get_option_quote(symbol).view(),lambda value,symbol=symbol:self.market_result('quote:'+symbol,value),15)
 
-        if active and self.option_provider and self.option_provider.health()['status'] not in ('QUESTRADE_NOT_CONFIGURED','FEED_NOT_CONFIGURED') and due('option_chain_independent',c['chain_refresh_seconds']):self.collect('option_chain',lambda:self.option_provider.get_option_chain().view(max_age=300),lambda value:self.store.put('chain',value),30)
+        if runtime_paid_capability and active and self.option_provider and self.option_provider.health()['status'] not in ('QUESTRADE_NOT_CONFIGURED','FEED_NOT_CONFIGURED') and due('option_chain_independent',c['chain_refresh_seconds']):self.collect('option_chain',lambda:self.option_provider.get_option_chain().view(max_age=300),lambda value:self.store.put('chain',value),30)
 
-        if configured and active:
+        if configured and active and (runtime_paid_capability or not self.background):
 
             interval=c['high_volatility_seconds'] if self.store.get('regime',{}).get('regime')=='HIGH_VOLATILITY' else c['price_poll_seconds']
 
@@ -577,48 +634,7 @@ class Engine:
 
         news=NewsProvider(ROOT/'config/news_calendar.json').snapshot(now)
 
-        for tenant,positions in allbooks.items():
-
-            reviewed=[]
-
-            for p in positions:
-
-                plan=self.store.get('plan:'+tenant+':'+p['contract'],{})
-
-                from core.signals import quote_valid,option_quote_valid
-
-                from monitoring.paper_alerts import reserve
-
-                uq=underlying if quote_valid(underlying,now) else fresh(self.store.get('research_quote:SPY:iex'),now)
-
-                oq=fresh(self.store.get('quote:'+p['contract']),now)
-
-                position_monitoring_incident(self.store,p,uq,oq,now,tenant,enqueue)
-
-                if plan.get('stop_bar_minutes'):
-
-                    bar=(self.store.get('features') or {}).get('5m',{});age=now.timestamp()-bar.get('timestamp',0)
-
-                    plan['invalidation_bar_close']=bar.get('close') if 300<=age<=420 else None
-
-                r=review(p,oq if option_quote_valid(oq,now) else None,uq if quote_valid(uq,now) else None,plan,news,self.store.get('regime',{}).get('regime'),now);reviewed.append(r)
-
-                for alert in r['alerts']:
-
-                    # Once per condition/day/contract; no guessed prices, private to record owner.
-
-                    aid='position-'+hashlib.sha256((tenant+p['contract']+alert+session['date']).encode()).hexdigest()[:32]
-
-                    if alert in ('ABNORMAL_DATA',) or str(alert).startswith('MONITORING_UNAVAILABLE'):continue
-                    # Actual reported holdings are private to their own tenant.
-                    # They are not research ideas and do not consume its cap.
-                    if not self.store.get('private-review:'+aid):
-                        from monitoring.message_format import position_review_text
-                        self.store.put('private-review:'+aid,{'at':now.isoformat()})
-                        text=position_review_text(p,alert,plan,uq,oq,now)
-                        enqueue(self.store,aid,text,'PRIVATE',tenant,kind='RESEARCH',alert_type='EXIT_REVIEW')
-
-            self.store.put('positions:'+tenant,reviewed)
+        if self.fast_path is None:reported_position_reviews(self.store,allbooks,now,news)
 
         self.phases.start('option_paper_reviews')
         for p in paper_positions:
@@ -713,15 +729,20 @@ class Engine:
         else:self.store.put('research_notification_health',{'state':'DISABLED_SIMPLE_PROFILE','at':now.isoformat(),'enabled_categories':[]})
 
         self.phases.start('diagnostic_studies')
-        from research.forward_study import tick,rows_from_disk
+        if due('diagnostic_studies',60 if active else 300):
+            from research.forward_study import tick,rows_from_disk
 
-        tick(self.store,public_snapshot,rows_from_disk(),session,now)
+            tick(self.store,public_snapshot,rows_from_disk(),session,now)
 
-        from research.ratio_study import tick as ratio_tick
+            from research.ratio_study import tick as ratio_tick
 
-        from data.trend_spy import load as ratio_load
+            from data.trend_spy import load as ratio_load
 
-        ratio_tick(self.store,ratio_load(),now)
+            ratio_tick(self.store,ratio_load(),now)
+
+            if self.fast_path:
+                from core.idea_service import maintenance_research
+                maintenance_research(self.store,news,c,datetime.now(timezone.utc),root=ROOT)
 
         watch_now=datetime.now(timezone.utc);watch_session=market_session(watch_now)
 
@@ -738,11 +759,56 @@ class Engine:
 
         return {'session':session['state'],'provider':health['status'],'action':'NO TRADE'}
 
+    def start_fast_path(self):
+        """Enable exactly one public coordinator in this worker process."""
+        if self.fast_path is not None:return False
+        from core.fast_path import FastPath
+        self.fast_path=FastPath(self.root,self.fast_tick)
+        return self.fast_path.start()
+
+    def fast_tick(self,store,now):
+        # Only this monitoring thread touches its Store/tracker. Reported ledger
+        # scans are background work and never share a SQLite connection.
+        from core.background_jobs import Jobs
+        from backtesting.idea_tracker import IdeaTracker
+        from core.idea_service import tick as idea_tick
+        from core.fast_path import phase_times,public_evaluation_due
+        if not hasattr(store,'monitor_jobs'):
+            store.monitor_jobs=Jobs(maximum=1);store.monitor_holdings=None;store.monitor_holdings_at=None;store.monitor_holdings_due=0
+            store.monitor_tracker=IdeaTracker(self.root/'runtime/ideas.sqlite')
+            store._closers.extend([store.monitor_tracker.close,lambda:store.monitor_jobs.close(timeout=1)])
+        from core.v6_service import monitor_checks
+        if not hasattr(store,'monitor_started'):store.monitor_started=now
+        monitor_checks(store,now,enqueue,self.root,store.monitor_started)
+        store.monitor_jobs.drain()
+        if time.monotonic()>=store.monitor_holdings_due:
+            def applied(value):
+                store.monitor_holdings=value;store.monitor_holdings_at=datetime.now(timezone.utc)
+            if store.monitor_jobs.submit('reported_positions',books,applied,budget=5):store.monitor_holdings_due=time.monotonic()+5
+        c=read_config();news=NewsProvider(self.root/'config/news_calendar.json').snapshot(now)
+        def publish(event):
+            enqueue(store,event['id'],event['text'],event['audience'],event['tenant'],kind='RESEARCH',alert_type=event['alert_type'],disable_notification=event['disable_notification'],expires_at=event['expires_at'],**({key:event[key] for key in ('reply_markup','parent_event_id','presentation_version','entry_guard','snapshot_id','evaluated_at','source_timestamps','rule_versions','reason_codes') if event.get(key)}))
+        if store.get('v5_skew_budget')!=c.get('max_future_skew_seconds',2):store.put('v5_skew_budget',c.get('max_future_skew_seconds',2))
+        started=time.monotonic()
+        public_due=public_evaluation_due(store,store.monitor_tracker,now)
+        events=idea_tick(store,news,c,now,publish,root=self.root,tracker=store.monitor_tracker,fast=True) if c.get('idea_engine_enabled',False) and public_due else []
+        # Re-read the wall clock after evaluation. A cycle start is not current
+        # quote eligibility and no receipt is retimed to improve a measurement.
+        review_now=datetime.now(timezone.utc)
+        if store.monitor_holdings is not None:
+            reconcile_monitoring_holdings(store,store.monitor_holdings,review_now)
+            reported_position_reviews(store,store.monitor_holdings,review_now,NewsProvider(self.root/'config/news_calendar.json').snapshot(review_now),publish=enqueue)
+        quality='CURRENT_REPORTED_SNAPSHOT' if store.monitor_holdings_at and (review_now-store.monitor_holdings_at).total_seconds()<=30 else 'REPORTED_SNAPSHOT_UNAVAILABLE_OR_OLD'
+        value={'version':'independent-monitor-timer-v1','at':review_now.isoformat(),'public_events':len(events),'public_evaluation':'EVALUATED' if public_due else 'NOT_DUE_OUTSIDE_SESSION_WITH_NO_UNRETIRED_PUBLIC_PLAN','input_quality':store.get('fast_input_health'),'reported_snapshot_quality':quality,'reported_snapshot_at':store.monitor_holdings_at.isoformat() if store.monitor_holdings_at else None,'no_personal_fill_or_exit_inferred':True,'live_signal_ready':False,**phase_times(store.get('research_quote:SPY:iex') or {},review_now,time.monotonic()-started)}
+        store.put('fast_path_health',value)
+        return value
+
     def run(self):
 
         def stop(*args):self.stop=True
 
         signal.signal(signal.SIGINT,stop);signal.signal(signal.SIGTERM,stop)
+        if self.background:self.start_fast_path()
 
         while not self.stop and not (ROOT/'runtime/shutdown.request').exists():
 

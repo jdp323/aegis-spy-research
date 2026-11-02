@@ -150,7 +150,10 @@ def collect(day,root=ROOT,now=None):
             if db:db.close()
 def write(day,root=ROOT,now=None):
     from ops.verification_packet import scan,redact_deep
-    result=collect(day,root,now);raw=json.dumps(result,indent=2,ensure_ascii=False,allow_nan=False)
+    result=collect(day,root,now)
+    from ops.free_engineering_review import collect as engineering_collect
+    result['free_mode_engineering']=engineering_collect(day,root,now)
+    raw=json.dumps(result,indent=2,ensure_ascii=False,allow_nan=False)
     if scan(raw):raise ValueError('SESSION_REPORT_SECRET_REJECTED')
     raw=json.dumps(redact_deep(result),indent=2,ensure_ascii=False,allow_nan=False)
     md='# AEGIS session report — '+day+'\n\nVERIFIED: retained read-only evidence as of generation. Missing evidence is unavailable. No profitability or strategy validation claimed.\n\n```json\n'+raw+'\n```\n'

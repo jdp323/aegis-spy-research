@@ -1,3 +1,7 @@
+## November 1 free-only implementation
+
+[Implementation, algorithms, measured limitations and verification](updates/2026-11-01_free-only-six-project-implementation.md). Actual local deployment and HTTP/progress samples are scoped in the report. Five genuine sessions remain pending. No new paid dependency or strategy promotion.
+
 # Expert technical review - 31 October 2026
 
 [Read the complete expert report](updates/2026-10-31_expert-review.md): exact algorithms, parameter profiles, retrospective strategy comparisons, fourteen-alert audit, operational measurements, evidence inventory and unresolved findings. Code baseline b234f6672bc20d931b9862249bcf9cbdb3fcab38. This is an as-of technical review; live readiness and genuine option profitability remain unestablished. No production source, service, risk, sharing or execution configuration changed for this report.

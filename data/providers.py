@@ -22,15 +22,29 @@ class UnconfiguredProvider:
     def get_market_status(self):return market_session()
     def health(self):return {'provider':self.name,'status':Quality.UNCONFIGURED}
 class AlpacaProvider(UnconfiguredProvider):
-    def __init__(self,transport=None):
+    def __init__(self,transport=None,*,enforce_free=None,purpose='RESEARCH'):
         super().__init__('alpaca');self.transport=transport;self.retry_at=0;self.last_error=None;self.latency_ms=None
+        if transport is None and enforce_free is False:raise ValueError('REAL_TRANSPORT_REQUIRES_FREE_POLICY')
+        # Existing injected fixtures never open a provider socket. All real
+        # transports enforce policy, and explicit True also exercises fake ones.
+        self.enforce_free=(transport is None) if enforce_free is None else bool(enforce_free)
+        self.purpose=purpose;self.probe_requests=0;self.last_error_detail=None
     def health(self):return {'provider':self.name,'status':Quality.OK if self.transport or (os.getenv('APCA_API_KEY_ID') and os.getenv('APCA_API_SECRET_KEY')) else Quality.UNCONFIGURED,'entitlement':'UNVERIFIED_UNTIL_RESPONSE','last_error':self.last_error,'retry_after_seconds':max(0,self.retry_at-time.monotonic()),'request_latency_ms':self.latency_ms}
     def get(self,path,params):
         if not re.fullmatch(r'/v2/stocks/SPY/(?:quotes/latest|bars)|/v1beta1/options/(?:quotes/latest|snapshots/SPY|bars)|/v1beta1/news|/v1/corporate-actions',path):raise ValueError('MARKET_ENDPOINT_FORBIDDEN')
-        if self.health()['status']==Quality.UNCONFIGURED:raise RuntimeError('FEED_NOT_CONFIGURED')
         if time.monotonic()<self.retry_at:raise RuntimeError('RATE_LIMIT_COOLDOWN')
-        start=time.monotonic()
+        if self.enforce_free:
+            from core.provider_policy import allow_alpaca,PolicyRefusal
+            allow_alpaca(path,params,self.purpose)
+            if self.purpose=='CAPABILITY_PROBE':
+                if self.probe_requests>=3:raise PolicyRefusal('CAPABILITY_PROBE_BUDGET_EXHAUSTED')
+                self.probe_requests+=1
+        if self.health()['status']==Quality.UNCONFIGURED:raise RuntimeError('FEED_NOT_CONFIGURED')
+        start=time.monotonic();budget_entered=False
         try:
+            if self.enforce_free:
+                from core.provider_policy import BUDGET
+                BUDGET.enter();budget_entered=True
             if self.transport:return self.transport(path,params)
             req=urllib.request.Request('https://data.alpaca.markets'+path+'?'+urlencode(params),headers={'APCA-API-KEY-ID':os.getenv('APCA_API_KEY_ID'),'APCA-API-SECRET-KEY':os.getenv('APCA_API_SECRET_KEY')})
             with urllib.request.urlopen(req,timeout=10) as r:
@@ -41,13 +55,25 @@ class AlpacaProvider(UnconfiguredProvider):
             self.last_error=None;return result
         except urllib.error.HTTPError as e:
             self.last_error='HTTP_'+str(e.code)
+            detail={'http_status':e.code,'provider_code':None,'classification':'CAUSE_UNSPECIFIED'}
+            try:
+                raw=json.loads(e.read(4096));code=raw.get('code');message=str(raw.get('message','')).lower()
+                if type(code) is int:detail['provider_code']=code
+                if 'subscription does not permit querying recent sip data' in message:detail['classification']='RECENT_SIP_PERMISSION_REFUSED'
+                elif 'subscription' in message and 'opra' in message:detail['classification']='OPRA_PERMISSION_REFUSED'
+                elif e.code==401:detail['classification']='AUTHENTICATION_REFUSED'
+                elif e.code==429:detail['classification']='REQUEST_QUOTA_REFUSED'
+            except (ValueError,TypeError,AttributeError,OSError):pass
+            self.last_error_detail=detail # No raw response/provider text or secrets.
             if e.code==429:
                 try:delay=float(e.headers.get('Retry-After','60'))
                 except (TypeError,ValueError):delay=60
                 self.retry_at=time.monotonic()+max(60,min(900,delay))
             elif e.code in (401,403):self.retry_at=time.monotonic()+300
             raise RuntimeError(self.last_error) from None
-        finally:self.latency_ms=(time.monotonic()-start)*1000
+        finally:
+            self.latency_ms=(time.monotonic()-start)*1000
+            if budget_entered:BUDGET.leave()
     def fail(self,symbol,kind):return unavailable(self.name,symbol,kind,Quality.UNCONFIGURED if self.health()['status']==Quality.UNCONFIGURED else Quality.DISCONNECTED,'Provider unavailable; no indicative fallback')
     def get_underlying_quote(self,symbol='SPY'):
         try:return quote('alpaca-sip',symbol,self.get('/v2/stocks/'+symbol+'/quotes/latest',{'feed':'sip'})['quote'])

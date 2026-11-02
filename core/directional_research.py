@@ -46,11 +46,11 @@ def view(ctx, now):
 def record(store, ident, issued, research, horizon, premarket=False):
     """Append at issuance, including abstentions. Never update a forecast in place."""
     item = (research.get('outlooks') or {}).get(horizon, {})
-    payload = dict(id=ident, version=FORECAST_VERSION, issued_at=issued.isoformat(),
+    payload = dict(id=ident, version=item.get('rule_version',item.get('version',FORECAST_VERSION)), issued_at=issued.isoformat(),
         horizon=horizon, bias=item.get('bias','ABSTAIN'), reference=item.get('reference'),
         invalidation=item.get('invalidation'), target_at=item.get('target_at'),
-        reference_at=research.get('as_of'), reference_rule='REGULAR_OPEN' if premarket else 'ISSUE_TIME_COMPLETED_PRICE',
-        outcome_rule='REGULAR_SESSION_LAST_MINUTE_CLOSE' if horizon in ('SESSION','PREMARKET') else 'EXACT_COMPLETED_MINUTE_CLOSE',
+        reference_at=research.get('as_of'), reference_rule='REGULAR_OPEN' if premarket else research.get('reference_rule','ISSUE_TIME_COMPLETED_PRICE'),
+        outcome_rule='REGULAR_SESSION_LAST_MINUTE_CLOSE' if horizon in ('SESSION','PREMARKET') else 'FIRST_VERIFIED_MATCHING_FEED_QUOTE_0_TO_5S_AFTER_TARGET_OR_EXACT_COMPLETED_MINUTE_CLOSE',
         provider=research.get('provider','UNAVAILABLE'), calibrated=False)
     payload['snapshot_id']=research.get('snapshot_id')
     payload['available_at']=issued.isoformat()

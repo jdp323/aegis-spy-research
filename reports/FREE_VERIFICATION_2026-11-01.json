@@ -1,0 +1,741 @@
+{
+  "version": "free-release-evidence-v1",
+  "as_of": "2026-11-01T23:57:02.670150+00:00",
+  "final_tests": {
+    "Portable final": {
+      "checked_at": "2026-11-01T23:46:55.574707+00:00",
+      "groups": {
+        "tests": {
+          "run": 861,
+          "passed": 861,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "backtesting": {
+          "run": 7,
+          "passed": 7,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "monitoring": {
+          "run": 4,
+          "passed": 4,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "node": {
+          "run": 63,
+          "passed": 63,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      },
+      "successful": true
+    },
+    "Installed final": {
+      "checked_at": "2026-11-01T23:52:19.501171+00:00",
+      "groups": {
+        "tests": {
+          "run": 854,
+          "passed": 854,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "backtesting": {
+          "run": 7,
+          "passed": 7,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "monitoring": {
+          "run": 4,
+          "passed": 4,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "node": {
+          "run": 62,
+          "passed": 62,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      },
+      "successful": true
+    }
+  },
+  "retained_attempts": [
+    {
+      "artifact": "public_attempt1.json",
+      "checked_at": "2026-11-01T22:23:18.253394+00:00",
+      "successful": false,
+      "groups": {
+        "tests": {
+          "run": 845,
+          "passed": 827,
+          "failed": 16,
+          "errors": 2,
+          "skipped": 0,
+          "failed_tests": [
+            "test_status_names_separate_horizons_without_probabilities_or_option_premium (test_complete_telegram_messages.SemanticMessageTests.test_status_names_separate_horizons_without_probabilities_or_option_premium)",
+            "test_aged_quote_reason_reaches_actual_status_with_active_plan (test_master_boundaries.MasterBoundaries.test_aged_quote_reason_reaches_actual_status_with_active_plan)",
+            "test_shared_view_has_all_separate_answers_and_false_flags (test_master_boundaries.MasterBoundaries.test_shared_view_has_all_separate_answers_and_false_flags)",
+            "test_available_trend_is_independent_of_option_and_quote (test_owner_experience.Experience.test_available_trend_is_independent_of_option_and_quote)",
+            "test_full_day_uses_actual_dispatch_fake_outbox_and_preserves_source (test_owner_experience.Experience.test_full_day_uses_actual_dispatch_fake_outbox_and_preserves_source)",
+            "test_auth_and_permission_denials_keep_five_minute_cooldown (test_provider_cooldowns.ProviderCooldownTests.test_auth_and_permission_denials_keep_five_minute_cooldown) (code=401)",
+            "test_auth_and_permission_denials_keep_five_minute_cooldown (test_provider_cooldowns.ProviderCooldownTests.test_auth_and_permission_denials_keep_five_minute_cooldown) (code=403)",
+            "test_rate_limit_retry_after_is_bounded_and_repeated_calls_are_suppressed (test_provider_cooldowns.ProviderCooldownTests.test_rate_limit_retry_after_is_bounded_and_repeated_calls_are_suppressed) (retry='1')",
+            "test_rate_limit_retry_after_is_bounded_and_repeated_calls_are_suppressed (test_provider_cooldowns.ProviderCooldownTests.test_rate_limit_retry_after_is_bounded_and_repeated_calls_are_suppressed) (retry='2000')",
+            "test_rate_limit_retry_after_is_bounded_and_repeated_calls_are_suppressed (test_provider_cooldowns.ProviderCooldownTests.test_rate_limit_retry_after_is_bounded_and_repeated_calls_are_suppressed) (retry='invalid')",
+            "test_rate_limit_retry_after_is_bounded_and_repeated_calls_are_suppressed (test_provider_cooldowns.ProviderCooldownTests.test_rate_limit_retry_after_is_bounded_and_repeated_calls_are_suppressed) (retry=None)",
+            "test_retry_boundary_recovers_and_clears_error_without_feed_substitution (test_provider_cooldowns.ProviderCooldownTests.test_retry_boundary_recovers_and_clears_error_without_feed_substitution)",
+            "test_missing_checks_are_sideways_not_forced_by_news (test_scheduled_preopen.ScheduledMorning.test_missing_checks_are_sideways_not_forced_by_news)",
+            "test_post_fetch_clock_keeps_fresh_prepared_snapshot (test_scheduled_preopen.ScheduledMorning.test_post_fetch_clock_keeps_fresh_prepared_snapshot)",
+            "test_preparation_failure_honest_abstention_no_fabricated_levels (test_scheduled_preopen.ScheduledMorning.test_preparation_failure_honest_abstention_no_fabricated_levels)",
+            "test_v5_flow_labelled_and_no_trade_progresses (test_v5_demo.V5Demo.test_v5_flow_labelled_and_no_trade_progresses)",
+            "test_capability_probe_uses_only_market_paths_and_preserves_refusal (test_completion_endpoints.EndpointTests.test_capability_probe_uses_only_market_paths_and_preserves_refusal)",
+            "test_long_short_stop_first_mfe_mae_and_separation (test_v5_ideas.V5Ideas.test_long_short_stop_first_mfe_mae_and_separation)"
+          ]
+        },
+        "backtesting": {
+          "run": 7,
+          "passed": 7,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": []
+        },
+        "monitoring": {
+          "run": 4,
+          "passed": 4,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": []
+        },
+        "node": {
+          "run": 61,
+          "passed": 61,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": null
+        }
+      }
+    },
+    {
+      "artifact": "public_attempt3_pass.json",
+      "checked_at": "2026-11-01T22:38:39.992602+00:00",
+      "successful": true,
+      "groups": {
+        "tests": {
+          "run": 853,
+          "passed": 853,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": []
+        },
+        "backtesting": {
+          "run": 7,
+          "passed": 7,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": []
+        },
+        "monitoring": {
+          "run": 4,
+          "passed": 4,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": []
+        },
+        "node": {
+          "run": 63,
+          "passed": 63,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": null
+        }
+      }
+    },
+    {
+      "artifact": "public_attempt5_timing_failed.json",
+      "checked_at": "2026-11-01T22:53:29.817127+00:00",
+      "successful": false,
+      "groups": {
+        "tests": {
+          "run": 854,
+          "passed": 852,
+          "failed": 2,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": [
+            "test_blocked_scan_never_blocks_market_poll_and_is_single_flight (test_receipt_observer.ReceiptObservation.test_blocked_scan_never_blocks_market_poll_and_is_single_flight)",
+            "test_close_is_bounded_and_does_not_launch_new_scan (test_receipt_observer.ReceiptObservation.test_close_is_bounded_and_does_not_launch_new_scan)"
+          ]
+        },
+        "backtesting": {
+          "run": 7,
+          "passed": 7,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": []
+        },
+        "monitoring": {
+          "run": 4,
+          "passed": 4,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": []
+        },
+        "node": {
+          "run": 63,
+          "passed": 63,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": null
+        }
+      }
+    },
+    {
+      "artifact": "public_attempt6_monitor_pass.json",
+      "checked_at": "2026-11-01T23:13:04.174197+00:00",
+      "successful": true,
+      "groups": {
+        "tests": {
+          "run": 856,
+          "passed": 856,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": []
+        },
+        "backtesting": {
+          "run": 7,
+          "passed": 7,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": []
+        },
+        "monitoring": {
+          "run": 4,
+          "passed": 4,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": []
+        },
+        "node": {
+          "run": 63,
+          "passed": 63,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": null
+        }
+      }
+    },
+    {
+      "artifact": "public_attempt7_guard_pass.json",
+      "checked_at": "2026-11-01T23:17:42.555439+00:00",
+      "successful": true,
+      "groups": {
+        "tests": {
+          "run": 857,
+          "passed": 857,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": []
+        },
+        "backtesting": {
+          "run": 7,
+          "passed": 7,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": []
+        },
+        "monitoring": {
+          "run": 4,
+          "passed": 4,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": []
+        },
+        "node": {
+          "run": 63,
+          "passed": 63,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": null
+        }
+      }
+    },
+    {
+      "artifact": "public_attempt8_dashboard_pass.json",
+      "checked_at": "2026-11-01T23:43:06.736591+00:00",
+      "successful": true,
+      "groups": {
+        "tests": {
+          "run": 861,
+          "passed": 861,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": []
+        },
+        "backtesting": {
+          "run": 7,
+          "passed": 7,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": []
+        },
+        "monitoring": {
+          "run": 4,
+          "passed": 4,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": []
+        },
+        "node": {
+          "run": 63,
+          "passed": 63,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": null
+        }
+      }
+    },
+    {
+      "artifact": "installed_final.json (retained failed run)",
+      "successful": false,
+      "groups": {
+        "tests": {
+          "run": 847,
+          "passed": 822,
+          "failed": 0,
+          "errors": 25,
+          "skipped": 0,
+          "failed_tests": [
+            "test_tenant_routes_receive_same_public_basic_reading (test_basic_trend.BasicTrendTests.test_tenant_routes_receive_same_public_basic_reading)",
+            "test_accuracy_append_only_dedupe_and_stale_rejection (test_combined_evidence.EvidenceTests.test_accuracy_append_only_dedupe_and_stale_rejection)",
+            "test_measured_clock_offset_blocks_option_path (test_combined_evidence.EvidenceTests.test_measured_clock_offset_blocks_option_path)",
+            "test_neighbors_and_missing_grid_fail_closed (test_combined_evidence.EvidenceTests.test_neighbors_and_missing_grid_fail_closed)",
+            "test_random_direction_baseline_separate_and_real_only (test_combined_evidence.EvidenceTests.test_random_direction_baseline_separate_and_real_only)",
+            "test_stale_review_hides_option_dollar_targets (test_combined_evidence.EvidenceTests.test_stale_review_hides_option_dollar_targets)",
+            "test_call_put_vwap_confirmation_and_news_gate (test_combined_proxy_vwap.ProxyVWAPTests.test_call_put_vwap_confirmation_and_news_gate)",
+            "test_bar_only_feed_cannot_create_proxy_entry_or_promote_live_gate (test_live_trend.LiveTrendTests.test_bar_only_feed_cannot_create_proxy_entry_or_promote_live_gate)",
+            "test_configuration_cannot_enable_live (test_paper_upgrade_a.PaperRiskTests.test_configuration_cannot_enable_live)",
+            "test_flag_and_live_separation (test_paper_upgrade_c.PaperEligibilityTests.test_flag_and_live_separation)",
+            "test_validator_never_promotes (test_paper_upgrade_c.PaperEligibilityTests.test_validator_never_promotes)",
+            "test_fills_stop_first_mfe_mae_separate_tables (test_paper_upgrade_d.ProxyTests.test_fills_stop_first_mfe_mae_separate_tables)",
+            "test_forced_flat_and_dst (test_paper_upgrade_d.ProxyTests.test_forced_flat_and_dst)",
+            "test_news_time_target_and_no_early_bar (test_paper_upgrade_d.ProxyTests.test_news_time_target_and_no_early_bar)",
+            "test_config_live_and_new_values_fail_closed (test_paper_upgrade_quality.QualityTests.test_config_live_and_new_values_fail_closed)",
+            "test_invalidation_rejects_stale_and_wrong_feed (test_paper_upgrade_quality.QualityTests.test_invalidation_rejects_stale_and_wrong_feed)",
+            "test_proxy_gap_preserves_unresolved_position_until_backfill (test_paper_upgrade_quality.QualityTests.test_proxy_gap_preserves_unresolved_position_until_backfill)",
+            "test_proxy_partial_entry_bar_skipped (test_paper_upgrade_quality.QualityTests.test_proxy_partial_entry_bar_skipped)",
+            "test_proxy_time_stop_and_feed_filter (test_paper_upgrade_quality.QualityTests.test_proxy_time_stop_and_feed_filter)",
+            "test_worker_wires_notifications_without_entitled_provider (test_research_alerts.ResearchAlerts.test_worker_wires_notifications_without_entitled_provider)",
+            "test_worker_missing_dependencies_end_to_end (test_upgrade_integration.IntegrationTests.test_worker_missing_dependencies_end_to_end)",
+            "test_worker_uses_current_clock_after_collection (test_upgrade_integration.IntegrationTests.test_worker_uses_current_clock_after_collection)",
+            "test_config_validation_and_live_flags_never_changed (test_v5_ideas.V5Ideas.test_config_validation_and_live_flags_never_changed)",
+            "test_live_and_sharing_flags_remain_exact (test_v6_reliability.ReliabilityTests.test_live_and_sharing_flags_remain_exact)",
+            "test_background_cycle_reaches_reviews_while_history_network_waits (test_worker_reliability_completion.WorkerTests.test_background_cycle_reaches_reviews_while_history_network_waits)"
+          ]
+        },
+        "backtesting": {
+          "run": 7,
+          "passed": 7,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": []
+        },
+        "monitoring": {
+          "run": 4,
+          "passed": 4,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": []
+        },
+        "node": {
+          "run": 62,
+          "passed": 61,
+          "failed": 1,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": null
+        }
+      }
+    },
+    {
+      "artifact": "installed_release_final.json (retained failed run)",
+      "successful": false,
+      "groups": {
+        "tests": {
+          "run": 850,
+          "passed": 849,
+          "failed": 0,
+          "errors": 1,
+          "skipped": 0,
+          "failed_tests": [
+            "test_model_timeout_and_malformed_child_do_not_block_parent (test_master_boundaries.MasterBoundaries.test_model_timeout_and_malformed_child_do_not_block_parent)"
+          ]
+        },
+        "backtesting": {
+          "run": 7,
+          "passed": 7,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": []
+        },
+        "monitoring": {
+          "run": 4,
+          "passed": 4,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": []
+        },
+        "node": {
+          "run": 62,
+          "passed": 62,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failed_tests": null
+        }
+      }
+    }
+  ],
+  "command_role_verification": {
+    "at": "2026-11-01T22:38:08.082086+00:00",
+    "status": "PASS",
+    "command_count": 36,
+    "roles": [
+      "owner",
+      "guest",
+      "stranger",
+      "revoked",
+      "expired_invitation"
+    ],
+    "checks": 540
+  },
+  "schedule": {
+    "at": "2026-11-01T22:47:28.863438+00:00",
+    "status": "PASS",
+    "scenarios": 24,
+    "notifier_transport": {
+      "status": "PASS",
+      "events": 388,
+      "calls": 388,
+      "transport": "Actual notifier validator/send with fake client, fake clock, fixture recipient only; no network or vault"
+    }
+  },
+  "formatter_dispatcher": {
+    "events": 58,
+    "calls": 58,
+    "scenarios": 2,
+    "gallery_fixtures": 7,
+    "transport": "FAKE; no Telegram network or real recipient"
+  },
+  "synthetic_query_benchmark": {
+    "at": "2026-11-01T22:28:29.593788+00:00",
+    "scope": "ISOLATED SYNTHETIC WORKLOAD, not a live-session latency or market-data claim",
+    "immutable_events": 30000,
+    "ideas": 600,
+    "active_ideas": 12,
+    "counterbalanced_seconds": {
+      "before": [
+        0.008048799820244312,
+        0.016366699943318963,
+        0.012012999970465899,
+        0.01759850000962615,
+        0.008851599879562855
+      ],
+      "after": [
+        0.00024780002422630787,
+        0.00018940004520118237,
+        0.0002531998325139284,
+        0.00018620002083480358,
+        0.0003095997963100672
+      ]
+    },
+    "median_seconds": {
+      "before": 0.012012999970465899,
+      "after": 0.00024780002422630787
+    },
+    "identical_active_rows": true,
+    "history_count_unchanged": true,
+    "limit": "Projection trades startup migration space/work for indexed monitoring reads; host pauses and current quote/source delays remain separate."
+  },
+  "deployment_and_progress": {
+    "at": "2026-11-01T23:52:30.216739+00:00",
+    "task_definition_unchanged": true,
+    "task_limited": true,
+    "all_deployed_sources_match_passing_installed_copy": true,
+    "configuration_preserved": true,
+    "issued_artifacts_preserved": 409,
+    "rolling_performance_view_preimage_preserved": true,
+    "database_backups_integrity_and_restore": 8,
+    "start_requested_at": "2026-11-01T23:52:30.321346+00:00",
+    "state": "DEPLOYED_AND_LOCAL_PROGRESS_VERIFIED",
+    "observed_at": "2026-11-01T23:55:13.252576+00:00",
+    "after_restart_cohort": "Sunday closed-session; no genuine live-session readiness claim",
+    "supervised_components": 7,
+    "components_running_and_alive": true,
+    "listener_dispatcher_progressed": true,
+    "worker_completed_phases_progressed": true,
+    "fast_completed_checks_progressed": true,
+    "last_cycle_seconds": 3.7189999998081475,
+    "last_cycle_deadline_missed": false,
+    "health_http": 200,
+    "populated_dashboard_http": 200,
+    "http_checks": {
+      "/healthz": {
+        "status": 200,
+        "bytes": 151,
+        "seconds": 0.024272099835798144
+      },
+      "/": {
+        "status": 200,
+        "bytes": 12282,
+        "seconds": 0.017305799992755055
+      },
+      "/api/status": {
+        "status": 200,
+        "bytes": 2943,
+        "seconds": 0.03020420018583536
+      },
+      "/api/upgrade": {
+        "status": 200,
+        "bytes": 27645,
+        "seconds": 0.046139500103890896,
+        "top_level_keys": [
+          "generated_at",
+          "session",
+          "underlying",
+          "research_underlying",
+          "features",
+          "regime",
+          "selection",
+          "news",
+          "streams",
+          "system",
+          "ntp_clock",
+          "market_view",
+          "signals",
+          "positions",
+          "positions_view",
+          "options_readiness",
+          "today_verdict",
+          "today_next_event",
+          "action",
+          "live_signal_enabled",
+          "live_execution_enabled",
+          "order_execution_enabled",
+          "LIVE_SIGNAL_READY",
+          "diagnostic_source",
+          "study_summaries",
+          "clock_meaning",
+          "live_trend",
+          "saved_today_verdict",
+          "snapshot_cache"
+        ],
+        "cache": {
+          "snapshot_cache": {
+            "state": "DIAGNOSTIC_CACHE",
+            "data_available": true,
+            "snapshot_as_of": "2026-11-01T23:55:05.934790+00:00",
+            "evaluated_at": "2026-11-01T23:55:13.463680+00:00",
+            "cache_age_seconds": 7.436999999918044,
+            "snapshot_source_age_seconds": 7.52889,
+            "refresh_running": false,
+            "refresh_elapsed_seconds": null,
+            "refresh_budget_seconds": 5,
+            "refresh_error_type": null,
+            "new_entry_eligibility": false,
+            "scope": "DIAGNOSTIC_ONLY_NOT_ENTRY_READINESS"
+          }
+        },
+        "populated_fields": {
+          "features": true,
+          "regime": true,
+          "selection": true,
+          "news": true,
+          "system": true
+        }
+      }
+    },
+    "fast_samples": 16,
+    "fast_p95_seconds": 23.625,
+    "fast_max_seconds": 23.625,
+    "fast_failed_ticks": 0,
+    "fast_deadline_misses": 6,
+    "fast_database_counters": {
+      "transactions": 61,
+      "busy_retries": 1,
+      "failures": 0,
+      "last_duration_seconds": 0.015999999828636646,
+      "maximum_duration_seconds": 0.6870000001508743,
+      "lock_timeout_seconds": 0.25,
+      "maximum_attempts": 2,
+      "last_error_code": 5,
+      "last_error_name": "SQLITE_BUSY"
+    },
+    "maintenance_database_counters": {
+      "busy_retries": 0,
+      "failures": 0,
+      "last_duration_seconds": 0.0,
+      "lock_timeout_seconds": 0.5,
+      "maximum_attempts": 3,
+      "maximum_duration_seconds": 0.9379999998491257,
+      "transactions": 87
+    },
+    "counter_reset_limit": "New process counters do not erase pre-release retries/failures; different cohorts, no causal benchmark",
+    "aegis_scheduled_tasks": 1,
+    "aegis_windows_services": 0,
+    "authoritative_scheduled_producer": "Existing worker independent monitor -> idea_service/day_schedule/owner_messages -> durable outbox -> existing dispatcher/notifier",
+    "source_export_runs_services": false,
+    "other_installations_scope": "Matched existing AEGIS task and command lines plus source-export inventory; no global forensic claim about unrelated software",
+    "database_inventory_relative": [
+      "runtime/aegis.sqlite",
+      "runtime/observability.sqlite",
+      "runtime/ideas.sqlite",
+      "runtime/horizon_ideas.sqlite",
+      "options/paper.sqlite",
+      "options/reported.sqlite",
+      "monitoring/users/<private-tenant>/reported.sqlite",
+      "runtime/history.sqlite"
+    ],
+    "streams": {
+      "iex": {
+        "at": "2026-11-01T23:53:06.729288+00:00",
+        "state": "FEED_DISCONNECTED",
+        "provider": null,
+        "error_type": "PermissionError",
+        "source_timestamp": null,
+        "received_timestamp": null
+      },
+      "sip": {
+        "at": "2026-11-01T23:52:59.696688+00:00",
+        "state": "POLICY_DISABLED_UNVERIFIED",
+        "provider": null,
+        "error_type": null,
+        "source_timestamp": null,
+        "received_timestamp": null
+      },
+      "opra": {
+        "at": "2026-11-01T23:52:59.999326+00:00",
+        "state": "POLICY_DISABLED_UNVERIFIED",
+        "provider": null,
+        "error_type": null,
+        "source_timestamp": null,
+        "received_timestamp": null
+      }
+    },
+    "original_history_prefixes": [
+      {
+        "population": "runtime/ideas.sqlite:idea_events",
+        "original_rows": 2165,
+        "exact_prefix_preserved": true
+      },
+      {
+        "population": "runtime/ideas.sqlite:idea_baseline_events",
+        "original_rows": 2089,
+        "exact_prefix_preserved": true
+      },
+      {
+        "population": "runtime/horizon_ideas.sqlite:idea_events",
+        "original_rows": 1720,
+        "exact_prefix_preserved": true
+      },
+      {
+        "population": "runtime/horizon_ideas.sqlite:idea_baseline_events",
+        "original_rows": 1315,
+        "exact_prefix_preserved": true
+      }
+    ],
+    "private_exposure_and_requests": "Reviewed privately before start; no personal settlement/exercise/closure inferred",
+    "sharing_and_manual_execution_preserved": true,
+    "development_telegram_messages": 0,
+    "phone_display_verified": false,
+    "genuine_sessions": "PENDING",
+    "live_signal_ready": false,
+    "order_execution_enabled": false,
+    "first_restart_failures_preserved": {
+      "started_at": "2026-11-01T23:31:37.970174+00:00",
+      "sampled_at": "2026-11-01T23:34:32.394606+00:00",
+      "whole_cycle_seconds": 152.60900000017136,
+      "fast_completed_samples": 18,
+      "fast_p95_seconds": 62.437999999849126,
+      "dashboard_cache": {
+        "snapshot_cache": {
+          "state": "REFRESHING",
+          "data_available": false,
+          "snapshot_as_of": "2026-11-01T23:33:30.816519+00:00",
+          "evaluated_at": "2026-11-01T23:34:39.179940+00:00",
+          "cache_age_seconds": 63.07899999991059,
+          "snapshot_source_age_seconds": 68.363421,
+          "refresh_running": true,
+          "refresh_elapsed_seconds": 0.4220000000204891,
+          "refresh_budget_seconds": 5,
+          "refresh_error_type": null,
+          "new_entry_eligibility": false,
+          "scope": "DIAGNOSTIC_ONLY_NOT_ENTRY_READINESS"
+        }
+      },
+      "IEX_control_rejection": {
+        "at": "2026-11-01T23:31:57.654195+00:00",
+        "code": 406,
+        "classification": "CONNECTION_LIMIT_EXCEEDED per official Alpaca docs",
+        "local_competing_stream_after_stop": false,
+        "external_holder_identity": "UNKNOWN"
+      },
+      "source_changes_after_detection": "Bounded query-only dashboard loader; omit closed-session public evaluation when no unretired public plan; regular slots and existing unresolved plans remain checked."
+    },
+    "fast_scope_limit": "Latest cohort may skip public calculation outside session; not an active-session trend latency result."
+  },
+  "genuine_session_status": "PENDING",
+  "option_performance": "NOT_MEASURED",
+  "strategy_validated": false,
+  "live_ready": false,
+  "post_validation_whitespace": {
+    "at": "2026-11-02T00:01:11.499811+00:00",
+    "path": "core/upgrade_service.py",
+    "before_sha256": "df311bb13d8bbde8a883ef79fe313c0606032fbc5114eec5294f15e9fe8abd92",
+    "after_sha256": "02f82c3bb2734bd020dc71bca8e5f3b72d61682cd1dc838dd1fd9d292768588e",
+    "change": "Remove eight spaces from one otherwise blank line; line count and all executable text unchanged",
+    "AST_identity": true,
+    "complete_compiled_code_identity": true,
+    "compiled_code_sha256": "1acbf1ea8829709259a837bf812591093bd4aded083dc6186cb3d8a44b74afaf",
+    "full_tests": "935portable/927installed complete runs apply to byte-for-byte identical compiled code; tested original source copies retained unchanged",
+    "generated_document_cleanup": "COMMANDS.md CRCRLF/trailing-space normalization only",
+    "broad_suites_repeated_after_nonsemantic_cleanup": false
+  }
+}

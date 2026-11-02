@@ -24,7 +24,7 @@ class Experience(unittest.TestCase):
     def test_available_trend_is_independent_of_option_and_quote(self):
         c=ctx();r=view(c,NOW);self.assertEqual(r['trend'],'UP')
         text=status_text(c,NOW,{'quality':'DATA_OK','risk':'NORMAL'})
-        self.assertEqual(len(text.splitlines()),5);self.assertIn('Last completed-bar trend: UP',text);self.assertIn('Next hour: unavailable',text);self.assertIn('WAIT',text);self.assertNotIn('SOURCE_',text)
+        self.assertEqual(len(text.splitlines()),8);self.assertIn('Last completed-bar trend: UP',text);self.assertIn('Next hour: unavailable',text);self.assertIn('WAIT',text);self.assertNotIn('SOURCE_',text)
     def test_retained_oct20_delay_cannot_be_refreshed_by_heartbeat(self):
         # Original retained source/receipt times; positive prices below are
         # synthetic schema placeholders, not reconstructed market prices.
@@ -64,7 +64,7 @@ class Experience(unittest.TestCase):
         for c in ('TARGET_2_HIT','STOP_HIT','TIME_EXIT','MONITORING_UNAVAILABLE','IDEA_CANCELLED'):
             t=update_text(idea(),c);self.assertIn('EXAMPLE',t);self.assertLessEqual(len(t.splitlines()),2);self.assertNotIn('you sold',t.lower())
     def test_recap_six_lines_no_rejection_dump(self):
-        r=dict(idea(),alerted=False,status='CLOSED');t=recap_text([r],NOW,'UNAVAILABLE');self.assertEqual(len(t.splitlines()),8);self.assertIn('Ideas alerted: 0',t);self.assertIn('Forward outlook: outcomes unavailable',t);self.assertNotIn('structure',t)
+        r=dict(idea(),alerted=False,status='CLOSED');t=recap_text([r],NOW,'UNAVAILABLE');self.assertEqual(len(t.splitlines()),8);self.assertIn('Ideas alerted: 0',t);self.assertIn('Operations: not measured',t);self.assertNotIn('structure',t)
     def test_pause_consumes_silent_losses_once_and_restart(self):
         rows=[closed(n,n) for n in range(3)];s,active,w=advance(None,rows,NOW+timedelta(minutes=3));self.assertTrue(active);self.assertEqual(len(w),1)
         first=copy.deepcopy(s);s,active,w=advance(json.loads(json.dumps(s)),rows+[closed(3,10)],NOW+timedelta(minutes=11));self.assertEqual(s['episode']['end'],first['episode']['end']);self.assertFalse(w)
@@ -159,7 +159,7 @@ class Experience(unittest.TestCase):
         from ops.day_simulation import run_scenario
         r=run_scenario('normal',NOW.astimezone(ET).date());self.assertTrue(r['PASS'])
         for e in r['timeline']:
-            cap={'PREOPEN':8,'TREND_LINE':6,'SPY_IDEA':9,'RECAP':8}.get(e['alert_type'])
+            cap={'PREOPEN':8,'TREND_LINE':8,'SPY_IDEA':9,'RECAP':8}.get(e['alert_type'])
             if cap:self.assertLessEqual(len(e['text'].splitlines()),cap,e['alert_type'])
             if e['alert_type']=='TREND_LINE':self.assertTrue('Current trend:' in e['text'] or 'Last completed-bar trend:' in e['text'])
 

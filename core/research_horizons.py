@@ -62,7 +62,16 @@ def from_snapshot(snapshot,now,simulation=False):
 def context(store,now,simulation=False):
     keys=('stream_bars:SPY','research_stream_bars:SPY:iex','history_daily:iex','history_daily:sip','daily','history_frames:iex','history_frames:sip')
     snap=store.snapshot(keys) if hasattr(store,'snapshot') else {k:store.get(k) for k in keys}
-    return from_snapshot(snap,now,simulation)
+    from core.fast_path import feature_key,feature_get,feature_put
+    key=feature_key(store,'DESCRIPTIVE_BARS',keys,now,simulation);value=feature_get(store,key)
+    if value is None:
+        value=from_snapshot(snap,now,simulation);feature_put(store,key,value)
+    # Snapshot-bound caching never refreshes a source time. The signed bar age
+    # is still checked against this evaluation clock, not the cache clock.
+    if value.get('source_timestamp'):
+        age=(now-stamp(value['source_timestamp'])).total_seconds();value['bar_end_age_seconds']=age
+        if not 0<=age<=120:value.update(quality='UNAVAILABLE',reason='COMPLETED_BAR_END_AGE_EXCEEDS_120_SECONDS')
+    return value
 
 def describe(bar_context,now):
     result={};fs=bar_context.get('features') or {}

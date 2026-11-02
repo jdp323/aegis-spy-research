@@ -1,0 +1,54 @@
+{
+  "at": "2026-11-01T22:42:35.531028+00:00",
+  "successful": true,
+  "checks": {
+    "production_unchanged": true,
+    "required_categories": true,
+    "all_day_dates_preserved": true,
+    "freshness_expires_closed": true,
+    "six_future_bls_rows": true
+  },
+  "verified_at": "2026-11-01T22:41:51+00:00",
+  "expires_at": "2026-11-08T22:41:51+00:00",
+  "coverage_through": "2026-12-05T04:59:59+00:00",
+  "events": 11,
+  "sha256": "0ad36d61ffd8f8f5a341f9bf2238849eaae75f3fef7a01f54e53d5fb10aebe8c",
+  "direct_failures": [
+    {
+      "url": "https://www.bls.gov/schedule/2026/home.htm",
+      "at": "2026-11-01T22:42:34.791680+00:00",
+      "error_type": "HTTPError",
+      "http_status": 403
+    },
+    {
+      "url": "https://www.bls.gov/schedule/news_release/bls.ics",
+      "at": "2026-11-01T22:42:34.871195+00:00",
+      "error_type": "HTTPError",
+      "http_status": 403
+    }
+  ],
+  "sources": {
+    "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm": {
+      "retrieved_at": "2026-11-01T22:42:35.158397+00:00",
+      "method": "DIRECT_OFFICIAL_HTTPS",
+      "sha256": "ae2dea1e51d950c0b6cfa61d723bfd778e589c21d0c3d5668ba05da5589cab7f",
+      "bytes": 166350,
+      "artifact": "fe3255ea546db4b0.body"
+    },
+    "https://www.bls.gov/schedule/2026/home.htm": {
+      "retrieved_at": "2026-11-01T22:41:51+00:00",
+      "method": "OFFICIAL_PAGE_READER; ORIGIN_DOWNLOAD_TIME_UNKNOWN",
+      "sha256": "1afe60e1731bc2eac69eea29269e76eab1a8d4820021f4a4d4a208aef660e0f0",
+      "bytes": 2830,
+      "artifact": "3ca73e30e8f7fb92.body"
+    },
+    "https://www.bea.gov/news/schedule": {
+      "retrieved_at": "2026-11-01T22:42:35.430402+00:00",
+      "method": "DIRECT_OFFICIAL_HTTPS",
+      "sha256": "ee68ab61fa90c5ae774341149b0da9fa7a17fbdfccbda764ad1b5afd29fcf410",
+      "bytes": 70025,
+      "artifact": "fd4e4b2ac67cbbe5.body"
+    }
+  },
+  "production_changed": false
+}

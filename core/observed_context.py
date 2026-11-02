@@ -51,8 +51,14 @@ def evaluate(store,now,simulation=False):
     rows=snapshot.get('stream_bars:SPY' if feed in ('SIP','SIMULATED') else 'research_stream_bars:SPY:iex') or []
     result['rows']=rows
     try:
-        bars=normalize(rows,now=now,simulation=simulation)
-        today=[b for b in bars if datetime.fromtimestamp(b['timestamp'],timezone.utc).astimezone(ET).date()==now.astimezone(ET).date() and market_session(datetime.fromtimestamp(b['timestamp'],timezone.utc))['active']]
+        from core.fast_path import feature_key,feature_get,feature_put
+        cache_keys=('stream_bars:SPY' if feed in ('SIP','SIMULATED') else 'research_stream_bars:SPY:iex','history_daily:'+feed.lower(),'daily','history_frames:'+feed.lower())
+        cache_key=feature_key(store,'STRICT_'+feed,cache_keys,now,simulation)
+        memo=feature_get(store,cache_key)
+        if memo:bars,today,fs=memo
+        else:
+            bars=normalize(rows,now=now,simulation=simulation)
+            today=[b for b in bars if datetime.fromtimestamp(b['timestamp'],timezone.utc).astimezone(ET).date()==now.astimezone(ET).date() and market_session(datetime.fromtimestamp(b['timestamp'],timezone.utc))['active']]
         if not today:return reject('BAR_TAIL_UNAVAILABLE','contiguous history missing: no completed current-session bars')
         age=now.timestamp()-today[-1]['timestamp']-60;result['bar_end_age_seconds']=age
         if not 0<=age<=120:return reject('BAR_END_AGE',f'completed bars not fresh: signed end age {age:+.3f} s; budget 120 s')
@@ -63,24 +69,28 @@ def evaluate(store,now,simulation=False):
         if len(slots)<need:return reject('BAR_TAIL_SHORT','opening range forming; insufficient completed history')
         # Ephemeral confirmed-empty slots do not reach features, signals or stores.
         result['synthetic_continuity_minutes']=n
-        daily=snapshot.get('history_daily:'+feed.lower()) or ((snapshot.get('daily') or {}).get('payload',{}).get('bars',[]) if feed!='IEX' else [])
-        from features.indicators import from_normalized
-        fs=from_normalized(bars,normalize(daily,1440,now,simulation),now)
-        from features.indicators import calculate
-        for frame,minutes in (('5m',5),('15m',15),('30m',30),('1h',60)):
-            if fs[frame].get('trend') in (None,'UNAVAILABLE'):
-                native=(snapshot.get('history_frames:'+feed.lower()) or {}).get(frame,[])
-                # Native provider aggregates stay explicitly separate from strict
-                # minute resampling. No synthetic minute creates an hourly candle.
-                verified=normalize(native,minutes,now,simulation=simulation)
-                verified=[b for b in verified if datetime.fromtimestamp(b['timestamp'],timezone.utc).astimezone(ET).hour*60+datetime.fromtimestamp(b['timestamp'],timezone.utc).astimezone(ET).minute+minutes<=market_session(datetime.fromtimestamp(b['timestamp'],timezone.utc))['close_minute']]
-                if verified:
-                    value=calculate(verified);value.update(history_source='PROVIDER_NATIVE_AGGREGATES',feed_quality=feed)
-                    fs[frame]=value
+        if not memo:
+            daily=snapshot.get('history_daily:'+feed.lower()) or ((snapshot.get('daily') or {}).get('payload',{}).get('bars',[]) if feed!='IEX' else [])
+            from features.indicators import from_normalized
+            fs=from_normalized(bars,normalize(daily,1440,now,simulation),now)
+            from features.indicators import calculate
+            for frame,minutes in (('5m',5),('15m',15),('30m',30),('1h',60)):
+                if fs[frame].get('trend') in (None,'UNAVAILABLE'):
+                    native=(snapshot.get('history_frames:'+feed.lower()) or {}).get(frame,[])
+                    # Native provider aggregates stay explicitly separate from strict
+                    # minute resampling. No synthetic minute creates an hourly candle.
+                    verified=normalize(native,minutes,now,simulation=simulation)
+                    verified=[b for b in verified if datetime.fromtimestamp(b['timestamp'],timezone.utc).astimezone(ET).hour*60+datetime.fromtimestamp(b['timestamp'],timezone.utc).astimezone(ET).minute+minutes<=market_session(datetime.fromtimestamp(b['timestamp'],timezone.utc))['close_minute']]
+                    if verified:
+                        value=calculate(verified);value.update(history_source='PROVIDER_NATIVE_AGGREGATES',feed_quality=feed)
+                        fs[frame]=value
+            feature_put(store,cache_key,(bars,today,fs))
         px=result['quote']['payload']['mid'];vwap=fs['1m'].get('vwap_approx')
         fifteen=today[-1]['timestamp']-15*60;older=next((b for b in today if b['timestamp']==fifteen),None);move=today[-1]['close']-older['close'] if older else None
         direction='UP' if finite(vwap) and finite(move) and px>vwap and move>0 else 'DOWN' if finite(vwap) and finite(move) and px<vwap and move<0 else 'MIXED'
         result.update(bars=today,features=fs,early=early,direction=direction,price_change_15m=move,opening_range_status='AVAILABLE' if fs['opening_range'] else 'OPENING RANGE UNAVAILABLE',early_context=store.get('premarket_report:'+now.astimezone(ET).date().isoformat()) or {})
-        if not simulation:store.put('v6-frame-availability',{k:fs.get(k,{}).get('trend') not in (None,'UNAVAILABLE') for k in ('1m','5m','15m','30m','1h','daily')})
+        if not simulation:
+            available={k:fs.get(k,{}).get('trend') not in (None,'UNAVAILABLE') for k in ('1m','5m','15m','30m','1h','daily')}
+            if store.get('v6-frame-availability')!=available:store.put('v6-frame-availability',available)
     except (ValueError,KeyError,TypeError,IndexError) as error:return reject('BAR_TAIL_GAP','contiguous history missing: '+(str(error) if isinstance(error,ValueError) else 'invalid bar inputs'))
     return result

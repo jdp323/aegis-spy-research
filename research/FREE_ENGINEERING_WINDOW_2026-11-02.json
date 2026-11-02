@@ -1,0 +1,24 @@
+{
+  "version": "free-mode-five-session-observation-v1",
+  "registered_at": "2026-11-01T22:44:08.446140+00:00",
+  "sessions": [
+    "2026-11-02",
+    "2026-11-03",
+    "2026-11-04",
+    "2026-11-05",
+    "2026-11-06"
+  ],
+  "purpose": "Initial genuine engineering observation, not strategy edge or option validation",
+  "data": "Actual prospective stream source/receipt clocks, immutable logs and durable notifier receipts; no synthetic substitution",
+  "targets": {
+    "all_expected_slots_accounted": true,
+    "acceptance_within30s_fraction": 0.95,
+    "local_fast_path_p95_less_than_seconds": 1,
+    "unhandled_database_write_failures": 0,
+    "orphan_or_duplicate_plan_alerts": 0
+  },
+  "status": "LIVE_SESSION_PENDING",
+  "strategy_validated": false,
+  "option_performance": "NOT_MEASURED",
+  "live_signal_ready": false
+}

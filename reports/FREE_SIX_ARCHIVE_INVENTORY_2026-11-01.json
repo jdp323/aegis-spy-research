@@ -1,0 +1,206 @@
+{
+  "at": "2026-11-01T22:04:43.528732+00:00",
+  "scope": "Selected reference source and licenses only; no bootstrap, agent instructions, symlink traversal, order code or external account execution.",
+  "archives": [
+    {
+      "archive": "day-trader-skill-main.zip",
+      "sha256": "a417522153234847eeaab4f0b883de1843a3ebe9b1e3f4942581070c97562054",
+      "bytes": 446717,
+      "executed": false,
+      "installed": false,
+      "inspected": [
+        {
+          "path": "LICENSE",
+          "sha256": "857c8d5276809c8196b3cd7cb3300324768bfc562b2b6281b06d6865058e186c",
+          "bytes": 1073,
+          "lines": 21,
+          "license": "MIT"
+        },
+        {
+          "path": "trader-entry/entry.py",
+          "sha256": "11518ca87e329520741044329e37066207d8a096d37809cd29ebed9f6d2776ec",
+          "bytes": 42324,
+          "lines": 960
+        },
+        {
+          "path": "trader-timemachine/timemachine.py",
+          "sha256": "5e73d566c78e5e42142371319491eef6257b6fc31fab5a87aa62506d03e9b5a1",
+          "bytes": 43070,
+          "lines": 956
+        }
+      ],
+      "symlinks_not_followed": [],
+      "license": "MIT",
+      "requested_paths_missing": []
+    },
+    {
+      "archive": "Kronos-master.zip",
+      "sha256": "92fc55519ddc46f22e0c8ac10a37cde73d6346818f4b8aa10f0e54c9f8a620ff",
+      "bytes": 9451071,
+      "executed": false,
+      "installed": false,
+      "inspected": [
+        {
+          "path": "LICENSE",
+          "sha256": "acb2d194d378204e5f2be4dcd24d39ecac437903620c790c3315a96dab388fdc",
+          "bytes": 1062,
+          "lines": 21,
+          "license": "MIT"
+        },
+        {
+          "path": "examples/prediction_example.py",
+          "sha256": "fd113d9466d42a0c07aeeec55c8dcbbdc3c0319727c9fc9bb89cd234c4c3ca01",
+          "bytes": 2457,
+          "lines": 80
+        },
+        {
+          "path": "model/kronos.py",
+          "sha256": "0a5f90282e2039c2de0771473419715c845def154896dbd0f5747837e6241032",
+          "bytes": 30133,
+          "lines": 662
+        }
+      ],
+      "symlinks_not_followed": [],
+      "license": "MIT",
+      "requested_paths_missing": []
+    },
+    {
+      "archive": "OpenStock-main.zip",
+      "sha256": "450b107de1a679b620e1030aedda4d1e82856ec9728ae08fd250e9de0131916b",
+      "bytes": 749477,
+      "executed": false,
+      "installed": false,
+      "inspected": [
+        {
+          "path": "LICENSE",
+          "sha256": "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef",
+          "bytes": 34523,
+          "lines": 661,
+          "license": "AGPL-3.0"
+        },
+        {
+          "path": "app/api/quotes/route.ts",
+          "sha256": "bf6a0ac64d0d4a7d39d62838fdfda6cad7ad6c55ce726fa0b5654dc0d2c0d239",
+          "bytes": 1341,
+          "lines": 30
+        },
+        {
+          "path": "lib/actions/finnhub.actions.ts",
+          "sha256": "79071f74195e87b3e4d5f88a202eee3ff9ad64374a89bc5d7bb93fa4f22bace7",
+          "bytes": 15402,
+          "lines": 378
+        },
+        {
+          "path": "lib/inngest/functions.ts",
+          "sha256": "f5bc34ce4a00088cef07a8888d37714d4d31b440b051ea8d6bc6ba4e84c08a1b",
+          "bytes": 26290,
+          "lines": 482
+        },
+        {
+          "path": "lib/market-data.ts",
+          "sha256": "a85958bd3487f914b1bc9032340a4c4590bfb9b4a13383fd3822bd1c59a93e03",
+          "bytes": 764,
+          "lines": 14
+        }
+      ],
+      "symlinks_not_followed": [],
+      "license": "AGPL-3.0",
+      "requested_paths_missing": []
+    },
+    {
+      "archive": "strikegrok-trading-desk-main.zip",
+      "sha256": "7b5867b7c4d5d15b3f5b5454dd50d68d239f3c6a8a51d72be39ffdb475f211ee",
+      "bytes": 664409,
+      "executed": false,
+      "installed": false,
+      "inspected": [
+        {
+          "path": "LICENSE",
+          "sha256": "cfd4007e08f85b51524e39f440928328b81827fc89c8125e68c3d3b313d57b71",
+          "bytes": 1065,
+          "lines": 21,
+          "license": "MIT"
+        },
+        {
+          "path": "scripts/autopilot.py",
+          "sha256": "f1c29d397ddcee50b075e733d9c84341771ae7482f3b7b23b62e80a5befba8ae",
+          "bytes": 101058,
+          "lines": 2037
+        },
+        {
+          "path": "template/rules/funding-fade-v1.json",
+          "sha256": "f3dd39dcc4f6a27f2e8e055f722c7d4831dc8e1cada33b44eed3c06c950d27ff",
+          "bytes": 865,
+          "lines": 22
+        }
+      ],
+      "symlinks_not_followed": [],
+      "license": "MIT",
+      "requested_paths_missing": []
+    },
+    {
+      "archive": "hypergrok-trading-desk-main.zip",
+      "sha256": "f688c0c2221139444024fa8c2abe1a464b9f0ad2c265c680b065e3d608da5d24",
+      "bytes": 1063013,
+      "executed": false,
+      "installed": false,
+      "inspected": [
+        {
+          "path": "LICENSE",
+          "sha256": "a56daa3d8ee5743a29be52f97c9c3f695cd846584c01584c6975300da9d0abb6",
+          "bytes": 1069,
+          "lines": 21,
+          "license": "MIT"
+        },
+        {
+          "path": "scripts/research_dataset.py",
+          "sha256": "0df4097c1da1c8f1fd92a0134baea0aa6dcf80a8452333a0b0afec7d6121248d",
+          "bytes": 22441,
+          "lines": 436
+        },
+        {
+          "path": "scripts/stop_cost.py",
+          "sha256": "7c238c18da04efad569a915021173f4f2ed256a608fd16407306c341a690debd",
+          "bytes": 19538,
+          "lines": 419
+        }
+      ],
+      "symlinks_not_followed": [
+        "hypergrok-trading-desk-main/CLAUDE.md"
+      ],
+      "license": "MIT",
+      "requested_paths_missing": []
+    },
+    {
+      "archive": "grok-bot-grokpump-main.zip",
+      "sha256": "a4d1bab6aae7f0c048975a86dae9f0f67f3f8490e9603c592d85cdb529d8d940",
+      "bytes": 18277,
+      "executed": false,
+      "installed": false,
+      "inspected": [
+        {
+          "path": "LICENSE",
+          "sha256": "1126322e2cc8d165adc4c792eeb195717de2bcc7b39be1ce77959d78e87ef685",
+          "bytes": 1056,
+          "lines": 21,
+          "license": "MIT"
+        },
+        {
+          "path": "docs/desk.html",
+          "sha256": "be976eceea8fccdf28721cd6610a93b1bfdae6222f67e53474eaad742d468d97",
+          "bytes": 21881,
+          "lines": 471
+        },
+        {
+          "path": "docs/serve.py",
+          "sha256": "159eac0c267a61b79f4f81c6d1f53c209b99dab77a50f61452e079f4dc1bc859",
+          "bytes": 789,
+          "lines": 27
+        }
+      ],
+      "symlinks_not_followed": [],
+      "license": "MIT",
+      "requested_paths_missing": []
+    }
+  ]
+}

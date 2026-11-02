@@ -1,3 +1,5 @@
+> November 1 current release: [free-only implementation and full verification](reports/updates/2026-11-01_free-only-six-project-implementation.md). Owner-free-v3 messages, independent monitoring timer, preserved incumbent and two shadow candidates. Genuine-session reliability pending; option performance NOT MEASURED; all orders manual.
+
 > October27 current handoff: [master implementation report](reports/updates/2026-10-27_master-implementation.md), [current status](reports/CURRENT_STATUS.md), [setup](SETUP.md). Current files supersede conflicting older presentation/scope notes; dated evidence below retains its as-of meaning.
 
 # Start here

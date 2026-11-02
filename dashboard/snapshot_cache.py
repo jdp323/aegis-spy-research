@@ -16,7 +16,7 @@ from data.reliability import quote_diagnostics
 
 def _loader():
     # Import/provider-independent request handling stays bounded even on cold boot.
-    from core.upgrade_service import snapshot
+    from dashboard.light_snapshot import snapshot
     return snapshot()
 
 def empty_snapshot(now):

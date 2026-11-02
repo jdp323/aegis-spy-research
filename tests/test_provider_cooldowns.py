@@ -20,7 +20,7 @@ class ProviderCooldownTests(unittest.TestCase):
     def test_rate_limit_retry_after_is_bounded_and_repeated_calls_are_suppressed(self):
         for value,delay in [('1',60),('2000',900),('invalid',60),(None,60)]:
             with self.subTest(retry=value):
-                provider=AlpacaProvider()
+                provider=AlpacaProvider(purpose='CAPABILITY_PROBE')
                 with patch('data.providers.urllib.request.urlopen',side_effect=self.error(429,value)) as get:
                     with self.assertRaisesRegex(RuntimeError,'^HTTP_429$'):
                         provider.get('/v2/stocks/SPY/quotes/latest',{'feed':'sip'})
@@ -33,7 +33,7 @@ class ProviderCooldownTests(unittest.TestCase):
     def test_auth_and_permission_denials_keep_five_minute_cooldown(self):
         for code in (401,403):
             with self.subTest(code=code):
-                provider=AlpacaProvider()
+                provider=AlpacaProvider(purpose='CAPABILITY_PROBE')
                 with patch('data.providers.urllib.request.urlopen',side_effect=self.error(code)) as get:
                     quote=provider.get_underlying_quote()
                     self.assertEqual(quote.quality,'FEED_DISCONNECTED')
@@ -45,7 +45,7 @@ class ProviderCooldownTests(unittest.TestCase):
                     self.assertNotIn(('fixture-' + 'secret'),quote.reason)
 
     def test_retry_boundary_recovers_and_clears_error_without_feed_substitution(self):
-        provider=AlpacaProvider()
+        provider=AlpacaProvider(purpose='CAPABILITY_PROBE')
         with patch('data.providers.urllib.request.urlopen',side_effect=self.error(403)):
             provider.get_underlying_quote()
         self.mock_clock.return_value=399.999
@@ -64,14 +64,14 @@ class ProviderCooldownTests(unittest.TestCase):
 
     def test_unconfigured_pair_never_attempts_http(self):
         with patch.dict('os.environ',{},clear=True),patch('data.providers.urllib.request.urlopen') as get:
-            provider=AlpacaProvider()
+            provider=AlpacaProvider(purpose='CAPABILITY_PROBE')
             self.assertEqual(provider.get_underlying_quote().quality,'FEED_NOT_CONFIGURED')
             provider.get_bars();provider.get_option_chain()
             get.assert_not_called()
 
     def test_timeout_is_fail_closed_and_raw_exception_is_not_returned(self):
         with patch('data.providers.urllib.request.urlopen',side_effect=TimeoutError(('fixture-' + 'secret'))):
-            quote=AlpacaProvider().get_underlying_quote()
+            quote=AlpacaProvider(purpose='CAPABILITY_PROBE').get_underlying_quote()
         self.assertEqual(quote.quality,'FEED_DISCONNECTED')
         self.assertNotIn(('fixture-' + 'secret'),str(quote))
         self.assertEqual(quote.payload,{})

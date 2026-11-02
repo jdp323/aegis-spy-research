@@ -1,3 +1,5 @@
+> November 1 current release: [free-only implementation and full verification](reports/updates/2026-11-01_free-only-six-project-implementation.md). Owner-free-v3 messages, independent monitoring timer, preserved incumbent and two shadow candidates. Genuine-session reliability pending; option performance NOT MEASURED; all orders manual.
+
 # AEGIS SPY research assistant
 
 > Current release: [October27 implementation and verification](reports/updates/2026-10-27_master-implementation.md). Start with [SETUP.md](SETUP.md); feature status, live-data limits and external actions are separate.

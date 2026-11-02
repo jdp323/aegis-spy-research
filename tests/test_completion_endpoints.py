@@ -18,6 +18,8 @@ class EndpointTests(unittest.TestCase):
         calls=[];old=(datetime.now(timezone.utc)-timedelta(days=1)).isoformat()
         class Provider:
             last_error=None
+            def __init__(self,*,purpose):
+                if purpose!='CAPABILITY_PROBE':raise AssertionError('explicit diagnostic purpose required')
             def get(self,path,params):
                 calls.append((path,params))
                 if params['feed']!='iex':self.last_error='HTTP_403';raise RuntimeError('sensitive provider body must not be logged')

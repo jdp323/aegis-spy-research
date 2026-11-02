@@ -1,0 +1,146 @@
+{
+  "version": "free-only-provider-v1",
+  "operating_mode": "FREE_ONLY",
+  "as_of": "2026-11-01T22:15:59.653295+00:00",
+  "credentials_configured": true,
+  "incremental_subscription_budget_usd": 0,
+  "recurring_paid_dependencies": [],
+  "capabilities": {
+    "IEX": {
+      "access": "RESPONSE_RECEIVED",
+      "stock_bars": "UNKNOWN",
+      "stock_quotes": "RESPONSE_RECEIVED",
+      "option_bbo": "NOT_APPLICABLE",
+      "option_source_timestamps": "UNKNOWN",
+      "greeks": "UNKNOWN",
+      "greek_source_timestamps": "UNKNOWN",
+      "greek_units": "UNKNOWN",
+      "point_in_time_chain_neighbors": "UNKNOWN",
+      "liquidity": "UNKNOWN",
+      "multiplier_deliverable": "UNKNOWN",
+      "delay_status": "UNVERIFIED",
+      "entitlement_evidence": "MARKET_ENDPOINT_RESPONSE_RECEIVED",
+      "refusal_cause": "UNKNOWN; status alone does not distinguish authentication from permissions",
+      "redistribution_scope": "UNKNOWN; no new raw-data guest routing authorized",
+      "request_rate_policy": "100/minute and four simultaneous requests per adapter process; provider/account quotas remain separate",
+      "latest_probe": {
+        "feed": "IEX",
+        "endpoint": "/v2/stocks/SPY/quotes/latest",
+        "at": "2026-11-01T22:15:58.840310+00:00",
+        "status": "MARKET_ENDPOINT_RESPONSE_RECEIVED",
+        "received_at": "2026-11-01T22:15:59.345051+00:00",
+        "quote_diagnostics": {
+          "provider": "alpaca-iex",
+          "source_age_seconds": 178981.561046,
+          "receipt_age_seconds": 0.001011,
+          "source_receipt_skew_seconds": -178981.560035,
+          "predicate": "SOURCE_TOO_OLD"
+        },
+        "source_timestamp": "2026-10-30T20:32:57.785016598Z",
+        "underlying_entry_fresh": false,
+        "duration_seconds": 0.516
+      },
+      "runtime_use": "SINGLE_EXCHANGE_UNDERLYING_RESEARCH",
+      "entry_eligibility_proved": false
+    },
+    "SIP": {
+      "access": "REFUSED",
+      "stock_bars": "UNKNOWN",
+      "stock_quotes": "REFUSED",
+      "option_bbo": "NOT_APPLICABLE",
+      "option_source_timestamps": "UNKNOWN",
+      "greeks": "UNKNOWN",
+      "greek_source_timestamps": "UNKNOWN",
+      "greek_units": "UNKNOWN",
+      "point_in_time_chain_neighbors": "UNKNOWN",
+      "liquidity": "UNKNOWN",
+      "multiplier_deliverable": "UNKNOWN",
+      "delay_status": "UNVERIFIED",
+      "entitlement_evidence": "HTTP_403",
+      "refusal_cause": "UNKNOWN; status alone does not distinguish authentication from permissions",
+      "redistribution_scope": "UNKNOWN; no new raw-data guest routing authorized",
+      "request_rate_policy": "100/minute and four simultaneous requests per adapter process; provider/account quotas remain separate",
+      "latest_probe": {
+        "feed": "SIP",
+        "endpoint": "/v2/stocks/SPY/quotes/latest",
+        "at": "2026-11-01T22:15:59.359100+00:00",
+        "status": "UNAVAILABLE",
+        "error_type": "RuntimeError",
+        "provider_error_class": "HTTP_403",
+        "provider_error_detail": {
+          "http_status": 403,
+          "provider_code": null,
+          "classification": "RECENT_SIP_PERMISSION_REFUSED"
+        },
+        "duration_seconds": 0.156
+      },
+      "runtime_use": "POLICY_DISABLED_UNVERIFIED",
+      "entry_eligibility_proved": false
+    },
+    "OPRA": {
+      "access": "REFUSED",
+      "stock_bars": "UNKNOWN",
+      "stock_quotes": "NOT_APPLICABLE",
+      "option_bbo": "REFUSED",
+      "option_source_timestamps": "UNKNOWN",
+      "greeks": "UNKNOWN",
+      "greek_source_timestamps": "UNKNOWN",
+      "greek_units": "UNKNOWN",
+      "point_in_time_chain_neighbors": "UNKNOWN",
+      "liquidity": "UNKNOWN",
+      "multiplier_deliverable": "UNKNOWN",
+      "delay_status": "UNVERIFIED",
+      "entitlement_evidence": "HTTP_403",
+      "refusal_cause": "UNKNOWN; status alone does not distinguish authentication from permissions",
+      "redistribution_scope": "UNKNOWN; no new raw-data guest routing authorized",
+      "request_rate_policy": "100/minute and four simultaneous requests per adapter process; provider/account quotas remain separate",
+      "latest_probe": {
+        "feed": "OPRA",
+        "endpoint": "/v1beta1/options/snapshots/SPY",
+        "at": "2026-11-01T22:15:59.523822+00:00",
+        "status": "UNAVAILABLE",
+        "error_type": "RuntimeError",
+        "provider_error_class": "HTTP_403",
+        "provider_error_detail": {
+          "http_status": 403,
+          "provider_code": null,
+          "classification": "CAUSE_UNSPECIFIED"
+        },
+        "duration_seconds": 0.14
+      },
+      "runtime_use": "POLICY_DISABLED_UNVERIFIED",
+      "entry_eligibility_proved": false
+    },
+    "INDICATIVE_OPTIONS": {
+      "access": "NOT_REQUESTED",
+      "delay_status": "DELAYED_TRADES_MODIFIED_QUOTES",
+      "runtime_use": "FORBIDDEN_FOR_EXECUTABLE_QUOTES_AND_PNL",
+      "source": "https://docs.alpaca.markets/us/reference/optionchain"
+    },
+    "QUESTRADE": {
+      "access": "NOT_CONFIGURED_OR_VERIFIED",
+      "continuous_free_option_bbo": "UNKNOWN",
+      "runtime_use": "NOT_ENABLED",
+      "credentials_collected": false
+    },
+    "IBKR": {
+      "access": "NOT_CONFIGURED_OR_VERIFIED",
+      "continuous_free_option_bbo": "UNKNOWN",
+      "runtime_use": "NOT_ENABLED",
+      "credentials_collected": false
+    },
+    "TRADIER": {
+      "runtime_use": "EXCLUDED_CANADIAN_RESIDENCE_PLAN",
+      "access": "NOT_REQUESTED",
+      "account_opened": false
+    }
+  },
+  "option_performance": "NOT_MEASURED",
+  "live_signal_ready": false,
+  "limits": [
+    "A configured credential is not entitlement or freshness.",
+    "Closed-session observations cannot establish live-session delivery.",
+    "No account, balance, order or subscription endpoint used.",
+    "Existing privacy/sharing decisions remain unchanged."
+  ]
+}

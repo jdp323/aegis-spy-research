@@ -89,7 +89,7 @@ Name: pending profile update
 Username: not available
 Telegram ID: [EXAMPLE ID]
 Access ID: [EXAMPLE ID]
-Joined (UTC): 2026-10-27T07:25:13.558Z
+Joined (UTC): 2026-11-01T22:38:11.301Z
 Last bot message (UTC): not recorded
 Names are self-reported Telegram profiles, not verified identities.
 /users PAGE_NUMBER for more; /revoke ACCESS_ID removes access.
@@ -133,13 +133,14 @@ Automatic morning br
 ```text
 EXAMPLE — fixture response
 AEGIS STATUS — signals.shared: OFF
-03:25 ET · SPY unavailable
-Current trend: UNAVAILABLE
-Next hour: unavailable · session: unclear
+17:38 ET · SPY unavailable
+Current trend: UNAVAILABLE through unavailable completed candle
+Next hour: unavailable · conditional
+Setup watch: await a new completed-candle confirmation.
+Public plan: NONE.
 New entry: WAIT — market closed
-Research · UNAVAILABLE · as of unavailable · /details
-Worker: UNVERIFIED_HEARTBEAT
-Automatic public research: silent every 15 minutes 09:45 to close−15; qualifying research alerts when eligi
+Research · UNAVAILABLE · as of unavailable; option quote unavailable
+Next summary:
 ```
 
 ### /feed
@@ -157,13 +158,12 @@ SIP stream: UNAVAILABLE (heartbeat unverifie
 ### /health
 ```text
 EXAMPLE — fixture response
-AEGIS HEALTH · 03:25 ET
+AEGIS HEALTH · 17:38 ET
 Clock: UNAVAILABLE; NTP offset UNAVAILABLE s; skew limit 2.000 s.
+delivery_observation: UNAVAILABLE; heartbeat UNAVAILABLE; fresh not verified
 services: UNAVAILABLE; heartbeat UNAVAILABLE; fresh not verified
 telegram: UNAVAILABLE; heartbeat UNAVAILABLE; fresh not verified
-dispatcher: UNAVAILABLE; heartbeat UNAVAILABLE; fresh not verified
-Calendar: DATA_INCOMPLETE; stale yes; coverage UNAVAILABLE
-Questrad
+dispatcher: UNAVAILABLE; heartbeat UNAVAILABLE; fresh not
 ```
 
 ### /void
@@ -175,31 +175,30 @@ REVERSAL_APPENDED. Original event preserved. No order placed.
 ### /trend
 ```text
 EXAMPLE — fixture response
-SPY · 03:25 ET
+SPY · 17:38 ET
 Trend: MIXED — timeframe agreement UNAVAILABLE
 DECISION: NO TRADE
 Market closed — saved context only; no live verdict.
-Next open: Tue 09:30 ET
-Next morning message: Tue 09:15 ET
+Next open: Mon 09:30 ET
+Next morning message: Mon 09:15 ET
 Data: UNAVAILABLE
 ```
 
 ### /details
 ```text
 EXAMPLE — fixture response
-AEGIS VIEW market-view-v1 · [EXAMPLE ID]
-Generated: 2026-10-27T07:25:28.799904+00:00
+AEGIS VIEW market-view-v2-free-underlying · [EXAMPLE ID]
+Generated: 2026-11-01T22:38:30.522943+00:00
 Current trend: UNAVAILABLE · completed-vwap-change15-v2-explicit-range
-completed current-session prices unavailable
-H60: ABSTAIN · target unavailable · fresh underlying unavailable
-H120: ABSTAIN · target unavailable · fresh underlying unavailable
-SESSION: ABSTAIN · tar
+exact 15-minute completed-price endpoints unavailable
+H60: ABSTAIN · h60-vwap-condition-v3-free · target unavailable · fresh underlying unavailable
+H120: ABSTAIN · h60-vwap-condition-
 ```
 
 ### /why
 ```text
 EXAMPLE — fixture response
-SPY IDEA CHECKS · 2026-10-27 03:25:30 ET
+SPY IDEA CHECKS · 2026-11-01 17:38:33 ET
 Fresh price/bar inputs: data not fresh — Quote rejected: quote timestamp unavailable; source age UNAVAILABLE, receipt age UNAVAILABLE, skew UNAVAILABLE; UNAVAILABLE
 Official calendar: DATA_INCOMPLETE / UNAVAILABLE
 Confirmed setups: 0
@@ -254,18 +253,18 @@ signals.shared: OFF
 ### /outlook
 ```text
 EXAMPLE — fixture response
-SPY OUTLOOK | 2026-10-27 03:25 ET
+SPY OUTLOOK | 2026-11-01 17:38 ET
 BIAS: UNAVAILABLE — News language only; current price trend missing.
 PRICE TREND: UNAVAILABLE | NO USABLE CURRENT PRICE TREND.
 SESSION: CLOSED — regular-session trend is not running now.
-Next regular open: Tue 2026-10-27 09:30 ET; morning outlook: 09:15 ET.
+Next regular open: Mon 2026-11-02 09:30 ET; morning outlook: 09:15 ET.
 Overnight news is context; it cannot confirm the direction of t
 ```
 
 ### /sentiment
 ```text
 EXAMPLE — fixture response
-WALLSTREETBETS | 2026-10-27 03:25 ET
+WALLSTREETBETS | 2026-11-01 17:38 ET
 SENTIMENT: UNAVAILABLE | FEED_NOT_CONFIGURED
 Authorized Reddit API access is not configured.
 SETUP: owner needs Reddit-approved Data API access and read-only OAuth credentials in the encrypted local setup form. A Reddit website login alone does not enable the API.
@@ -331,11 +330,12 @@ No closing price was invented. ACTION: NO TRADE.
 ```text
 EXAMPLE — fixture response
 SPY PREMARKET REPORT
-NOT DUE YET — the scheduled report is at 09:15 ET today.
-No report saved for 2026-10-27.
-Next scheduled report: Tue 2026-10-27 09:15 ET.
+NO REPORT DUE TODAY — CLOSED.
+No report saved for 2026-11-01.
+Next scheduled report: Mon 2026-11-02 09:15 ET.
 Computer must remain awake/online. /outlook and /news show current available news context.
-Current-session public premarket bars start at 04:00 ET; sufficient completed bars are required. Public da
+Current-session public premarket bars start at 04:00 ET; sufficient completed bars are required. Public data delay is unverified.
+Ca
 ```
 
 ### /paper
@@ -357,11 +357,11 @@ Command not applied. Check /help and the required fields; no order placed.
 ### /news
 ```text
 EXAMPLE — fixture response
-SPY NEWS | 2026-10-27 03:26 ET
+SPY NEWS | 2026-11-01 17:39 ET
 BIAS: UNAVAILABLE — News language only; current price trend missing.
 PRICE TREND: UNAVAILABLE | NO USABLE CURRENT PRICE TREND.
 SESSION: CLOSED — regular-session trend is not running now.
-Next regular open: Tue 2026-10-27 09:30 ET; morning outlook: 09:15 ET.
+Next regular open: Mon 2026-11-02 09:30 ET; morning outlook: 09:15 ET.
 Overnight news is context; it cannot confirm the direction of the
 ```
 

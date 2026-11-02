@@ -12,7 +12,7 @@ def probe():
         ('IEX','/v2/stocks/SPY/quotes/latest',{'feed':'iex'}),
         ('SIP','/v2/stocks/SPY/quotes/latest',{'feed':'sip'}),
         ('OPRA','/v1beta1/options/snapshots/SPY',{'feed':'opra','limit':1})):
-        provider=AlpacaProvider();start=time.monotonic();row={'feed':feed,'endpoint':path,'at':datetime.now(timezone.utc).isoformat()}
+        provider=AlpacaProvider(purpose='CAPABILITY_PROBE');start=time.monotonic();row={'feed':feed,'endpoint':path,'at':datetime.now(timezone.utc).isoformat()}
         try:
             raw=provider.get(path,params);received=datetime.now(timezone.utc).isoformat()
             row.update(status='MARKET_ENDPOINT_RESPONSE_RECEIVED',received_at=received)
@@ -25,7 +25,7 @@ def probe():
                 row['timestamped_quote_contracts']=sum(bool(v.get('latestQuote',{}).get('t')) for v in snapshots.values())
                 row['timestamped_greek_contracts']=sum(bool(v.get('greeksTimestamp')) for v in snapshots.values())
                 row['option_entry_eligible']=False;row['note']='Endpoint response alone never proves chain completeness, current executable quotes, liquidity or strategy eligibility.'
-        except Exception as error:row.update(status='UNAVAILABLE',error_type=type(error).__name__,provider_error_class=provider.last_error)
+        except Exception as error:row.update(status='UNAVAILABLE',error_type=type(error).__name__,provider_error_class=provider.last_error,provider_error_detail=getattr(provider,'last_error_detail',None))
         row['duration_seconds']=round(time.monotonic()-start,3);results.append(row)
     return {'at':datetime.now(timezone.utc).isoformat(),'scope':'Three authorized market-data requests; no account/balance/order requests. Closed-session observations cannot establish live readiness.','probes':results,'LIVE_SIGNAL_READY':False}
 

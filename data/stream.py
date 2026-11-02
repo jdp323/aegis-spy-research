@@ -129,6 +129,12 @@ class Stream:
             else:
                 for k,v in writes.items():self.store.put(k,v)
             if not self.options and kind=='q':
+                if self.name=='iex' and getattr(self.store,'path',None) is not None:
+                    from data.free_quote_recorder import QuoteRecorder
+                    if not hasattr(self,'_quote_recorder'):
+                        parent=self.store.path.parent;root=parent.parent if parent.name=='runtime' else parent
+                        self._quote_recorder=QuoteRecorder(root);self.store._closers.append(self._quote_recorder.close)
+                    self._quote_recorder.offer(d)
                 from core.directional_research import capture_future_quote
                 capture_future_quote(self.store,d,stamp(received))
             if self.options and kind=='q':
@@ -220,10 +226,16 @@ def run_feed(feed,options,budget,shutdown):
 
 async def main():
     from core.upgrade_service import read_config
+    from core.provider_policy import runtime_streams,VERSION
     import threading
-    budget=read_config().get('max_future_skew_seconds',2.0);shutdown=threading.Event()
+    config=read_config();budget=config.get('max_future_skew_seconds',2.0);shutdown=threading.Event()
     def stop(*args):shutdown.set()
     signal.signal(signal.SIGINT,stop);signal.signal(signal.SIGTERM,stop)
-    try:await asyncio.gather(*(asyncio.to_thread(run_feed,feed,options,budget,shutdown) for feed,options in [('sip',False),('sip',True),('iex',False)]))
+    store=Store()
+    try:
+        for name in ('sip','opra'):
+            store.put('stream:'+name,{'state':'POLICY_DISABLED_UNVERIFIED','at':iso(),'policy_version':VERSION,'reason':'FREE_ONLY; existing refusal history preserved; no new entitlement or freshness inferred'})
+    finally:store.close()
+    try:await asyncio.gather(*(asyncio.to_thread(run_feed,feed,options,budget,shutdown) for feed,options in runtime_streams(config)))
     finally:shutdown.set()
 if __name__=='__main__':asyncio.run(main())

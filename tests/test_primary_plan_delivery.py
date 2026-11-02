@@ -32,7 +32,7 @@ class PrimaryPlanTests(unittest.TestCase):
   self.assertIsNone(current(s,[dict(a,status='CLOSED')],NOW))
  def test_status_retains_hold_after_entry_expiry_without_inferred_personal_fill(self):
   a=dict(self.plan(),status='OPEN');text=status_text(context(),NOW+timedelta(minutes=15),{'quality':'DATA_OK','risk':'NORMAL'},plan=a)
-  self.assertIn('HOLD',text);self.assertIn('no new entry',text);self.assertIn('monitoring unavailable',text);self.assertLessEqual(len(text.splitlines()),6);self.assertNotIn('you bought',text.lower())
+  self.assertIn('HOLD',text);self.assertIn('no new entry',text);self.assertIn('monitoring unavailable',text);self.assertLessEqual(len(text.splitlines()),8);self.assertIn('Next summary:',text);self.assertNotIn('you bought',text.lower())
  def test_compact_messages_and_cohort_recap(self):
   a=self.plan();self.assertIn('ENTRY CONFIRMED',idea_text(a,{},{}));self.assertLessEqual(len(idea_text(a,{},{}).splitlines()),9)
   self.assertIn('EXIT CONDITION REACHED',update_text(a,'STOP_HIT'))
@@ -55,14 +55,18 @@ class PrimaryPlanTests(unittest.TestCase):
   with patch('core.directional_research.capture_future_quote'):
    stream.ingest({'T':'q','S':'SPY','t':received.isoformat(),'bp':500.,'ap':500.01},received.isoformat())
   self.assertEqual(s.get('research_quote:SPY:iex')['received_timestamp'],received.isoformat());self.assertGreater(s.get('stream:iex')['local_queue_delay_ms'],1000)
- def test_feed_read_loops_have_independent_threads_and_connections(self):
+ def test_free_mode_runs_only_iex_in_its_own_thread_and_does_not_open_unverified_feeds(self):
   import asyncio
   from data.stream import main
-  barrier=threading.Barrier(3);calls=[]
+  calls=[];main_thread=threading.get_ident()
+  class FixtureStore(MemoryStore):
+   def close(self):pass
+  store=FixtureStore()
   def fake(feed,options,budget,shutdown):
-   calls.append((feed,options,threading.get_ident()));barrier.wait(timeout=2)
-  with patch('data.stream.run_feed',side_effect=fake),patch('data.stream.signal.signal'),patch('core.upgrade_service.read_config',return_value={}):asyncio.run(main())
-  self.assertEqual(len({x[2] for x in calls}),3);self.assertEqual({(x[0],x[1]) for x in calls},{('sip',False),('sip',True),('iex',False)})
+   calls.append((feed,options,threading.get_ident()))
+  with patch('data.stream.run_feed',side_effect=fake),patch('data.stream.Store',return_value=store),patch('data.stream.signal.signal'),patch('core.upgrade_service.read_config',return_value={}):asyncio.run(main())
+  self.assertEqual(len(calls),1);self.assertNotEqual(calls[0][2],main_thread);self.assertEqual({(x[0],x[1]) for x in calls},{('iex',False)})
+  for feed in ('sip','opra'):self.assertEqual(store.get('stream:'+feed)['state'],'POLICY_DISABLED_UNVERIFIED')
  def test_normalization_still_rejects_unknown_year_holiday_and_after_early_close(self):
   from features.indicators import normalize
   from core.sessions import ET

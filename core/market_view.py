@@ -1,12 +1,14 @@
 """One versioned, deterministic product snapshot. No model grants entry permission."""
 from dataclasses import dataclass,asdict
-from datetime import datetime,timezone
+from datetime import datetime,timezone,timedelta
 import hashlib,json
 from core.sessions import ET,market_session
 from core.directional_research import view,VERSION as TREND_VERSION
 from data.models import finite,stamp
 
-VERSION='market-view-v1'
+VERSION='market-view-v2-free-underlying'
+SCENARIO_VERSION='h60-vwap-condition-v3-free'
+DESCRIPTIVE_MAX_BAR_AGE_SECONDS=120
 
 @dataclass(frozen=True)
 class PriceView:
@@ -35,6 +37,7 @@ class OutlookView:
     invalidation:float|None
     basis:str
     reason:str|None
+    rule_version:str=SCENARIO_VERSION
 
 @dataclass(frozen=True)
 class EntryView:
@@ -66,6 +69,8 @@ class RecapView:
     unresolved:int
     cancelled:int
     silent_observations:int
+    carried_in:int=0
+    administratively_closed_unresolved:int=0
     option_performance:str='UNAVAILABLE_WITHOUT_GENUINE_QUOTES'
 
 @dataclass(frozen=True)
@@ -94,18 +99,49 @@ def premarket_view(report,now):
     lean={'BULLISH':'UP','BEARISH':'DOWN','UP':'UP','DOWN':'DOWN'}.get(report.get('bias'),'UNCLEAR') if usable else 'UNCLEAR'
     return asdict(PremarketView(lean,'UNCLEAR',current,px if finite(px) else None,levels.get('high') if finite(levels.get('high')) else None,levels.get('low') if finite(levels.get('low')) else None,source,quality,'CURRENT_PREMARKET_BAR_RESEARCH' if usable else 'PRIOR_CLOSE_PROJECTION_OR_UNAVAILABLE'))
 
-def recap_view(rows,now):
+def recap_view(rows,now,closures=()):
     day=now.astimezone(ET).date();today=[r for r in rows if stamp(r['timestamp']).astimezone(ET).date()==day];alerted=[r for r in today if r.get('alerted')]
     closed=sum(r.get('status')=='CLOSED' for r in alerted);open_=sum(r.get('status') in ('OPEN','PENDING') and r.get('coverage_status')!='UNRESOLVED_GAP' for r in alerted)
     unresolved=sum(r.get('coverage_status')=='UNRESOLVED_GAP' or r.get('status') not in ('CLOSED','OPEN','PENDING','EXPIRED','EXPIRED_NO_ENTRY','CANCELLED') for r in alerted)
     cancelled=sum(r.get('status') in ('EXPIRED','EXPIRED_NO_ENTRY','CANCELLED') for r in alerted)
-    return asdict(RecapView(day.isoformat(),len(alerted),sum(bool(r.get('opened_at')) for r in alerted),closed,open_,unresolved,cancelled,len(today)-len(alerted)))
+    retired={r['signal_id'] for r in closures};retired_today={r['signal_id'] for r in closures if stamp(r['at']).astimezone(ET).date()==day}
+    admin=sum(r['signal_id'] in retired and r.get('status') in ('OPEN','PENDING') for r in alerted)
+    carried=[r for r in rows if r.get('alerted') and stamp(r['timestamp']).astimezone(ET).date()<day and (r.get('status') in ('OPEN','PENDING') and r['signal_id'] not in retired or r['signal_id'] in retired_today or r.get('closed_at') and stamp(r['closed_at']).astimezone(ET).date()==day)]
+    open_-=sum(r['signal_id'] in retired and r.get('status') in ('OPEN','PENDING') and r.get('coverage_status')!='UNRESOLVED_GAP' for r in alerted)
+    unresolved=sum(r.get('coverage_status')=='UNRESOLVED_GAP' or r['signal_id'] in retired and r.get('status') in ('OPEN','PENDING') or r.get('status') not in ('CLOSED','OPEN','PENDING','EXPIRED','EXPIRED_NO_ENTRY','CANCELLED') for r in alerted)
+    return asdict(RecapView(day.isoformat(),len(alerted),sum(bool(r.get('opened_at')) for r in alerted),closed,open_,unresolved,cancelled,len(today)-len(alerted),len(carried),admin))
 
 def plan_view(plan,now,monitoring_available=False):
-    from core.primary_plan import state
+    from core.primary_plan import state,public_state,administrative_end
     primary={k:plan.get(k) for k in ('signal_id','direction','horizon_id','horizon','strategy_version','timestamp','confirmation_at','confirmation_bar_start','confirmation_timeframe','decision_at','market_timestamp','quote_received_at','entry_condition','planned_holding_minutes','entry_mode','trigger_level','trigger','reference_midpoint','entry','modeled_entry_fill','invalidation','t1','t2','do_not_chase','signal_expiry','max_hold_until','coverage_status','last_observed_bar')}
-    primary.update(state=state(plan,now),monitoring_available=monitoring_available,meaning='RESEARCH_PLAN; no personal fill or sale inferred')
+    primary.update(state=state(plan,now),public_state=public_state(plan,now,monitoring_available),administrative_end=administrative_end(plan).isoformat(),monitoring_available=monitoring_available,meaning='RESEARCH_PLAN; no personal fill or sale inferred')
     return primary
+
+def observed_research(ctx,now):
+    """Bound the descriptive path independently, never override entry predicates.
+
+    The incumbent VWAP/change rule is preserved. The adapter additionally checks
+    the exact 15-minute endpoints, genuine constituents and current RTH session.
+    Provider arrival/availability remains separate from candle close time.
+    """
+    result=view(ctx,now);bar=ctx.get('bar_research') or {}
+    rows=bar.get('bars',[]) if not bar.get('reason') else ctx.get('bars',[]) if ctx.get('early') and not ctx.get('reason') else []
+    reason=None
+    if len(rows)<16:reason='exact 15-minute completed-price endpoints unavailable'
+    else:
+        tail=rows[-16:]
+        for row in tail:
+            try:
+                at=datetime.fromtimestamp(row['timestamp'],timezone.utc)
+                if at.astimezone(ET).date()!=now.astimezone(ET).date() or not market_session(at)['active']:reason='completed bars are outside the current regular session';break
+                if row.get('synthetic') or row.get('continuity_only') or row.get('confirmed_empty') or row.get('quality') in ('SYNTHETIC','CONTINUITY_ONLY'):
+                    reason='genuine completed bars required; continuity slots are not prices';break
+                if row.get('available_at') and stamp(row['available_at'])>now:reason='completed bar was not available at evaluation';break
+            except (KeyError,ValueError,TypeError,OverflowError):reason='invalid completed-bar timestamp';break
+        if not reason and not 0<=now.timestamp()-tail[-1]['timestamp']-60<=DESCRIPTIVE_MAX_BAR_AGE_SECONDS:reason='completed bar older than 120 seconds or unfinished'
+    if reason:
+        result=dict(result,trend='DATA UNAVAILABLE',price=None,as_of=None,reason=reason,invalidation=None,outlooks={})
+    return result
 
 def plain_reason(text):
     text=str(text or '')
@@ -114,6 +150,26 @@ def plain_reason(text):
         if needle in text:return label
     return text.removeprefix('NO TRADE — ').replace('_',' ').lower()[:90] or 'confirmation missing'
 
+def h60_scenario(ctx,now,research):
+    """Separate frozen hypothesis: completed 5m and 15m moves plus VWAP.
+
+    This does not reuse the current-trend label. Missing complete frames abstain;
+    disagreement is MIXED. It has no calibrated forecast or profitability claim.
+    """
+    from features.indicators import resample
+    bar=ctx.get('bar_research') or {};rows=bar.get('bars') or []
+    out={'bias':'ABSTAIN','target_at':None,'invalidation':None,'reason':'complete five-/fifteen-minute scenario evidence unavailable'}
+    if research.get('trend')=='DATA UNAVAILABLE' or bar.get('reason'):return out
+    five=resample(rows,5);fifteen=resample(rows,15)
+    vwap=(bar.get('features') or {}).get('1m',{}).get('vwap_approx')
+    if len(five)<2 or len(fifteen)<2 or not finite(vwap) or vwap<=0:return out
+    d5=five[-1]['close']-five[-2]['close'];d15=fifteen[-1]['close']-fifteen[-2]['close'];last=rows[-1]['close']
+    bias='UP' if d5>0 and d15>0 and last>vwap else 'DOWN' if d5<0 and d15<0 and last<vwap else 'SIDEWAYS' if d5==0 and d15==0 else 'MIXED'
+    session=market_session(now);close=now.astimezone(ET).replace(hour=session['close_minute']//60,minute=session['close_minute']%60,second=0,microsecond=0)
+    target=now+timedelta(minutes=60)
+    if not session['active'] or target>close:return dict(out,reason='full next hour does not fit verified regular session')
+    return {'bias':bias,'target_at':target.isoformat(),'invalidation':vwap,'reason':None,'delta_5m':d5,'delta_15m':d15}
+
 def build(ctx,news,now,config=None,plan=None,entry_reason=None):
     """Pure constructor shared by scheduled/on-demand/dashboard representations.
 
@@ -121,7 +177,7 @@ def build(ctx,news,now,config=None,plan=None,entry_reason=None):
     absence never deletes a descriptive trend. Missing price inputs abstain.
     """
     if now.tzinfo is None:raise ValueError('AWARE_TIME_REQUIRED')
-    config=config or {};research=view(ctx,now);session=market_session(now)
+    config=config or {};research=observed_research(ctx,now);session=market_session(now)
     from core.signals import quote_valid
     q=ctx.get('quote') or {};fresh=quote_valid(q,now,5)
     payload=q.get('payload') or {};mid=payload.get('mid')
@@ -150,12 +206,13 @@ def build(ctx,news,now,config=None,plan=None,entry_reason=None):
         c,p=option;option_data='VERIFIED_QUOTE_REFERENCE_ONLY; strategy remains unvalidated'
         primary['option_reference']={'symbol':c['symbol'],'expiry':c['expiry'],'strike':c['strike'],'right':c['type'],'bid':c['bid'],'ask':c['ask'],'source_at':c['quote']['source_timestamp'],'provider':c['quote']['provider'],'premium_at_risk':p['limit']*100,'multiplier':100,'personal_fill':False}
     entry=EntryView(entry_state,why,underlying,calendar,bool(option and underlying and calendar))
-    outlooks={}
+    outlooks={};scenario=h60_scenario(ctx,now,research)
     for h in ('H60','H120','SESSION'):
-        o=(research.get('outlooks') or {}).get(h,{})
-        available=bool(underlying and o.get('target_at') and o.get('bias') in ('UP','DOWN','MIXED','SIDEWAYS'))
-        outlooks[h]=OutlookView(h,o.get('bias') if available else 'ABSTAIN',o.get('target_at') if available else None,mid if available else None,o.get('invalidation') if available else None,'deterministic conditional-direction-v2; unvalidated',None if available else 'fresh underlying unavailable' if not underlying else o.get('reason') or 'insufficient session time or evidence')
-    evidence={'underlying_reason':ctx.get('reason'),'quote_diagnostics':ctx.get('diagnostics',[]),'heartbeat_age_seconds':ctx.get('heartbeat_age_seconds'),'bar_end_age_seconds':ctx.get('bar_end_age_seconds'),'confirmed_empty_continuity_slots':ctx.get('synthetic_continuity_minutes',0),'early_limited':bool(ctx.get('early')),'trend_components':research.get('components',{}),'calendar_quality':news.get('quality'),'calendar_risk':news.get('risk'),'options_separate':True,'source_population':ctx.get('feed_quality','UNAVAILABLE')}
+        o=scenario if h=='H60' else {}
+        available=bool(h=='H60' and underlying and o.get('target_at') and o.get('bias') in ('UP','DOWN','MIXED','SIDEWAYS'))
+        missing='separate horizon scenario not issued by this version' if h!='H60' else 'fresh underlying unavailable' if not underlying else o.get('reason') or 'insufficient session time or evidence'
+        outlooks[h]=OutlookView(h,o.get('bias') if available else 'ABSTAIN',o.get('target_at') if available else None,mid if available else None,o.get('invalidation') if available else None,'Conditional H60 hypothesis while the measured VWAP invalidation holds; not calibrated',None if available else missing)
+    evidence={'underlying_reason':ctx.get('reason'),'quote_diagnostics':ctx.get('diagnostics',[]),'heartbeat_age_seconds':ctx.get('heartbeat_age_seconds'),'bar_end_age_seconds':ctx.get('bar_end_age_seconds'),'descriptive_bar_age_limit_seconds':DESCRIPTIVE_MAX_BAR_AGE_SECONDS,'descriptive_minimum_endpoint_bars':16,'confirmed_empty_continuity_slots':ctx.get('synthetic_continuity_minutes',0),'early_limited':bool(ctx.get('early')),'trend_components':research.get('components',{}),'calendar_quality':news.get('quality'),'calendar_risk':news.get('risk'),'options_separate':True,'source_population':ctx.get('feed_quality','UNAVAILABLE')}
     ident={'schema':VERSION,'at':now.isoformat(),'price':asdict(price),'trend':asdict(trend),'entry':asdict(entry),'plan':primary,'outlooks':{k:asdict(v) for k,v in outlooks.items()}}
     digest=hashlib.sha256(json.dumps(ident,sort_keys=True,allow_nan=False,default=str).encode()).hexdigest()[:24]
     premarket=premarket_view(ctx.get('premarket_report') or {},now);recap=ctx.get('recap')
@@ -164,7 +221,8 @@ def build(ctx,news,now,config=None,plan=None,entry_reason=None):
 
 def details(snapshot):
     s=snapshot;lines=['AEGIS VIEW '+s['schema_version']+' · '+s['snapshot_id'],'Generated: '+s['generated_at'],'Current trend: '+s['trend']['state']+' · '+s['trend']['rule_version'],s['trend']['reason']]
-    for h,o in s['outlooks'].items():lines.append(h+': '+o['bias']+' · target '+str(o['target_at'] or 'unavailable')+' · '+str(o['reason'] or o['basis']))
+    for h,o in s['outlooks'].items():lines.append(h+': '+o['bias']+' · '+o['rule_version']+' · target '+str(o['target_at'] or 'unavailable')+' · '+str(o['reason'] or o['basis']))
+    lines+=['Observed rule: close versus same-feed session VWAP and exact15m change; UP/DOWN require agreement. SIDEWAYS requires span<=2ATR, |change|<=0.25ATR, |close-VWAP|<=0.5ATR; other disagreement=MIXED.', 'Descriptive bounds: current-session genuine contiguous completed endpoints; bar end age 0..120 seconds. Entry quote/receipt/heartbeat/calendar/risk gates are independent.']
     lines+=['Entry: '+s['entry']['state']+' — '+s['entry']['reason'],'Primary: '+(s['primary_plan']['signal_id']+' '+s['primary_plan']['state'] if s.get('primary_plan') else 'none'),s['option_data'],'Indicators, hypotheses and entries are separate. No calibrated odds; no order execution.']
     return '\n'.join(lines)
 
