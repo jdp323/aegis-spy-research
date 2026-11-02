@@ -1,0 +1,17 @@
+--- a/ops/supervisor.py
++++ b/ops/supervisor.py
+@@ -64 +64 @@
+-def stream_restart_due(root,now,started):
++def stream_restart_due(root,now,started,clock=None):
+@@ -74,2 +74,6 @@
+-            if stream_control_progress(health,now,started):return False
+-            return watchdog_age(get('last_market:iex'),now,started)>=300
++            last=get('last_market:iex')
++            # Evaluate after the coherent read. A legitimate concurrent control
++            # update can be newer than the supervisor loop-start timestamp.
++            evaluated=(clock or (lambda:now))()
++            if stream_control_progress(health,evaluated,started):return False
++            return watchdog_age(last,evaluated,started)>=300
+@@ -94 +98 @@
+-            if child and child.poll() is None and stream_restart_due(ROOT,now,stream_started):
++            if child and child.poll() is None and stream_restart_due(ROOT,now,stream_started,clock=lambda:datetime.now(timezone.utc)):

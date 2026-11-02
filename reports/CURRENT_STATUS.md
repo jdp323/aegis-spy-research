@@ -1,3 +1,7 @@
+## November2 first-session review,11:38ET
+
+[Partial-session monitoring evidence and undeployed clock-race proposal](updates/2026-11-02_first-session-monitoring.md). Eight due statuses API-accepted on time; bounded monitor tail contains four SQLite-busy failed cycles and its Store reports five failed transactions. Latency target is not met. ExistingIEX406/entry restrictions remain; no production source, service or gate change.
+
 ## November 1 free-only implementation
 
 [Implementation, algorithms, measured limitations and verification](updates/2026-11-01_free-only-six-project-implementation.md). Actual local deployment and HTTP/progress samples are scoped in the report. Five genuine sessions remain pending. No new paid dependency or strategy promotion.
