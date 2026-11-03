@@ -1,3 +1,7 @@
+## November 3 morning operational target failure
+
+[Eight-slot timing and issued first-hour evidence](updates/2026-11-03_morning-timing-and-first-hour-failure.md): 8/8 slots API-accepted through 11:30 ET, 5 timely. Three late slots cap today's final timely count at 22/25, below 95%. First-hour verifier FAIL with 33 recorded sample minutes; no complete coverage or option readiness inferred. No source/configuration/gate/restart change.
+
 ## November 3 audit of the November 2 supplied Telegram transcript
 
 [Timing, historical-price comparison and hypothetical-outcome audit](updates/2026-11-03_message-timing-and-hypothetical-outcomes.md): literal WAIT means zero new hypothetical trades; no option P&L established. Current compact references match historical minute prices, but bar age is separate from scheduling delay. Future-event date omission reproduced; legacy message origin remains partly unverified. No runtime or strategy change in this audit.
