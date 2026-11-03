@@ -1,3 +1,5 @@
+> November 2 supervisor clock correction: [deployed behavior, full tests and rollback scope](reports/updates/2026-11-02_watchdog-read-clock-deployed.md). The control watchdog samples its evaluation clock after coherent database reads; all existing control bounds and market-data gates remain strict. Load reviewed source using the single existing task, then verify completed work and fresh listener/dispatcher clocks, HTTP and a populated diagnostic view. No dependency, credential, schema, task privilege or configuration change; source rollback must not rewind live ledgers.
+
 > Report downloads are now available in [reports/downloads](reports/downloads/README.md). Downloading/reviewing them requires no credentials or service restart. Publication accepts only the four reviewed artifact names with pinned SHA-256 hashes; unknown or modified binary files remain blocked.
 
 > November 1 free-only operating release: [implementation and evidence](reports/updates/2026-11-01_free-only-six-project-implementation.md). This current procedure supersedes conflicting old provider/presentation recommendations below.

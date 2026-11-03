@@ -61,7 +61,7 @@ def stream_control_progress(health,now,started):
     except (KeyError,TypeError,ValueError):pass
     return False
 
-def stream_restart_due(root,now,started):
+def stream_restart_due(root,now,started,clock=None):
     if not active(now) or started is None or (now-started).total_seconds()<300:return False
     try:
         db=sqlite3.connect((root/'runtime/aegis.sqlite').as_uri()+'?mode=ro',uri=True,timeout=.5)
@@ -71,8 +71,12 @@ def stream_restart_due(root,now,started):
                 row=db.execute('SELECT payload FROM state WHERE key=?',(key,)).fetchone();return json.loads(row[0]) if row else {}
             health=get('stream:iex')
             if health.get('state') in ('FEED_NOT_CONFIGURED','IDLE_NO_CONTRACT_SUBSCRIPTIONS'):return False
-            if stream_control_progress(health,now,started):return False
-            return watchdog_age(get('last_market:iex'),now,started)>=300
+            last=get('last_market:iex')
+            # Evaluate after the coherent read. A legitimate concurrent control
+            # update can be newer than the supervisor loop-start timestamp.
+            evaluated=(clock or (lambda:now))()
+            if stream_control_progress(health,evaluated,started):return False
+            return watchdog_age(last,evaluated,started)>=300
         finally:db.close()
     except (OSError,sqlite3.Error,ValueError):return False
 def clear_previous_shutdown(root=ROOT):
@@ -91,7 +95,7 @@ def run():
             now=datetime.now(timezone.utc);pause=probe.check(now)
             if pause:events.add('PROCESS_PAUSED','supervisor',now,**pause)
             child=children.get('stream')
-            if child and child.poll() is None and stream_restart_due(ROOT,now,stream_started):
+            if child and child.poll() is None and stream_restart_due(ROOT,now,stream_started,clock=lambda:datetime.now(timezone.utc)):
                 events.add('WATCHDOG_RESTART','supervisor',now,reason='NO_VALID_MARKET_MESSAGE_300_SECONDS');child.terminate();stream_started=now
             try:client,_=sock.accept();client.close()
             except BlockingIOError:pass

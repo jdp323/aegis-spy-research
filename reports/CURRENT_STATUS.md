@@ -1,3 +1,7 @@
+## November 2 evening watchdog clock correction
+
+[Post-read clock fix deployed and verified](updates/2026-11-02_watchdog-read-clock-deployed.md): 943 portable / 932 installed checks pass, with exact source binding and bounded post-restart work/HTTP/diagnostic-view verification. No freshness, risk or live gate change. Earlier full-day engineering FAIL and source/database limits remain; active-session benefit is pending.
+
 ## November 2 completed engineering session
 
 [Final first-session evidence and independent reconciliation](updates/2026-11-02_first-full-free-mode-session.md): 25/25 owner status slots and recap API-accepted; 21/25 timely, 0/25 strict underlying eligibility. Monitor p95 9.344 seconds, 13 failed ticks; engineering FAIL. Historical backfill coverage PASS is separate. No strategy or option qualification, production change or replay.
