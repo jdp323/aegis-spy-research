@@ -19,7 +19,10 @@ def next_event(news,now):
         except (KeyError,TypeError,ValueError):return 'event data unavailable — invalid event time'
     if not rows:return 'no required scheduled event listed; optional coverage incomplete'
     _,t,e=min(rows,key=lambda r:r[:2]);name=' '.join(str(e.get('name') or e.get('category') or 'verified event').split())[:65]
-    return name+' · '+('all-day ET' if e.get('time_source')=='DATE_ONLY' else clock(e['time_utc']))
+    local=t.astimezone(ET)
+    day='today' if local.date()==now.astimezone(ET).date() else local.strftime('%a %b %d %Y')
+    timing='all-day ET' if e.get('time_source')=='DATE_ONLY' else clock(e['time_utc'])
+    return name+' · '+day+' · '+timing
 def reason(text):
     text=str(text or '')
     for key,label in [('quote age','fresh price unavailable'),('COOL_OFF','research pause active'),('cool off','research pause active'),('SOURCE','fresh price unavailable'),('data not fresh','fresh price unavailable'),('BAR_','completed minutes missing'),('history','completed minutes missing'),('NEGATIVE','setup evidence under review'),('DIRECTION_COOLDOWN','similar watch recently alerted')]:

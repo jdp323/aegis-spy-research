@@ -14,7 +14,7 @@ class Evaluation(unittest.TestCase):
         from monitoring.owner_messages import next_event
         midnight=NOW.astimezone(ET).replace(hour=0,minute=0)
         news={'quality':'DATA_OK','events':[{'name':'FOMC\nfixture','time_utc':midnight.isoformat(),'time_source':'DATE_ONLY','risk':'HIGH'},{'name':'later','time_utc':(NOW+timedelta(days=1)).isoformat()}]}
-        self.assertEqual(next_event(news,NOW),'FOMC fixture · all-day ET')
+        self.assertEqual(next_event(news,NOW),'FOMC fixture · today · all-day ET')
         self.assertIn('unavailable',next_event({'quality':'DATA_OK','events':[{'time_utc':'bad'}]},NOW))
     def test_all_issued_forecasts_and_failures_stay_in_denominator(self):
         q=prepare(rows5(),'IEX',NOW);failed=copy.deepcopy(q);failed['id']='failed';r=validate_result(q,result(q),NOW+timedelta(seconds=1))

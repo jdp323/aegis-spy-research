@@ -1,3 +1,7 @@
+## November 3 event-date correction deployed
+
+[Explicit event dates and retained session failures](updates/2026-11-03_event-date-display-deployed.md): same-day events say today; future events show their date and year; date-only events remain all-day. Complete final profiles: 953 portable / 942 installed PASS after preserving one obsolete-label assertion failure. Existing task reloaded with bounded work/HTTP/diagnostic-view verification. November 3 engineering remains FAIL:24/25 accepted,19 timely,14.156s monitor p95,200 failed ticks. The14:00 handoff gap remains unresolved.
+
 ## November 3 missing 14:00 ET status
 
 [Reservation-to-outbox gap](updates/2026-11-03_reserved-status-without-outbox.md): 19 of 20 due slots through 14:30 ET have owner API acceptance; 14 timely. The 14:00 composition and durable reservation exist, but its expected outbox and owner journal are absent. Adjacent monitor ticks failed with SQLITE_BUSY; exact failing statement remains unknown. No expired-slot replay or runtime change. Earlier timing/first-hour failures remain.
