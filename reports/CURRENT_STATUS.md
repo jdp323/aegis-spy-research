@@ -1,3 +1,7 @@
+## November 3 missing 14:00 ET status
+
+[Reservation-to-outbox gap](updates/2026-11-03_reserved-status-without-outbox.md): 19 of 20 due slots through 14:30 ET have owner API acceptance; 14 timely. The 14:00 composition and durable reservation exist, but its expected outbox and owner journal are absent. Adjacent monitor ticks failed with SQLITE_BUSY; exact failing statement remains unknown. No expired-slot replay or runtime change. Earlier timing/first-hour failures remain.
+
 ## November 3 morning operational target failure
 
 [Eight-slot timing and issued first-hour evidence](updates/2026-11-03_morning-timing-and-first-hour-failure.md): 8/8 slots API-accepted through 11:30 ET, 5 timely. Three late slots cap today's final timely count at 22/25, below 95%. First-hour verifier FAIL with 33 recorded sample minutes; no complete coverage or option readiness inferred. No source/configuration/gate/restart change.
