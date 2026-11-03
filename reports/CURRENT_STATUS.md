@@ -1,3 +1,7 @@
+## November 3 audit of the November 2 supplied Telegram transcript
+
+[Timing, historical-price comparison and hypothetical-outcome audit](updates/2026-11-03_message-timing-and-hypothetical-outcomes.md): literal WAIT means zero new hypothetical trades; no option P&L established. Current compact references match historical minute prices, but bar age is separate from scheduling delay. Future-event date omission reproduced; legacy message origin remains partly unverified. No runtime or strategy change in this audit.
+
 ## November 2 evening watchdog clock correction
 
 [Post-read clock fix deployed and verified](updates/2026-11-02_watchdog-read-clock-deployed.md): 943 portable / 932 installed checks pass, with exact source binding and bounded post-restart work/HTTP/diagnostic-view verification. No freshness, risk or live gate change. Earlier full-day engineering FAIL and source/database limits remain; active-session benefit is pending.
