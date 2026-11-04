@@ -1,3 +1,7 @@
+## November 3 evening scheduled-handoff assessment
+
+[Failure boundaries and pending prepared-outbox design](updates/2026-11-03_scheduled-handoff-failure-assessment.md): five isolated diagnostics reproduce current reservation/publication boundaries, including a metadata failure after claim and an audit failure after file publication. These are fault reproductions, not a handoff fix or readiness PASS. The deployed date correction and issued session failures are preserved; no runtime source or service change occurred.
+
 ## November 3 event-date correction deployed
 
 [Explicit event dates and retained session failures](updates/2026-11-03_event-date-display-deployed.md): same-day events say today; future events show their date and year; date-only events remain all-day. Complete final profiles: 953 portable / 942 installed PASS after preserving one obsolete-label assertion failure. Existing task reloaded with bounded work/HTTP/diagnostic-view verification. November 3 engineering remains FAIL:24/25 accepted,19 timely,14.156s monitor p95,200 failed ticks. The14:00 handoff gap remains unresolved.
