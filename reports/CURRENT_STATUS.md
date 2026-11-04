@@ -1,3 +1,7 @@
+## November 4 completed engineering session
+
+[Final receipt reconciliation and distinct evidence populations](updates/2026-11-04_completed-engineering-session.md): 24/25 owner status slots API-accepted, 18/25 timely, zero scheduled strict underlying passes; 11:45 remains uncertain with no replay. Monitor p95 16.844s, 100 failed ticks, maximum logged DB failure counter 99: engineering FAIL. Historical coverage PASS is separate (389/390, 320 backfilled). The 64 strict polling samples do not change the zero-of-25 scheduled result. Recap API-accepted; prepared-event candidate remains private and undeployed.
+
 ## November 4 owner11:45 status send uncertain
 
 [Recipient-specific delivery evidence](updates/2026-11-04_owner-status-delivery-uncertain.md): owner journal UNCERTAIN_AFTER_SEND after one NETWORK/ECONNRESET attempt. Aggregate shared completion and other recipients' acceptances do not establish owner receipt. No resend or original-record rewrite; owner can check the chat and, if seen, separately attest. Ten of eleven slots through12:15 have owner API acceptance; the remaining result is unknown.
