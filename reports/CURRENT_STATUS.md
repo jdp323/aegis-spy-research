@@ -1,3 +1,7 @@
+## November 4 owner11:45 status send uncertain
+
+[Recipient-specific delivery evidence](updates/2026-11-04_owner-status-delivery-uncertain.md): owner journal UNCERTAIN_AFTER_SEND after one NETWORK/ECONNRESET attempt. Aggregate shared completion and other recipients' acceptances do not establish owner receipt. No resend or original-record rewrite; owner can check the chat and, if seen, separately attest. Ten of eleven slots through12:15 have owner API acceptance; the remaining result is unknown.
+
 ## November 4 daily timing target failed
 
 [Seven-slot timing and retained first-hour evidence](updates/2026-11-04_status-timing-target-failure.md): all seven statuses through11:15ET owner API-accepted, five within30s. Two late slots cap today's maximum at23/25, below95%. Original39-sample first-hour FAIL preserved. No runtime source, gate, schedule, service restart or replay change; the handoff persistence candidate remains undeployed.
