@@ -1,3 +1,7 @@
+## November 4 daily timing target failed
+
+[Seven-slot timing and retained first-hour evidence](updates/2026-11-04_status-timing-target-failure.md): all seven statuses through11:15ET owner API-accepted, five within30s. Two late slots cap today's maximum at23/25, below95%. Original39-sample first-hour FAIL preserved. No runtime source, gate, schedule, service restart or replay change; the handoff persistence candidate remains undeployed.
+
 ## November 3 evening scheduled-handoff assessment
 
 [Failure boundaries and pending prepared-outbox design](updates/2026-11-03_scheduled-handoff-failure-assessment.md): five isolated diagnostics reproduce current reservation/publication boundaries, including a metadata failure after claim and an audit failure after file publication. These are fault reproductions, not a handoff fix or readiness PASS. The deployed date correction and issued session failures are preserved; no runtime source or service change occurred.
