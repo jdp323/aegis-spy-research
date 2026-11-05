@@ -1,3 +1,7 @@
+## November 5 completed engineering session
+
+[Issued evidence and independent reconciliation](updates/2026-11-05_completed-engineering-session.md):25/25 owner status slots API-accepted,18/25 timely,0/25 scheduled strict underlying passes; recap API-accepted. Monitor p95 10.406s,71failed ticks,maxlogged DB failure counter161:engineering FAIL. Historical coverage PASS is separate:389/390,357backfilled. The26strict polling samples do not change scheduled zero-of25. Private83-case handoff candidate remains undeployed; no new operative change.
+
 ## November 5 daily timing target failed
 
 [First three-slot reconciliation](updates/2026-11-05_status-timing-target-failure.md): 3/3 owner API-accepted, 1/3 within30s.09:45 +32.281s and10:15 +43.317s cap today's final timely count at23/25, below95%. Original clocks preserved; pending10:30 was not declared lost or replayed. Data/host limits persist; no operative change or candidate deployment.
