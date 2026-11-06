@@ -1,3 +1,7 @@
+## November 6 daily timing target failed
+
+[First four-slot original-clock reconciliation](updates/2026-11-06_status-timing-target-failure.md):4/4 owner slots API-accepted,2/4 within30s.10:00 +41.228s and10:30 +32.521s cap today's final timely count at23/25, below95%. No missing/uncertain result in this cohort, no resend. Known data/host limits remain; private91-case candidate is undeployed and default scheduled path unchanged.
+
 ## November 5 completed engineering session
 
 [Issued evidence and independent reconciliation](updates/2026-11-05_completed-engineering-session.md):25/25 owner status slots API-accepted,18/25 timely,0/25 scheduled strict underlying passes; recap API-accepted. Monitor p95 10.406s,71failed ticks,maxlogged DB failure counter161:engineering FAIL. Historical coverage PASS is separate:389/390,357backfilled. The26strict polling samples do not change scheduled zero-of25. Private83-case handoff candidate remains undeployed; no new operative change.
