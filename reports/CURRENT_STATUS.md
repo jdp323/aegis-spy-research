@@ -1,3 +1,7 @@
+## November 6 read-only revalidation prerequisites
+
+[Eight isolated cases](updates/2026-11-06_readonly-revalidation-prerequisites.md) pass against the existing query-only facade and evaluator. No runtime source change or production loading. There are 99 distinct scoped candidate/prerequisite cases; the real scheduled-status gate, factory and full integration remain pending. Through12:30ET,12/12 owner statuses were API-accepted,7timely; the known daily timing failure persists. Phone delivery is unverified.
+
 ## November 6 daily timing target failed
 
 [First four-slot original-clock reconciliation](updates/2026-11-06_status-timing-target-failure.md):4/4 owner slots API-accepted,2/4 within30s.10:00 +41.228s and10:30 +32.521s cap today's final timely count at23/25, below95%. No missing/uncertain result in this cohort, no resend. Known data/host limits remain; private91-case candidate is undeployed and default scheduled path unchanged.
