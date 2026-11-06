@@ -1,3 +1,7 @@
+## November 6 close: native report delayed, completed-work clocks stale
+
+[As-of close assessment](updates/2026-11-06_close-review-native-report-delayed.md):25/25 owner slots and recap API-accepted,14/25 timely; four strict composition observations. Independent engineering observation FAIL:monitor p95 16.859s/295failed ticks. Native16:20ET session JSON/Markdown and its completion marker were unavailable at16:28:44ET; worker last completed16:20:25ET and monitor16:23:59ET, unchanged at16:29followup with two HTTPtimeouts. No causal diagnosis, speculative restart, report regeneration or repair deployment. Phone delivery unverified.
+
 ## November 6 read-only revalidation prerequisites
 
 [Eight isolated cases](updates/2026-11-06_readonly-revalidation-prerequisites.md) pass against the existing query-only facade and evaluator. No runtime source change or production loading. There are 99 distinct scoped candidate/prerequisite cases; the real scheduled-status gate, factory and full integration remain pending. Through12:30ET,12/12 owner statuses were API-accepted,7timely; the known daily timing failure persists. Phone delivery is unverified.
