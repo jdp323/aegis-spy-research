@@ -1,3 +1,7 @@
+## November 6 native report now present; completed-work clocks resumed
+
+[Original native followup](updates/2026-11-06_native-report-completion-followup.md): native artifacts/marker now present, worker and monitor completed work advancing, two bounded HTTP200 responses. Original collection time16:20:28ET differs from engineeringasof17:23:09ET and markerupdate17:23:14ET. Delay remains recorded; no restart or causal fix claimed. Engineering FAIL remains:25/25accepted,14timely,4strict compositions,p9516.859s/295failed ticks. HistoricalcoveragePASS389/390 with176backfilled is separate. Private99-case implementation remains undeployed.
+
 ## November 6 close: native report delayed, completed-work clocks stale
 
 [As-of close assessment](updates/2026-11-06_close-review-native-report-delayed.md):25/25 owner slots and recap API-accepted,14/25 timely; four strict composition observations. Independent engineering observation FAIL:monitor p95 16.859s/295failed ticks. Native16:20ET session JSON/Markdown and its completion marker were unavailable at16:28:44ET; worker last completed16:20:25ET and monitor16:23:59ET, unchanged at16:29followup with two HTTPtimeouts. No causal diagnosis, speculative restart, report regeneration or repair deployment. Phone delivery unverified.
